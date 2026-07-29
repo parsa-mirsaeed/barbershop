@@ -1,0 +1,138 @@
+, prices, stock, and images.
++4. Test registration and password recovery.
++5. Test the cart from desktop and mobile navigation.
++6. Test checkout, cancellation, failure, duplicate callback, amount mismatch, refund, and reconciliation.
++7. Confirm order email delivery.
++8. Test keyboard navigation, 200% zoom, contrast, and reduced motion.
++9. Run the full repository checks and a low-value live transaction.
++
++The Docker production example is a baseline, not a substitute for professional operations and legal/security review.
+diff --git a/plugin/barbershop-core/assets/admin.js b/plugin/barbershop-core/assets/admin.js
+index 1ceb5ae..9db01de 100644
+--- a/plugin/barbershop-core/assets/admin.js
++++ b/plugin/barbershop-core/assets/admin.js
+@@ -1,19 +1,43 @@
+ (() => {
+   'use strict';
++
+   document.addEventListener('click', (event) => {
++    const removeButton = event.target.closest('[data-bsc-media-remove]');
++    if (removeButton) {
++      event.preventDefault();
++      const target = removeButton.dataset.bscMediaRemove;
++      const input = document.getElementById(target);
++      const preview = document.querySelector(`[data-bsc-preview="${target}"]`);
++      if (input) input.value = '';
++      if (preview) {
++        preview.src = '';
++        preview.hidden = true;
++      }
++      return;
++    }
++
+     const button = event.target.closest('[data-bsc-media-target]');
+     if (!button || typeof window.wp === 'undefined' || !window.wp.media) return;
+     event.preventDefault();
+     const target = button.dataset.bscMediaTarget;
+     const input = document.getElementById(target);
+-    const preview = document.querySelector(`[data-bsc-preview="${target}"]`);
+     if (!input) return;
+-    const frame = window.wp.media({ title: 'Choose image', multiple: false, library: { type: 'image' } });
++    const frame = window.wp.media({ title: 'انتخاب تصویر', multiple: false, library: { type: 'image' } });
+     frame.on('select', () => {
+       const attachment = frame.state().get('selection').first().toJSON();
++      let preview = document.querySelector(`[data-bsc-preview="${target}"]`);
++      if (!preview) {
++        const wrap = document.querySelector(`[data-bsc-preview-wrap="${target}"]`);
++        if (wrap) {
++          preview = document.createElement('img');
++          preview.dataset.bscPreview = target;
++          preview.alt = '';
++          wrap.appendChild(preview);
++        }
++      }
+       input.value = String(attachment.id);
+       if (preview) {
+-        preview.src = attachment.sizes?.medium?.url || attachment.url;
++        preview.src = attachment.sizes?.thumbnail?.url || attachment.sizes?.medium?.url || attachment.url;
+         preview.hidden = false;
+       }
+     });
+diff --git a/plugin/barbershop-core/assets/frontend.css b/plugin/barbershop-core/assets/frontend.css
+index 03a8ae9..61c1d08 100644
+--- a/plugin/barbershop-core/assets/frontend.css
++++ b/plugin/barbershop-core/assets/frontend.css
+@@ -1,12 +1,32 @@
++:root { --bsc-navy:#071a3d; --bsc-green:#0e8f6a; --bsc-white:#fff; --bsc-muted:#a9b8c8; }
++.bsc-category-grid { display:grid; gap:1.1rem; grid-template-columns:repeat(3,minmax(0,1fr)); }
++.bsc-category-card { min-width:0; }
++.bsc-category-card > a { background:linear-gradient(155deg,rgba(255,255,255,.065),rgba(14,143,106,.08)); border:1px solid rgba(255,255,255,.14); border-radius:1.75rem; color:var(--bsc-white); display:flex; flex-direction:column; height:100%; min-height:19rem; padding:clamp(1.3rem,3vw,2rem); text-decoration:none; transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease; }
++.bsc-category-card > a:hover { border-color:var(--bsc-green); box-shadow:0 24px 70px rgba(0,0,0,.25); transform:translateY(-5px); }
++.bsc-category-card__icon { align-items:center; background:rgba(14,143,106,.13); border:1px solid rgba(14,143,106,.45); border-radius:1.4rem; color:#23d6a7; display:flex; height:7rem; justify-content:center; margin-bottom:1.35rem; overflow:hidden; width:7rem; }
++.bsc-category-card__image, .bsc-category-card__fallback svg { height:5rem; object-fit:contain; width:5rem; }
++.bsc-category-card__title { font-size:clamp(1.25rem,2.5vw,1.75rem); font-weight:900; line-height:1.35; }
++.bsc-category-card__children { color:var(--bsc-muted); font-size:.92rem; line-height:1.9; margin-top:.65rem; }
++.bsc-category-card__action { color:#39e1b5; font-weight:800; margin-top:auto; padding-top:1.4rem; }
++.bsc-store-notice { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); border-radius:1rem; padding:1rem; }
++.bsc-cart-link, .bsc-account-link { align-items:center; border:1px solid rgba(255,255,255,.2); border-radius:999px; color:#fff !important; display:inline-flex; font-size:.9rem; font-weight:850; gap:.55rem; min-height:3rem; padding:.55rem .85rem; text-decoration:none !important; white-space:nowrap; }
++.bsc-cart-link { background:var(--bsc-green); border-color:var(--bsc-green); }
++.bsc-cart-link__icon { display:inline-flex; height:1.45rem; width:1.45rem; }
++.bsc-cart-link__icon svg { height:100%; width:100%; }
++.bsc-cart-link__count { align-items:center; background:#fff; border-radius:999px; color:var(--bsc-navy); display:inline-flex; font-size:.76rem; height:1.45rem; justify-content:center; min-width:1.45rem; padding:0 .28rem; }
++.bsc-cart-link--floating { bottom:1rem; box-shadow:0 14px 40px rgba(0,0,0,.36); display:none; left:1rem; position:fixed; z-index:1000; }
++.bsc-register-note { color:var(--bsc-muted); font-size:.82rem; line-height:1.7; }
+ .bsc-ba-grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr)); }
+-.bsc-ba { background:var(--pbs-card,rgba(255,248,235,.07)); border:1px solid var(--pbs-line,rgba(255,248,235,.14)); border-radius:1.5rem; overflow:hidden; }
++.bsc-ba { background:rgba(255,255,255,.065); border:1px solid rgba(255,255,255,.14); border-radius:1.5rem; overflow:hidden; }
+ .bsc-ba__media { aspect-ratio:4/3; isolation:isolate; position:relative; }
+ .bsc-ba__media img { display:block; height:100%; inset:0; object-fit:cover; position:absolute; width:100%; }
+ .bsc-ba__after { clip-path:inset(0 50% 0 0); }
+-.bsc-ba__range { cursor:ew-resize; inset:auto 1rem 1rem; position:absolute; width:calc(100% - 2rem); z-index:3; }
+-.bsc-ba__labels { display:flex; font-size:.75rem; font-weight:800; inset:.8rem .8rem auto; justify-content:space-between; pointer-events:none; position:absolute; z-index:2; }
+-.bsc-ba__labels span { background:rgba(15,12,8,.78); border-radius:999px; color:#fff7ea; padding:.35rem .65rem; }
++.bsc-ba__range { bottom:1rem; cursor:ew-resize; left:1rem; position:absolute; width:calc(100% - 2rem); z-index:3; }
++.bsc-ba__labels { display:flex; inset:.8rem .8rem auto; justify-content:space-between; pointer-events:none; position:absolute; z-index:2; }
++.bsc-ba__labels span { background:rgba(7,26,61,.82); border-radius:999px; color:#fff; font-size:.75rem; font-weight:800; padding:.35rem .65rem; }
+ .bsc-ba__body { padding:1rem 1.1rem 1.2rem; }
+ .bsc-ba__body h3,.bsc-ba__body p { margin-block:0; }
+-.bsc-ba__body p { color:var(--pbs-muted,#b9a994); margin-block-start:.5rem; }
+-@media (prefers-reduced-motion:reduce) { .bsc-ba__after { transition:none; } }
++.bsc-ba__body p { color:var(--bsc-muted); margin-block-start:.5rem; }
++@media (max-width:900px) { .bsc-category-grid { grid-template-columns:1fr; } .bsc-category-card > a { min-height:15rem; } }
++@media (max-width:781px) { .bsc-cart-link--floating { display:inline-flex; } .bsc-cart-link__label { display:none; } }
++@media (prefers-reduced-motion:reduce) { .bsc-category-card > a,.bsc-ba__after { transition:none; } }
+diff --git a/plugin/barbershop-core/barbershop-core.php b/plugin/barbershop-core/barbershop-core.php
+index 795ba2a..e340f0a 100644
+--- a/plugin/barbershop-core/barbershop-core.php
++++ b/plugin/barbershop-core/barbershop-core.php
+@@ -1,8 +1,8 @@
+ <?php
+ /**
+  * Plugin Name: Barbershop Core
+- * Description: Privacy-aware before/after portfolio controls and configurable WooCommerce order alerts.
+- * Version: 1.0.0
++ * Description: Store setup, simplified customer accounts, editable product-category icons, cart access, and privacy-aware portfolio controls.
++ * Version: 2.0.0
+  * Requires at least: 6.6
+  * Requires PHP: 7.4
+  * Author: Project Contributors
+@@ -10,192 +10,21 @@
+  * Text Domain: barbershop-core
+  */
+ 
+-if ( ! defined( 'ABSPATH' ) ) { exit; }
+-
+-const BSC_VERSION = '1.0.0';
+-const BSC_POST_TYPE = 'barbershop_result';
+-
+-function bsc_declare_compatibility() {
+-    if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+-        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+-    }
+-}
+-add_action( 'before_woocommerce_init', 'bsc_declare_compatibility' );
+-
+-function bsc_capabilities() {
+-    return array(
+-        'edit_barbershop_result', 'read_barbershop_result', 'delete_barbershop_result',
+-        'edit_barbershop_results', 'edit_others_barbershop_results', 'pub
