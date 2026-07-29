@@ -1,0 +1,5 @@
+<?php if ( ! defined( 'ABSPATH' ) ) { exit; } ?>
+<!-- wp:group {"anchor":"store","align":"full","className":"pbs-section","backgroundColor":"graphite","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}},"layout":{"type":"constrained"}} -->
+<div id="store" class="wp-block-group alignfull pbs-section has-graphite-background-color has-background" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)">
+  <div class="wp-block-group alignwide pbs-store-panel" style="padding:var(--wp--preset--spacing--70)"><p class="pbs-kicker has-muted-gold-color has-text-color">فروشگاه</p><h2 class="wp-block-heading has-heading-2-font-size">محصولات مراقبتی منتخب</h2><p class="has-sand-color has-text-color">موجودی، سفارش و ارسال با ووکامرس مدیریت می‌شود. پرداخت را فقط از طریق افزونه معتبر و صفحه میزبانی‌شده ارائه‌دهنده انجام دهید.</p><div class="wp-block-buttons"><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/shop/">مشاهده محصولات</a></div></div></div>
+</div><!-- /wp:group -->

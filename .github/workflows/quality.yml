@@ -1,0 +1,31 @@
+name: Quality checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python3 tools/scan-secrets.py
+      - run: python3 tools/validate.py
+      - run: find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+      - run: |
+          node --check plugin/barbershop-core/assets/admin.js
+          node --check plugin/barbershop-core/assets/frontend.js

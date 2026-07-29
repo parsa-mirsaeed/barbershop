@@ -1,0 +1,9 @@
+<?php if ( ! defined( 'ABSPATH' ) ) { exit; } ?>
+<!-- wp:group {"anchor":"contact","align":"full","className":"pbs-section","backgroundColor":"paper","textColor":"ink","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}},"layout":{"type":"constrained"}} -->
+<div id="contact" class="wp-block-group alignfull pbs-section has-ink-color has-paper-background-color has-text-color has-background" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)">
+  <div class="wp-block-group alignwide pbs-section-heading"><p class="pbs-kicker has-muted-gold-dark-color has-text-color">تماس و هماهنگی</p><h2 class="wp-block-heading has-heading-2-font-size">برای زمان مناسب تماس بگیرید</h2><p>تمام اطلاعات زیر جای‌نگهدار هستند و باید پیش از انتشار جایگزین شوند.</p></div>
+  <div class="wp-block-columns alignwide pbs-contact-panel">
+    <div class="wp-block-column" style="flex-basis:58%"><div class="wp-block-group pbs-contact-details has-warm-white-background-color has-background" style="padding:var(--wp--preset--spacing--70)"><h3 class="wp-block-heading has-heading-3-font-size">ارتباط مستقیم با [نام کسب‌وکار]</h3><ul class="pbs-contact-list"><li><strong>تلفن:</strong> [شماره تماس]</li><li><strong>ساعت پاسخ‌گویی:</strong> [ساعت پاسخ‌گویی]</li><li><strong>نشانی:</strong> [نشانی]</li></ul><div class="wp-block-buttons"><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="tel:+000000000000">تماس تلفنی</a></div></div></div></div>
+    <div class="wp-block-column" style="flex-basis:42%"><figure class="wp-block-image size-full"><img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/gallery-5.svg' ) ); ?>" alt="تصویر گرافیکی عمومی برای بخش تماس" width="1200" height="900"/></figure></div>
+  </div>
+</div><!-- /wp:group -->

@@ -1,0 +1,4 @@
+/* Direction-specific corrections; the main stylesheet uses logical properties. */
+.rtl .wp-block-post-excerpt__more-link::after,
+.rtl .wp-block-read-more::after { content: " ←"; }
+.rtl .pbs-hero-visual { transform: rotate(1.5deg); }

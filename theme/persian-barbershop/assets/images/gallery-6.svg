@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+<title id="title">Finish placeholder</title><desc id="desc">Abstract editorial placeholder for a barbershop portfolio image.</desc>
+<rect width="1200" height="900" fill="#151719"/><circle cx="740" cy="250" r="175" fill="#b7914b" opacity=".2"/>
+<path d="M260 760C420 420 560 250 790 170C930 140 1030 210 1090 340V900H120Z" fill="#f4f0e8" opacity=".055"/>
+<g fill="none" stroke="#b7914b" stroke-width="8" opacity=".9"><path d="M370 620c55-250 170-375 345-375 179 0 300 136 337 407"/><path d="M440 500c95-110 255-149 415-70"/><path d="M525 585c42 27 88 31 137 12m55-7c48 24 94 24 137 0"/></g>
+<g stroke="#f4f0e8" stroke-width="2" opacity=".22"><path d="M70 70h360"/><path d="M70 100h210"/><path d="M870 800h260"/></g>
+<text x="70" y="820" fill="#f4f0e8" opacity=".75" font-family="Arial,sans-serif" font-size="34" letter-spacing="6">BARBERSHOP / 06</text>
+</svg>

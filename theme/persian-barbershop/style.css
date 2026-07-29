@@ -1,0 +1,170 @@
+/*
+Theme Name: Persian Barbershop
+Author: Project Contributors
+Description: A Persian-first RTL WordPress block theme for a generalized barbershop portfolio and WooCommerce storefront.
+Version: 1.0.0
+Requires at least: 6.6
+Tested up to: 7.0
+Requires PHP: 7.4
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+Text Domain: persian-barbershop
+Tags: block-patterns, block-styles, full-site-editing, rtl-language-support, blog, e-commerce
+*/
+
+:root {
+  color-scheme: dark;
+  --pbs-bg: #0f0c08;
+  --pbs-bg-soft: #17120d;
+  --pbs-card: rgba(255, 248, 235, 0.075);
+  --pbs-line: rgba(255, 248, 235, 0.15);
+  --pbs-text: #fff8eb;
+  --pbs-muted: #c9bba8;
+  --pbs-gold: #c4a464;
+  --pbs-gold-dark: #8e6f35;
+  --pbs-paper: #f4f0e8;
+  --pbs-ink: #1c1711;
+  --pbs-radius: 1.5rem;
+  --pbs-shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(196, 164, 100, .15), transparent 34rem),
+    radial-gradient(circle at 90% 24%, rgba(244, 240, 232, .06), transparent 30rem),
+    var(--pbs-bg);
+  color: var(--pbs-text);
+  font-family: Tahoma, Arial, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+a { transition: color .2s ease, opacity .2s ease, transform .2s ease; }
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid var(--pbs-gold);
+  outline-offset: 4px;
+}
+
+.screen-reader-text {
+  border: 0; clip: rect(1px,1px,1px,1px); clip-path: inset(50%);
+  height: 1px; margin: -1px; overflow: hidden; padding: 0;
+  position: absolute !important; width: 1px; word-wrap: normal !important;
+}
+.screen-reader-text:focus {
+  clip: auto !important; clip-path: none; height: auto; width: auto;
+  background: var(--pbs-paper); color: var(--pbs-ink); padding: .8rem 1rem;
+  inset: .75rem auto auto .75rem; z-index: 100000;
+}
+
+.site-header-shell {
+  backdrop-filter: blur(18px);
+  background: rgba(15, 12, 8, .82) !important;
+  border-bottom: 1px solid var(--pbs-line);
+  position: sticky; top: 0; z-index: 50;
+}
+.site-header-shell > .wp-block-group { min-height: 5.2rem; }
+.site-header-shell .wp-block-site-title { font-weight: 900; letter-spacing: -.04em; }
+.site-header-shell .wp-block-navigation-item__content { font-weight: 700; }
+
+.wp-element-button, .wp-block-button__link {
+  border-radius: 999px;
+  box-shadow: none;
+  font-weight: 850;
+  padding: .82rem 1.35rem;
+}
+.wp-block-button.is-style-outline .wp-block-button__link {
+  border-color: var(--pbs-line);
+  color: inherit;
+}
+
+.pbs-hero {
+  min-height: min(900px, calc(100svh - 5rem));
+  overflow: hidden;
+  position: relative;
+}
+.pbs-hero::before {
+  background: radial-gradient(circle, rgba(196,164,100,.22), transparent 64%);
+  content: ""; height: 42rem; inset: -8rem auto auto -12rem; pointer-events: none;
+  position: absolute; width: 42rem;
+}
+.pbs-hero-copy { position: relative; z-index: 2; }
+.pbs-kicker {
+  font-size: .78rem; font-weight: 900; letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.pbs-hero h1 {
+  font-size: clamp(3.2rem, 8vw, 7.8rem) !important;
+  line-height: .98; letter-spacing: -.07em; margin-block: .7rem 1.3rem;
+}
+.pbs-hero-visual {
+  background: linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.015));
+  border: 1px solid var(--pbs-line); border-radius: 2.4rem;
+  box-shadow: var(--pbs-shadow); overflow: hidden; transform: rotate(-1.5deg);
+}
+.pbs-hero-visual img { display: block; min-height: 38rem; object-fit: cover; width: 100%; }
+
+.pbs-section { position: relative; }
+.pbs-section-heading { gap: 1.5rem; margin-bottom: 2.4rem; }
+.pbs-section-heading h2 { letter-spacing: -.04em; margin-block: .35rem 0; }
+.pbs-card-grid { gap: 1rem; }
+.pbs-card {
+  background: var(--pbs-card); border: 1px solid var(--pbs-line);
+  border-radius: var(--pbs-radius); box-shadow: 0 15px 55px rgba(0,0,0,.14);
+  height: 100%; overflow: hidden; padding: clamp(1.25rem, 3vw, 2rem);
+}
+.pbs-card h3 { margin-top: 0; }
+.pbs-number {
+  align-items: center; border: 1px solid var(--pbs-line); border-radius: 999px;
+  color: var(--pbs-gold); display: inline-flex; font-size: .75rem; font-weight: 900;
+  height: 2.2rem; justify-content: center; width: 2.2rem;
+}
+
+.pbs-gallery-grid { gap: .9rem; }
+.pbs-gallery-item {
+  border: 1px solid var(--pbs-line); border-radius: 1.5rem; overflow: hidden;
+  position: relative;
+}
+.pbs-gallery-item img { aspect-ratio: 4 / 3; display: block; object-fit: cover; width: 100%; }
+.pbs-gallery-item figcaption {
+  background: linear-gradient(transparent, rgba(0,0,0,.9)); bottom: 0; color: #fff;
+  inset-inline: 0; margin: 0; padding: 3rem 1rem 1rem; position: absolute;
+}
+
+.pbs-store-panel, .pbs-contact-panel {
+  background: linear-gradient(135deg, rgba(196,164,100,.14), rgba(255,255,255,.035));
+  border: 1px solid var(--pbs-line); border-radius: 2rem; box-shadow: var(--pbs-shadow);
+  overflow: hidden;
+}
+.pbs-contact-details { color: var(--pbs-ink); min-height: 100%; }
+.pbs-contact-list { list-style: none; margin: 0; padding: 0; }
+.pbs-contact-list li { border-bottom: 1px solid rgba(28,23,17,.12); padding-block: .8rem; }
+
+.pbs-review-card blockquote { margin: 0; }
+.pbs-review-card cite { color: var(--pbs-gold); display: block; margin-top: 1rem; }
+
+.pbs-footer { border-top: 1px solid var(--pbs-line); }
+.pbs-footer a { color: var(--pbs-text); }
+
+.pbs-content-shell { min-height: 65svh; }
+.pbs-entry-header { border-bottom: 1px solid var(--pbs-line); }
+.wp-block-post-template { gap: 1rem; }
+.wp-block-post-template > li {
+  background: var(--pbs-card); border: 1px solid var(--pbs-line);
+  border-radius: var(--pbs-radius); padding: 1.4rem;
+}
+
+@media (max-width: 781px) {
+  .site-header-shell .wp-block-navigation { order: 3; }
+  .pbs-hero { min-height: auto; }
+  .pbs-hero h1 { font-size: clamp(3rem, 17vw, 5rem) !important; }
+  .pbs-hero-visual img { min-height: 26rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

@@ -1,0 +1,6 @@
+<?php if ( ! defined( 'ABSPATH' ) ) { exit; } ?>
+<!-- wp:group {"anchor":"articles","align":"full","className":"pbs-section","style":{"spacing":{"padding":{"top":"var:preset|spacing|80","bottom":"var:preset|spacing|80"}}},"layout":{"type":"constrained"}} -->
+<div id="articles" class="wp-block-group alignfull pbs-section" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)">
+  <div class="wp-block-group alignwide pbs-section-heading"><p class="pbs-kicker has-muted-gold-color has-text-color">مقاله‌ها</p><h2 class="wp-block-heading has-heading-2-font-size">راهنمای نگهداری و استایل</h2></div>
+  <!-- wp:query {"queryId":1,"query":{"perPage":3,"postType":"post","order":"desc","orderBy":"date","inherit":false},"align":"wide"} --><div class="wp-block-query alignwide"><!-- wp:post-template {"layout":{"type":"grid","columnCount":3}} --><!-- wp:post-featured-image {"isLink":true,"aspectRatio":"4/3"} /--><!-- wp:post-title {"isLink":true,"fontSize":"heading-3"} /--><!-- wp:post-excerpt {"moreText":"ادامه مطلب"} /--><!-- /wp:post-template --><!-- wp:query-no-results --><p class="has-text-align-center has-sand-color has-text-color">هنوز مقاله‌ای منتشر نشده است.</p><!-- /wp:query-no-results --></div><!-- /wp:query -->
+</div><!-- /wp:group -->

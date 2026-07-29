@@ -1,0 +1,203 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/theme.json",
+  "version": 3,
+  "settings": {
+    "appearanceTools": true,
+    "layout": {
+      "contentSize": "760px",
+      "wideSize": "1280px"
+    },
+    "color": {
+      "defaultPalette": false,
+      "palette": [
+        {
+          "slug": "charcoal",
+          "name": "Charcoal",
+          "color": "#0f0c08"
+        },
+        {
+          "slug": "graphite",
+          "name": "Graphite",
+          "color": "#17120d"
+        },
+        {
+          "slug": "warm-white",
+          "name": "Warm white",
+          "color": "#fff8eb"
+        },
+        {
+          "slug": "paper",
+          "name": "Paper",
+          "color": "#f4f0e8"
+        },
+        {
+          "slug": "sand",
+          "name": "Sand",
+          "color": "#c9bba8"
+        },
+        {
+          "slug": "muted-gold",
+          "name": "Muted gold",
+          "color": "#c4a464"
+        },
+        {
+          "slug": "muted-gold-dark",
+          "name": "Muted gold dark",
+          "color": "#8e6f35"
+        },
+        {
+          "slug": "ink",
+          "name": "Ink",
+          "color": "#1c1711"
+        }
+      ]
+    },
+    "spacing": {
+      "units": [
+        "px",
+        "rem",
+        "%",
+        "vw",
+        "vh"
+      ],
+      "spacingSizes": [
+        {
+          "slug": "20",
+          "size": ".5rem",
+          "name": "2XS"
+        },
+        {
+          "slug": "30",
+          "size": ".75rem",
+          "name": "XS"
+        },
+        {
+          "slug": "40",
+          "size": "1rem",
+          "name": "S"
+        },
+        {
+          "slug": "50",
+          "size": "1.5rem",
+          "name": "M"
+        },
+        {
+          "slug": "60",
+          "size": "2rem",
+          "name": "L"
+        },
+        {
+          "slug": "70",
+          "size": "3rem",
+          "name": "XL"
+        },
+        {
+          "slug": "80",
+          "size": "clamp(4rem,8vw,7rem)",
+          "name": "2XL"
+        }
+      ]
+    },
+    "typography": {
+      "fluid": true,
+      "fontFamilies": [
+        {
+          "slug": "system-persian",
+          "name": "System Persian",
+          "fontFamily": "Tahoma, Arial, sans-serif"
+        }
+      ],
+      "fontSizes": [
+        {
+          "slug": "tiny",
+          "size": ".75rem",
+          "name": "Tiny"
+        },
+        {
+          "slug": "small",
+          "size": ".9rem",
+          "name": "Small"
+        },
+        {
+          "slug": "body",
+          "size": "1rem",
+          "name": "Body"
+        },
+        {
+          "slug": "lead",
+          "size": "clamp(1.1rem,2vw,1.35rem)",
+          "name": "Lead"
+        },
+        {
+          "slug": "heading-3",
+          "size": "clamp(1.4rem,3vw,2rem)",
+          "name": "Heading 3"
+        },
+        {
+          "slug": "heading-2",
+          "size": "clamp(2.2rem,5vw,4.4rem)",
+          "name": "Heading 2"
+        },
+        {
+          "slug": "display",
+          "size": "clamp(3.2rem,8vw,7.8rem)",
+          "name": "Display"
+        }
+      ]
+    }
+  },
+  "styles": {
+    "color": {
+      "background": "var:preset|color|charcoal",
+      "text": "var:preset|color|warm-white"
+    },
+    "spacing": {
+      "blockGap": "1.25rem"
+    },
+    "typography": {
+      "fontFamily": "var:preset|font-family|system-persian",
+      "lineHeight": "1.8"
+    },
+    "elements": {
+      "link": {
+        "color": {
+          "text": "var:preset|color|muted-gold"
+        },
+        "typography": {
+          "textDecoration": "none"
+        }
+      },
+      "heading": {
+        "typography": {
+          "fontWeight": "850",
+          "lineHeight": "1.12"
+        }
+      }
+    },
+    "blocks": {
+      "core/button": {
+        "color": {
+          "background": "var:preset|color|muted-gold",
+          "text": "var:preset|color|charcoal"
+        }
+      },
+      "core/paragraph": {
+        "typography": {
+          "lineHeight": "1.9"
+        }
+      }
+    }
+  },
+  "templateParts": [
+    {
+      "area": "header",
+      "name": "header",
+      "title": "سربرگ"
+    },
+    {
+      "area": "footer",
+      "name": "footer",
+      "title": "پابرگ"
+    }
+  ]
+}

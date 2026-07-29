@@ -1,0 +1,37 @@
+.env
+.env.*
+!.env.example
+
+# WordPress and database secrets/data
+wp-config.php
+*.sql
+*.sql.gz
+*.dump
+*.backup
+*.bak
+
+# Private certificates and keys
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Archives and generated packages
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Runtime and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+coverage/
+node_modules/
+vendor/
+__pycache__/
+.pytest_cache/

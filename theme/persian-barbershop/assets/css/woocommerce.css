@@ -1,0 +1,62 @@
+.woocommerce .woocommerce-breadcrumb,
+.woocommerce .woocommerce-result-count,
+.woocommerce .woocommerce-ordering,
+.woocommerce .product_meta { color: var(--pbs-muted); }
+
+.woocommerce ul.products,
+.woocommerce-page ul.products {
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+.woocommerce ul.products::before,
+.woocommerce ul.products::after { display: none; }
+
+.woocommerce ul.products li.product,
+.woocommerce div.product,
+.woocommerce-cart-form,
+.woocommerce-checkout-review-order,
+.woocommerce form.checkout,
+.woocommerce form.login,
+.woocommerce form.register,
+.woocommerce-MyAccount-navigation,
+.woocommerce-MyAccount-content {
+  background: var(--pbs-card); border: 1px solid var(--pbs-line);
+  border-radius: var(--pbs-radius); box-shadow: var(--pbs-shadow);
+}
+.woocommerce ul.products li.product { margin: 0 !important; padding: 1rem; width: auto !important; }
+.woocommerce ul.products li.product img,
+.woocommerce div.product div.images img { border-radius: 1.2rem; }
+.woocommerce ul.products li.product .woocommerce-loop-product__title,
+.woocommerce div.product .product_title,
+.woocommerce table.shop_table,
+.woocommerce table.shop_table th,
+.woocommerce table.shop_table td,
+.woocommerce .cart_totals h2,
+.woocommerce-checkout h3,
+.woocommerce-account h2 { color: var(--pbs-text); }
+.woocommerce ul.products li.product .price,
+.woocommerce div.product p.price,
+.woocommerce div.product span.price { color: var(--pbs-gold); }
+.woocommerce div.product,
+.woocommerce-cart-form,
+.woocommerce-checkout-review-order,
+.woocommerce form.checkout,
+.woocommerce form.login,
+.woocommerce form.register,
+.woocommerce-MyAccount-navigation,
+.woocommerce-MyAccount-content { padding: clamp(1rem, 3vw, 2rem); }
+.woocommerce table.shop_table,
+.woocommerce table.shop_table td,
+.woocommerce table.shop_table th { border-color: var(--pbs-line); }
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error { background: rgba(255,248,235,.08); border-radius: 1rem; color: var(--pbs-text); }
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea,
+.select2-container--default .select2-selection--single {
+  background: rgba(15,12,8,.72); border: 1px solid var(--pbs-line);
+  border-radius: 1rem; color: var(--pbs-text); min-height: 3.2rem;
+}
+.woocommerce form .form-row label,
+.woocommerce form .form-row .required { color: var(--pbs-text); }
+.woocommerce-checkout #payment { background: rgba(15,12,8,.52); border: 1px solid var(--pbs-line); border-radius: 1rem; }
