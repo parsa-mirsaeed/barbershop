@@ -1,0 +1,195 @@
+diff --git a/.env.example b/.env.example
+index 4791f54..14be312 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1,7 +1,11 @@
+-# Copy to .env and replace every value before starting Docker.
+-# Never commit .env.
++# Copy to .env. The installer generates random passwords when .env does not exist.
+ WP_PORT=8080
+ DB_NAME=wordpress
+ DB_USER=wordpress
+ DB_PASSWORD=replace-with-a-random-local-password
+ DB_ROOT_PASSWORD=replace-with-another-random-local-password
++WP_URL=
++WP_TITLE="[نام برند]"
++WP_ADMIN_USER=siteadmin
++WP_ADMIN_PASSWORD=replace-with-a-strong-admin-password
++WP_ADMIN_EMAIL=admin@example.test
+diff --git a/.github/workflows/quality.yml b/.github/workflows/quality.yml
+index b326fe4..ff5151a 100644
+--- a/.github/workflows/quality.yml
++++ b/.github/workflows/quality.yml
+@@ -9,7 +9,7 @@ permissions:
+   contents: read
+ 
+ jobs:
+-  validate:
++  static:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+@@ -23,9 +23,74 @@ jobs:
+       - uses: actions/setup-node@v4
+         with:
+           node-version: '22'
+-      - run: python3 tools/scan-secrets.py
+-      - run: python3 tools/validate.py
+-      - run: find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+-      - run: |
++      - name: Secret and policy checks
++        run: |
++          python3 tools/scan-secrets.py
++          python3 tools/validate.py
++          python3 -m unittest discover -s tests -v
++      - name: Syntax checks
++        run: |
++          find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+           node --check plugin/barbershop-core/assets/admin.js
+           node --check plugin/barbershop-core/assets/frontend.js
++          bash -n tools/install.sh tools/deploy.sh tools/build-release.sh
++      - name: Docker configuration checks
++        run: |
++          cp .env.example .env
++          sed -i 's/replace-with-a-random-local-password/ci-db-password/' .env
++          sed -i 's/replace-with-another-random-local-password/ci-root-password/' .env
++          sed -i 's/replace-with-a-strong-admin-password/ci-admin-password/' .env
++          docker compose config >/dev/null
++          cp .env.production.example .env.production
++          sed -i 's/shop.example.com/shop.example.test/' .env.production
++          sed -i 's/replace-with-a-long-random-production-password/ci-db-password/' .env.production
++          sed -i 's/replace-with-a-different-long-random-password/ci-root-password/' .env.production
++          sed -i 's/replace-with-a-long-unique-admin-password/ci-admin-password/' .env.production
++          docker compose --env-file .env.production -f compose.production.yaml config >/dev/null
++      - name: Build installable packages
++        run: ./tools/build-release.sh
++
++  php-compatibility:
++    strategy:
++      matrix:
++        php: ['7.4', '8.2', '8.3']
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++      - uses: shivammathur/setup-php@v2
++        with:
++          php-version: ${{ matrix.php }}
++          coverage: none
++      - run: find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
++
++  docker-smoke:
++    runs-on: ubuntu-latest
++    timeout-minutes: 25
++    steps:
++      - uses: actions/checkout@v4
++      - name: Prepare safe CI environment
++        run: |
++          cp .env.example .env
++          sed -i 's/replace-with-a-random-local-password/ci-db-password/' .env
++          sed -i 's/replace-with-another-random-local-password/ci-root-password/' .env
++          sed -i 's/replace-with-a-strong-admin-password/ci-admin-password/' .env
++          sed -i 's/admin@example.test/ci@example.test/' .env
++      - name: Install complete WordPress storefront
++        run: ./tools/install.sh
++      - name: Verify runtime setup
++        run: |
++          curl -fsSL --retry 10 --retry-delay 3 http://127.0.0.1:8080/ >/dev/null
++          WP='docker compose run --rm wpcli --allow-root'
++          $WP theme is-active persian-barbershop
++          $WP plugin is-active woocommerce
++          $WP plugin is-active barbershop-core
++          test "$($WP option get woocommerce_registration_generate_username)" = yes
++          test "$($WP option get woocommerce_registration_generate_password)" = yes
++          test "$($WP term list product_cat --parent=0 --format=count)" -ge 3
++          $WP eval 'exit( shortcode_exists("bsc_product_categories") && shortcode_exists("bsc_cart_link") ? 0 : 1 );'
++      - name: Container logs
++        if: failure()
++        run: docker compose logs --no-color
++      - name: Cleanup
++        if: always()
++        run: docker compose down -v --remove-orphans
+diff --git a/.gitignore b/.gitignore
+index e895a76..f34dd58 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,6 +1,7 @@
+ .env
+ .env.*
+ !.env.example
++!.env.production.example
+ 
+ # WordPress and database secrets/data
+ wp-config.php
+diff --git a/README.md b/README.md
+index a120f85..a4eca7f 100644
+--- a/README.md
++++ b/README.md
+@@ -1,75 +1,102 @@
+-# Persian Barbershop WordPress
++# Barbershop WordPress Storefront
+ 
+-A generalized, Persian-first RTL WordPress block theme with WooCommerce styling, a privacy-aware before/after portfolio plugin, and a safe local Docker development stack.
++A generalized Persian-first RTL WordPress and WooCommerce storefront for a modern barbershop. The visual system follows a professional navy, emerald, and white product-care direction while keeping all names, logos, contact values, products, and images editable.
+ 
+-This repository is intentionally free of personal names, real contact information, customer data, merchant credentials, database dumps, production configuration, and private project history.
++## Implemented requirements
+ 
+-## Included
++- **Very short customer registration:** first name, last name, email for login/recovery, and an optional phone number. Username and password are generated by WooCommerce; address and city are not part of the profile-registration flow.
++- **Easy cart access:** a large cart control in the header, an item-count badge, AJAX count updates, and a floating mobile cart button.
++- **Editable product taxonomy:** seeded categories for hair/beard styling, hair care, and skin care, including the requested subcategories.
++- **Large editable category icons:** each WooCommerce product category has a media-library icon field. The storefront uses large 7rem icon panels with accessible SVG fallbacks.
++- **Simple barber administration:** a Persian **راه‌اندازی فروشگاه** dashboard links directly to logo/site editing, product categories/icons, and product management.
++- **Editable logo:** the installer imports a neutral placeholder logo and sets it as the WordPress custom logo/site icon. It can be replaced in the Site Editor.
++- **WooCommerce editing:** products, prices, images, inventory, categories, order email, and homepage blocks are editable without source-code changes.
++- **Safe Docker deployment:** localhost development stack plus an optional Caddy/HTTPS production compose file.
++- **Automated quality:** secret scan, structural/design tests, PHP 7.4/8.2/8.3 linting, JavaScript checks, Docker configuration validation, package building, and a full Docker installation smoke test.
+ 
+-- `theme/persian-barbershop` — dark charcoal, warm-white, and muted-gold block theme.
+-- `plugin/barbershop-core` — managed before/after entries, publication-consent checks, and configurable new-order notification recipient.
+-- `compose.yaml` — local-only WordPress and MariaDB environment using values from `.env`.
+-- `tools/validate.py` — structure and policy checks.
+-- `tools/scan-secrets.py` — conservative repository secret scanner.
++The source intentionally contains no real person, business, address, telephone, merchant, customer, or trademark identity.
+ 
+-## Safe local setup
++## One-command local installation
+ 
+-1. Copy the environment template:
++Requirements: Docker with Compose v2 and Bash.
+ 
+-   ```bash
+-   cp .env.example .env
+-   ```
++```bash
++./tools/install.sh
++```
++
++The installer:
+ 
+-2. Generate unique local passwords instead of reusing the examples:
++1. creates `.env` when absent;
++2. generates random database and administrator passwords;
++3. starts WordPress and MariaDB on `127.0.0.1`;
++4. installs WordPress when needed;
++5. installs and activates WooCommerce;
++6. activates the theme and companion plugin;
++7. creates the product categories and short-account defaults;
++8. imports the editable placeholder logo;
++9. configures clean permalinks.
++
++Open `http://127.0.0.1:8080` and `/wp-admin/` afterward. Review `.env` for the generated administrator password.
++
++## Production Docker deployment
++
++1. Copy and complete the production environment:
+ 
+    ```bash
+-   openssl rand -hex 32
++   cp .env.production.example .env.production
+    ```
+ 
+-3. Put the generated values in `.env`.
+-4. Start the stack:
++2. Point the domain to the server and allow inbound TCP 80/443 and UDP 443.
++3. Replace every example value, especially all passwords and `SITE_DOMAI
