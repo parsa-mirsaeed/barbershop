@@ -1,0 +1,199 @@
+N`.
++4. Run:
+ 
+    ```bash
+-   docker compose up -d
++   ./tools/deploy.sh
+    ```
+ 
+-5. Open `http://127.0.0.1:8080` unless `WP_PORT` was changed.
+-6. Complete WordPress setup, activate **Persian Barbershop**, then activate **Barbershop Core**.
+-7. Install WooCommerce only when storefront functionality is required.
++Caddy obtains and renews HTTPS certificates. Production still requires backups, monitoring, authenticated transactional email, a maintained payment plugin, legal pages, and jurisdiction-specific review. See [deployment guidance](docs/DEPLOYMENT.md).
+ 
+-The port binds to `127.0.0.1` by default. This stack is a development baseline, not a production hosting recipe.
++## Daily editing for the barber
+ 
+-## Required customization
++In WordPress admin, open **راه‌اندازی فروشگاه**:
++
++- **لوگو و ظاهر سایت** → Site Editor for logo, site title, homepage text, colors, navigation, footer, and contact placeholders.
++- **دسته‌بندی و آیکون‌ها** → WooCommerce categories, subcategories, descriptions, ordering, and large icon uploads.
++- **محصولات و موجودی** → product title, price, photos, stock, category, and publication status.
+ 
+-Replace every bracketed placeholder before deployment:
++Detailed Persian instructions are in [docs/STORE-MANAGEMENT.fa.md](docs/STORE-MANAGEMENT.fa.md).
+ 
+-- `[نام کسب‌وکار]`
+-- `[نام آرایشگر]`
+-- `[شماره تماس]`
+-- `[نشانی]`
+-- `[ساعت پاسخ‌گویی]`
+-- `[توضیح خدمت]`
+-- `[نظر واقعی مشتری با اجازه انتشار]`
++## Registration design decision
+ 
+-Use only permission-cleared portfolio images and genuine reviews with publication consent.
++Email remains required because WooCommerce needs a stable login/recovery and order-notification identifier. The installer enables generated username and generated password, so the visible registration remains short: first name, last name, email, and optional phone. Postal address and city appear only when a physical order requires shipping, not during profile creation.
+ 
+-## Validation
++## Tests
++
++```bash
++make test
++```
++
++Or individually:
+ 
+ ```bash
+ python3 tools/scan-secrets.py
+ python3 tools/validate.py
++python3 -m unittest discover -s tests -v
+ find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+ node --check plugin/barbershop-core/assets/admin.js
+ node --check plugin/barbershop-core/assets/frontend.js
++bash -n tools/install.sh tools/deploy.sh tools/build-release.sh
+ ```
+ 
+-## Production notes
++Build normal WordPress upload packages with:
++
++```bash
++make release
++```
++
++## Required customization
+ 
+-- Keep all credentials outside Git and rotate any value that was accidentally committed.
+-- Use HTTPS, MFA, least privilege, encrypted backups, tested restores, secure cookies, rate limiting, and authenticated transactional email.
+-- Use a maintained hosted-payment gateway plugin. Never collect card numbers, security codes, PINs, expiry dates, or gateway secrets in this theme or plugin.
+-- Keep WordPress core, WooCommerce, plugins, PHP, the database, and the host patched.
+-- Review privacy, consumer, tax, retention, accessibility, and payment obligations for the deployment jurisdiction.
++Replace every bracketed placeholder, including `[نام برند]`, `[نام کسب‌وکار]`, `[شماره تماس]`, `[ساعت پاسخ‌گویی]`, `[نشانی]`, service descriptions, portfolio media, and approved reviews.
+ 
+ ## License
+ 
+diff --git a/compose.yaml b/compose.yaml
+index 6bc7d26..657d6b3 100644
+--- a/compose.yaml
++++ b/compose.yaml
+@@ -13,9 +13,8 @@ services:
+       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+       interval: 10s
+       timeout: 5s
+-      retries: 15
+-    networks:
+-      - internal
++      retries: 20
++    networks: [internal]
+ 
+   wordpress:
+     image: wordpress:php8.2-apache
+@@ -25,7 +24,7 @@ services:
+         condition: service_healthy
+     ports:
+       - "127.0.0.1:${WP_PORT:-8080}:80"
+-    environment:
++    environment: &wordpress-environment
+       WORDPRESS_DB_HOST: database:3306
+       WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
+       WORDPRESS_DB_USER: ${DB_USER:-wordpress}
+@@ -34,12 +33,25 @@ services:
+         define( 'WP_ENVIRONMENT_TYPE', 'local' );
+         define( 'DISALLOW_FILE_EDIT', true );
+         define( 'WP_DEBUG', false );
+-    volumes:
++    volumes: &wordpress-volumes
+       - wordpress_data:/var/www/html
+       - ./theme/persian-barbershop:/var/www/html/wp-content/themes/persian-barbershop:ro
+       - ./plugin/barbershop-core:/var/www/html/wp-content/plugins/barbershop-core:ro
+-    networks:
+-      - internal
++    networks: [internal]
++
++  wpcli:
++    image: wordpress:cli-php8.2
++    entrypoint: ["wp"]
++    user: "33:33"
++    working_dir: /var/www/html
++    depends_on:
++      database:
++        condition: service_healthy
++    environment:
++      <<: *wordpress-environment
++      HOME: /tmp
++    volumes: *wordpress-volumes
++    networks: [internal]
+ 
+ networks:
+   internal:
+diff --git a/docs/CUSTOMIZATION.md b/docs/CUSTOMIZATION.md
+index 55cc562..5e66a92 100644
+--- a/docs/CUSTOMIZATION.md
++++ b/docs/CUSTOMIZATION.md
+@@ -1,17 +1,13 @@
+ # Customization
+ 
+-The bundled Persian copy is deliberately generic. Replace bracketed placeholders through the Site Editor before launch.
++The source uses the exact visual palette requested for the design direction:
+ 
+-## Identity
++- Navy: `#071A3D`
++- Emerald: `#0E8F6A`
++- White: `#FFFFFF`
+ 
+-Set the site title, logo, and icon in WordPress. Do not hard-code a real person's name into reusable source files unless public attribution is intentional.
++All brand identity remains generic. Replace the logo through the Site Editor, edit homepage patterns visually, and manage WooCommerce products and categories in the standard admin interface.
+ 
+-## Contact
++Product-category icons are stored as WordPress media attachment IDs in term metadata. A barber can replace each icon without code. If no custom icon is selected, a large accessible SVG fallback appears.
+ 
+-Replace visible contact placeholders and the `tel:` target together. Add only the business information intended for public display.
+-
+-## Portfolio and reviews
+-
+-Use the **Before & After** post type supplied by Barbershop Core. Keep written consent records outside public WordPress content. Do not put customer names, phone numbers, social handles, appointment notes, or identifying metadata into portfolio posts.
+-
+-Replace review placeholders with genuine, approved testimonials. Avoid invented ratings or claims.
++Do not hard-code personal details into reusable source files. Keep real contact and business details in WordPress content/options and keep credentials outside Git.
+diff --git a/docs/DEPLOYMENT.md b/docs/DEPLOYMENT.md
+index ee133c2..28917d4 100644
+--- a/docs/DEPLOYMENT.md
++++ b/docs/DEPLOYMENT.md
+@@ -1,17 +1,33 @@
+ # Deployment guidance
+ 
+-The Docker configuration is for local development. A production deployment should use managed secrets, HTTPS, restricted administration, persistent storage, encrypted backups, monitoring, and a supported update process.
++## Supported paths
+ 
+-## Before launch
++- `compose.yaml` and `tools/install.sh`: safe localhost development/demo installation.
++- `compose.production.yaml`, `deploy/Caddyfile`, and `tools/deploy.sh`: generic single-server HTTPS deployment.
++- `tools/build-release.sh`: theme/plugin ZIP packages for a managed WordPress host.
+ 
+-- Replace all bracketed placeholders.
+-- Confirm image and review publication rights.
+-- Install WooCommerce only when needed.
+-- Select a maintained payment plugin for the contracted provider and test request, redirect, callback, verification, cancellation, duplicate callback, amount mismatch, timeout, refund, and reconciliation behavior.
+-- Configure authenticated transactional email.
+-- Publish privacy, terms, returns, shipping, and contact pages appropriate to the jurisdiction.
+-- Test keyboard navigation, zoom, contrast, reduced motion, mobile layout, checkout, email, backups, and restoration.
++## Production prerequisites
+ 
+-## Secrets
++- DNS record pointing the selected domain to the server.
++- Unique random database and WordPress administrator passwords.
++- A separate administrator email owned by the operator.
++- Firewall allowing only required traffic.
++- Encrypted off-server backups and a tested restore procedure.
++- MFA and least-privilege roles.
++- Authenticated transactional email.
++- A maintained WooCommerce payment plugin with server-side verification.
++- Privacy, terms, returns, shipping, and contact pages appropriate to the deployment jurisdiction.
+ 
+-Production values belong in the host's secret manager or protected configuration—not Git, theme files, block content, screenshots, CI output, or support logs.
++## Launch verification
++
++1. Replace every bracketed placeholder.
++2. Replace the neutral logo and generic portfolio art.
++3. Confirm all product categories, icons
