@@ -3,18 +3,21 @@ name: Bootstrap storefront source
 on:
   push:
     branches: [agent/storefront-v2]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   rebuild:
-    if: ${{ github.actor != 'github-actions[bot]' }}
+    if: ${{ github.actor != 'github-actions[bot]' && (github.event_name == 'push' || github.head_ref == 'agent/storefront-v2') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: agent/storefront-v2
           fetch-depth: 0
       - uses: shivammathur/setup-php@v2
         with:
