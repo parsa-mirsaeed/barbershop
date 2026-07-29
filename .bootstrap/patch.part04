@@ -1,0 +1,148 @@
+
+-        $before = absint( get_post_meta( get_the_ID(), '_bsc_before_image_id', true ) );
+-        $after = absint( get_post_meta( get_the_ID(), '_bsc_after_image_id', true ) );
+-        $service = (string) get_post_meta( get_the_ID(), '_bsc_service_label', true );
+-        if ( ! $before || ! $after ) { continue; }
+-        echo '<article class="bsc-ba" data-bsc-before-after><div class="bsc-ba__media">';
+-        echo wp_get_attachment_image( $before, 'large', false, array( 'class'=>'bsc-ba__before', 'loading'=>'lazy' ) );
+-        echo wp_get_attachment_image( $after, 'large', false, array( 'class'=>'bsc-ba__after', 'loading'=>'lazy' ) );
+-        echo '<div class="bsc-ba__labels"><span>' . esc_html__( 'Before', 'barbershop-core' ) . '</span><span>' . esc_html__( 'After', 'barbershop-core' ) . '</span></div>';
+-        echo '<input class="bsc-ba__range" type="range" min="0" max="100" value="50" aria-label="' . esc_attr__( 'Compare before and after images', 'barbershop-core' ) . '">';
+-        echo '</div><div class="bsc-ba__body"><h3>' . esc_html( get_the_title() ) . '</h3>';
+-        if ( $service ) { echo '<p>' . esc_html( $service ) . '</p>'; }
+-        echo '</div></article>';
+-    }
+-    echo '</div>'; wp_reset_postdata(); return (string) ob_get_clean();
+-}
+-add_shortcode( 'barbershop_before_after_gallery', 'bsc_gallery_shortcode' );
+-
+-function bsc_add_settings_section( $sections ) { $sections['barbershop'] = __( 'Barbershop settings', 'barbershop-core' ); return $sections; }
+-add_filter( 'woocommerce_get_sections_general', 'bsc_add_settings_section' );
+-
+-function bsc_general_settings( $settings, $section ) {
+-    if ( 'barbershop' !== $section ) { return $settings; }
+-    return array(
+-        array( 'title'=>__( 'Order notifications', 'barbershop-core' ), 'type'=>'title', 'id'=>'bsc_settings' ),
+-        array( 'title'=>__( 'Order alert email', 'barbershop-core' ), 'desc'=>__( 'New-order alerts are sent here.', 'barbershop-core' ), 'id'=>'bsc_order_email', 'type'=>'email', 'default'=>get_option( 'admin_email' ), 'desc_tip'=>true ),
+-        array( 'type'=>'sectionend', 'id'=>'bsc_settings' ),
+-    );
+-}
+-add_filter( 'woocommerce_get_settings_general', 'bsc_general_settings', 10, 2 );
+-
+-function bsc_new_order_recipient( $recipient ) {
+-    $email = sanitize_email( get_option( 'bsc_order_email', '' ) );
+-    return is_email( $email ) ? $email : $recipient;
+-}
+-add_filter( 'woocommerce_email_recipient_new_order', 'bsc_new_order_recipient' );
+-
+-function bsc_privacy_policy() {
+-    if ( function_exists( 'wp_add_privacy_policy_content' ) ) {
+-        wp_add_privacy_policy_content( __( 'Barbershop store', 'barbershop-core' ), wp_kses_post( '<p>' . __( 'WooCommerce stores order and fulfilment information. Card details should be entered on the payment provider page and are not stored by this plugin. Published before/after images require documented permission.', 'barbershop-core' ) . '</p>' ) );
+-    }
+-}
+-add_action( 'admin_init', 'bsc_privacy_policy' );
++register_activation_hook( __FILE__, 'bsc_activate' );
+diff --git a/plugin/barbershop-core/readme.txt b/plugin/barbershop-core/readme.txt
+index 095d313..a0a49a1 100644
+--- a/plugin/barbershop-core/readme.txt
++++ b/plugin/barbershop-core/readme.txt
+@@ -1,8 +1,17 @@
+ === Barbershop Core ===
+-Contributors: project-contributors
+ Requires at least: 6.6
+ Requires PHP: 7.4
+-Stable tag: 1.0.0
++Stable tag: 2.0.0
+ License: GPLv2 or later
+ 
+-Provides privacy-aware before/after portfolio controls and configurable WooCommerce order alerts.
++WooCommerce setup, short customer registration, persistent cart access, editable product-category icons, order alerts, and privacy-aware before/after portfolios.
++
++== Features ==
++
++* Seeds editable styling, hair-care, and skin-care product categories.
++* Adds a media-library icon field to WooCommerce product categories.
++* Keeps customer registration to name, family name, email, and optional phone.
++* Removes address management from the account profile menu.
++* Adds header and mobile cart access shortcodes with live item counts.
++* Adds a Persian store-setup dashboard for nontechnical daily editing.
++* Requires documented publication permission for before/after images.
+diff --git a/theme/persian-barbershop/assets/css/woocommerce.css b/theme/persian-barbershop/assets/css/woocommerce.css
+index c17e3ed..8593d45 100644
+--- a/theme/persian-barbershop/assets/css/woocommerce.css
++++ b/theme/persian-barbershop/assets/css/woocommerce.css
+@@ -1,62 +1,24 @@
+-.woocommerce .woocommerce-breadcrumb,
+-.woocommerce .woocommerce-result-count,
+-.woocommerce .woocommerce-ordering,
+-.woocommerce .product_meta { color: var(--pbs-muted); }
+-
+-.woocommerce ul.products,
+-.woocommerce-page ul.products {
+-  display: grid; gap: 1rem;
+-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+-}
+-.woocommerce ul.products::before,
+-.woocommerce ul.products::after { display: none; }
+-
+-.woocommerce ul.products li.product,
+-.woocommerce div.product,
+-.woocommerce-cart-form,
+-.woocommerce-checkout-review-order,
+-.woocommerce form.checkout,
+-.woocommerce form.login,
+-.woocommerce form.register,
+-.woocommerce-MyAccount-navigation,
+-.woocommerce-MyAccount-content {
+-  background: var(--pbs-card); border: 1px solid var(--pbs-line);
+-  border-radius: var(--pbs-radius); box-shadow: var(--pbs-shadow);
+-}
+-.woocommerce ul.products li.product { margin: 0 !important; padding: 1rem; width: auto !important; }
+-.woocommerce ul.products li.product img,
+-.woocommerce div.product div.images img { border-radius: 1.2rem; }
+-.woocommerce ul.products li.product .woocommerce-loop-product__title,
+-.woocommerce div.product .product_title,
+-.woocommerce table.shop_table,
+-.woocommerce table.shop_table th,
+-.woocommerce table.shop_table td,
+-.woocommerce .cart_totals h2,
+-.woocommerce-checkout h3,
+-.woocommerce-account h2 { color: var(--pbs-text); }
+-.woocommerce ul.products li.product .price,
+-.woocommerce div.product p.price,
+-.woocommerce div.product span.price { color: var(--pbs-gold); }
+-.woocommerce div.product,
+-.woocommerce-cart-form,
+-.woocommerce-checkout-review-order,
+-.woocommerce form.checkout,
+-.woocommerce form.login,
+-.woocommerce form.register,
+-.woocommerce-MyAccount-navigation,
+-.woocommerce-MyAccount-content { padding: clamp(1rem, 3vw, 2rem); }
+-.woocommerce table.shop_table,
+-.woocommerce table.shop_table td,
+-.woocommerce table.shop_table th { border-color: var(--pbs-line); }
+-.woocommerce-message,
+-.woocommerce-info,
+-.woocommerce-error { background: rgba(255,248,235,.08); border-radius: 1rem; color: var(--pbs-text); }
+-.woocommerce form .form-row input.input-text,
+-.woocommerce form .form-row textarea,
+-.select2-container--default .select2-selection--single {
+-  background: rgba(15,12,8,.72); border: 1px solid var(--pbs-line);
+-  border-radius: 1rem; color: var(--pbs-text); min-height: 3.2rem;
+-}
+-.woocommerce form .form-row label,
+-.woocommerce form .form-row .required { color: var(--pbs-text); }
+-.woocommerce-checkout #payment { background: rgba(15,12,8,.52); border: 1px solid var(--pbs-line); border-radius: 1rem; }
++.woocommerce .woocommerce-breadcrumb,.woocommerce .woocommerce-result-count,.woocommerce .woocommerce-ordering,.woocommerce .product_meta { color:var(--pbs-muted); }
++.woocommerce ul.products,.woocommerce-page ul.products { display:grid;gap:1.15rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr)); }
++.woocommerce ul.products::before,.woocommerce ul.products::after { display:none; }
++.woocommerce ul.products li.product { background:#fff;border:1px solid #dce5ed;border-radius:1.45rem;box-shadow:0 16px 45px rgba(7,26,61,.09);display:flex;flex-direction:column;margin:0!important;overflow:hidden;padding:1rem;width:auto!important; }
++.woocommerce ul.products li.product img { aspect-ratio:1/1;background:#f1f5f8;border-radius:1.1rem;object-fit:cover; }
++.woocommerce ul.products li.product .woocommerce-loop-product__title { color:var(--pbs-ink);font-size:1.05rem;line-height:1.55; }
++.woocommerce ul.products li.product .price { color:var(--pbs-green);font-size:1rem;font-weight:900; }
++.woocommerce ul.products li.product .button { background:var(--pbs-green);border-radius:999px;color:#fff;margin-top:auto;text-align:center; }
++.woocommerce div.product,.woocommerce-cart-form,.woocommerce-checkout-review-order,.woocommerce form.checkout,.woocommerce form.login,.woocommerce form.register,.woocommerce-MyAccount-navigation,.woocommerce-MyAccount-content { background:rgba(255,255,255,.065);border:1px solid var(--pbs-line);border-radius:var(--pbs-radius);box-shadow:var(--pbs-shadow);padding:clamp(1rem,3vw,2rem); }
++.woocommerce div.product div.images img { border-radius:1.25rem; }
++.woocommerce div.product .product_title,.woocommerce table.shop_table,.woocommerce table.shop_table th,.woocommerce table.shop_table td,.woocommerce .cart_totals h2,.woocommerce-checkout h3,.woocommerce-account h2 { color:var(--pbs-text); }
++.woocommerce div.product p.price
