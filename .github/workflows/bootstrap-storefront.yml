@@ -33,7 +33,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .bootstrap/payload.part* | base64 --decode > /tmp/storefront.zip
+          cat \
+            .bootstrap/payload.part00 \
+            .bootstrap/payload.part01 \
+            .bootstrap/payload.part02 \
+            .bootstrap/payload.part03 \
+            .bootstrap/fix04.00 \
+            .bootstrap/fix04.01 \
+            .bootstrap/payload.part05 \
+            .bootstrap/payload.part06 \
+            .bootstrap/payload.part07 \
+            .bootstrap/payload.part08 \
+            .bootstrap/payload.part09 \
+            .bootstrap/payload.part10 \
+            | base64 --decode > /tmp/storefront.zip
           echo "e9942acd88554e4ecfbfe8f32bb92cb8bb39a514777237c4ef6ae6fd5162c82e  /tmp/storefront.zip" | sha256sum -c -
           rm -rf /tmp/extracted
           mkdir -p /tmp/extracted
