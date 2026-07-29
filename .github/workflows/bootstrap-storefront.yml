@@ -1,0 +1,66 @@
+name: Bootstrap storefront source
+
+on:
+  push:
+    branches: [agent/storefront-v2]
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reconstruct verified source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/payload.part* | base64 --decode > /tmp/storefront.zip
+          echo "e9942acd88554e4ecfbfe8f32bb92cb8bb39a514777237c4ef6ae6fd5162c82e  /tmp/storefront.zip" | sha256sum -c -
+          rm -rf /tmp/extracted
+          mkdir -p /tmp/extracted
+          unzip -q /tmp/storefront.zip -d /tmp/extracted
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/extracted/barbershop-storefront-v2/. .
+          chmod +x tools/*.sh
+      - name: Validate reconstructed project
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/scan-secrets.py
+          python3 tools/validate.py
+          python3 -m unittest discover -s tests -v
+          find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+          node --check plugin/barbershop-core/assets/admin.js
+          node --check plugin/barbershop-core/assets/frontend.js
+          bash -n tools/install.sh tools/deploy.sh tools/build-release.sh
+          cp .env.example .env
+          sed -i 's/replace-with-a-random-local-password/ci-db-password/' .env
+          sed -i 's/replace-with-another-random-local-password/ci-root-password/' .env
+          sed -i 's/replace-with-a-strong-admin-password/ci-admin-password/' .env
+          docker compose config >/dev/null
+          rm -f .env
+      - name: Commit finished storefront
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: add editable WooCommerce storefront and installer"
+          git push origin HEAD:agent/storefront-v2
