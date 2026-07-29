@@ -29,30 +29,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Reconstruct verified source archive
+      - name: Reconstruct checksum-verified storefront
         shell: bash
         run: |
           set -euo pipefail
-          cat \
-            .bootstrap/payload.part00 \
-            .bootstrap/payload.part01 \
-            .bootstrap/payload.part02 \
-            .bootstrap/payload.part03 \
-            .bootstrap/fix04.00 \
-            .bootstrap/fix04.01 \
-            .bootstrap/payload.part05 \
-            .bootstrap/payload.part06 \
-            .bootstrap/payload.part07 \
-            .bootstrap/payload.part08 \
-            .bootstrap/payload.part09 \
-            .bootstrap/payload.part10 \
-            | base64 --decode > /tmp/storefront.zip
-          echo "e9942acd88554e4ecfbfe8f32bb92cb8bb39a514777237c4ef6ae6fd5162c82e  /tmp/storefront.zip" | sha256sum -c -
-          rm -rf /tmp/extracted
-          mkdir -p /tmp/extracted
-          unzip -q /tmp/storefront.zip -d /tmp/extracted
-          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          cp -a /tmp/extracted/barbershop-storefront-v2/. .
+          cat .bootstrap/patch.part* > /tmp/storefront.patch
+          echo "6431b50b0e0afd33e64cad1b315a41c3e69ccf7bd038b400746c20dd1e4f113f  /tmp/storefront.patch" | sha256sum -c -
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fdx
+          git apply --binary /tmp/storefront.patch
           chmod +x tools/*.sh
       - name: Validate reconstructed project
         shell: bash
@@ -79,4 +65,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "feat: add editable WooCommerce storefront and installer"
-          git push origin HEAD:agent/storefront-v2
+          git push --force-with-lease origin HEAD:agent/storefront-v2
