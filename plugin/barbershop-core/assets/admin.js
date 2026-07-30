@@ -19,7 +19,7 @@
         preview.src = '';
         preview.hidden = true;
       }
-      announce(wrap, 'آیکون حذف شد');
+      announce(wrap, 'تصویر حذف شد');
       removeButton.focus();
       return;
     }
@@ -30,7 +30,8 @@
     const target = button.dataset.bscMediaTarget;
     const input = document.getElementById(target);
     if (!input) return;
-    const frame = window.wp.media({ title: 'انتخاب آیکون دسته‌بندی', button: { text: 'استفاده از این تصویر' }, multiple: false, library: { type: 'image' } });
+    const title = button.dataset.bscMediaTitle || 'انتخاب تصویر';
+    const frame = window.wp.media({ title, button: { text: 'استفاده از این تصویر' }, multiple: false, library: { type: 'image' } });
     frame.on('select', () => {
       const attachment = frame.state().get('selection').first().toJSON();
       let preview = document.querySelector(`[data-bsc-preview="${target}"]`);
@@ -38,7 +39,7 @@
       if (!preview && wrap) {
         preview = document.createElement('img');
         preview.dataset.bscPreview = target;
-        preview.alt = 'پیش‌نمایش آیکون دسته‌بندی';
+        preview.alt = `پیش‌نمایش ${title}`;
         wrap.appendChild(preview);
       }
       input.value = String(attachment.id);
@@ -46,7 +47,7 @@
         preview.src = attachment.sizes?.medium?.url || attachment.sizes?.thumbnail?.url || attachment.url;
         preview.hidden = false;
       }
-      announce(wrap, 'آیکون جدید انتخاب شد');
+      announce(wrap, 'تصویر جدید انتخاب شد');
       button.focus();
     });
     frame.open();
