@@ -28,6 +28,25 @@ The installer creates `.env` with random local passwords, finds a free localhost
 
 Open the URL printed by the installer and review the generated administrator password in `.env`. Then open Wordfence and finish firewall optimization, alert email, and administrator 2FA.
 
+### Re-cloned project or stale Docker volumes
+
+`docker compose down` stops and removes containers, but it deliberately keeps the named WordPress and MariaDB volumes. If the project is later re-cloned and a new `.env` is generated, those old volumes can still contain database credentials from the previous `.env`.
+
+For a clean local reinstall when no old local shop data is needed:
+
+```bash
+./tools/install.sh --reset
+```
+
+This deletes only the Docker volumes belonging to this Compose project and rebuilds the local site. To preserve the old database, restore the previous `.env` instead of using `--reset`.
+
+Useful checks:
+
+```bash
+docker compose ps -a
+docker compose logs --no-color database wordpress
+```
+
 ## Production Docker deployment
 
 ```bash
