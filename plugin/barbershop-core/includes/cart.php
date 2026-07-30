@@ -40,13 +40,23 @@ function bsc_cart_link_markup( $floating = false ) {
 	return '<a class="' . esc_attr( $class ) . '" href="' . esc_url( wc_get_cart_url() ) . '" aria-label="' . esc_attr( sprintf( 'سبد خرید، %d کالا', $count ) ) . '"><span class="bsc-cart-link__icon" aria-hidden="true">' . bsc_icon_svg( 'cart' ) . '</span><span class="bsc-cart-link__label">سبد خرید</span><span class="bsc-cart-link__count" aria-live="polite">' . esc_html( $count ) . '</span></a>';
 }
 
-function bsc_account_link_markup( $compact = false ) {
-	if ( ! function_exists( 'wc_get_page_permalink' ) ) {
-		return '';
+function bsc_account_destination() {
+	if ( function_exists( 'bsc_is_store_staff' ) && bsc_is_store_staff() ) {
+		return admin_url( 'admin.php?page=bsc-store-setup' );
 	}
-	$label = is_user_logged_in() ? 'حساب من' : 'ورود / ثبت‌نام';
+	return function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : wp_login_url();
+}
+
+function bsc_account_label() {
+	if ( function_exists( 'bsc_is_store_staff' ) && bsc_is_store_staff() ) {
+		return 'مدیریت فروشگاه';
+	}
+	return is_user_logged_in() ? 'حساب من' : 'ورود / ثبت‌نام';
+}
+
+function bsc_account_link_markup( $compact = false ) {
 	$class = $compact ? 'bsc-account-link bsc-account-link--compact' : 'bsc-account-link';
-	return '<a class="' . esc_attr( $class ) . '" href="' . esc_url( wc_get_page_permalink( 'myaccount' ) ) . '"><span class="bsc-account-link__icon" aria-hidden="true">' . bsc_icon_svg( 'user' ) . '</span><span>' . esc_html( $label ) . '</span></a>';
+	return '<a class="' . esc_attr( $class ) . '" href="' . esc_url( bsc_account_destination() ) . '"><span class="bsc-account-link__icon" aria-hidden="true">' . bsc_icon_svg( 'user' ) . '</span><span>' . esc_html( bsc_account_label() ) . '</span></a>';
 }
 
 function bsc_sanitize_navigation_markup( $markup ) {
@@ -97,11 +107,12 @@ function bsc_mobile_dock() {
 	}
 	bsc_frontend_assets();
 	$home_url    = home_url( '/' );
-	$account_url = wc_get_page_permalink( 'myaccount' );
+	$account_url = bsc_account_destination();
+	$account_label = function_exists( 'bsc_is_store_staff' ) && bsc_is_store_staff() ? 'مدیریت' : 'حساب';
 	$markup      = '<nav class="bsc-mobile-dock" aria-label="دسترسی سریع فروشگاه">';
 	$markup     .= '<a href="' . esc_url( $home_url ) . '"><span class="bsc-mobile-dock__icon" aria-hidden="true">' . bsc_icon_svg( 'home' ) . '</span><span>خانه</span></a>';
 	$markup     .= '<a href="' . esc_url( $home_url . '#categories' ) . '"><span class="bsc-mobile-dock__icon" aria-hidden="true">' . bsc_icon_svg( 'grid' ) . '</span><span>دسته‌ها</span></a>';
-	$markup     .= '<a href="' . esc_url( $account_url ) . '"><span class="bsc-mobile-dock__icon" aria-hidden="true">' . bsc_icon_svg( 'user' ) . '</span><span>حساب</span></a>';
+	$markup     .= '<a href="' . esc_url( $account_url ) . '"><span class="bsc-mobile-dock__icon" aria-hidden="true">' . bsc_icon_svg( 'user' ) . '</span><span>' . esc_html( $account_label ) . '</span></a>';
 	$markup     .= bsc_cart_link_markup( true );
 	$markup     .= '</nav>';
 	echo bsc_sanitize_navigation_markup( $markup );
