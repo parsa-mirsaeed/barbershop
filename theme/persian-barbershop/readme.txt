@@ -1,15 +1,12 @@
 === Persian Barbershop ===
-Contributors: project-contributors
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Version: 3.0.0
 License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
-A generalized Persian-first RTL block theme for a barbershop portfolio and WooCommerce storefront.
+A premium Persian-first RTL block theme for an editable WooCommerce barbershop storefront.
 
-== Installation ==
-1. Upload the `persian-barbershop` directory to `wp-content/themes`.
-2. Activate the theme.
-3. Replace all bracketed placeholders before publishing.
+The design uses the requested deep navy, emerald, and true-white system, self-hosted Vazirmatn supplied by Barbershop Core, responsive product/category layouts, persistent purchase navigation, visible focus, reduced-motion support, and a neutral replaceable logo.
+
+Activate WooCommerce and Barbershop Core, then open **مدیریت فروشگاه**. Replace all bracketed placeholders and generic media before launch.

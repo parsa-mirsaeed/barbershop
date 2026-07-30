@@ -13,9 +13,8 @@ services:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
-      retries: 15
-    networks:
-      - internal
+      retries: 20
+    networks: [internal]
 
   wordpress:
     image: wordpress:php8.2-apache
@@ -25,7 +24,7 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:${WP_PORT:-8080}:80"
-    environment:
+    environment: &wordpress-environment
       WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
       WORDPRESS_DB_USER: ${DB_USER:-wordpress}
@@ -33,13 +32,25 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define( 'WP_ENVIRONMENT_TYPE', 'local' );
         define( 'DISALLOW_FILE_EDIT', true );
-        define( 'WP_DEBUG', false );
-    volumes:
+    volumes: &wordpress-volumes
       - wordpress_data:/var/www/html
       - ./theme/persian-barbershop:/var/www/html/wp-content/themes/persian-barbershop:ro
       - ./plugin/barbershop-core:/var/www/html/wp-content/plugins/barbershop-core:ro
-    networks:
-      - internal
+    networks: [internal]
+
+  wpcli:
+    image: wordpress:cli-php8.2
+    entrypoint: ["wp"]
+    user: "33:33"
+    working_dir: /var/www/html
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      <<: *wordpress-environment
+      HOME: /tmp
+    volumes: *wordpress-volumes
+    networks: [internal]
 
 networks:
   internal:

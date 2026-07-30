@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TEXT_SUFFIXES = {'.php', '.js', '.css', '.html', '.json', '.md', '.txt', '.yaml', '.yml', '.py', '.pot', '.example'}
+TEXT_SUFFIXES = {'.php', '.js', '.css', '.html', '.json', '.md', '.txt', '.yaml', '.yml', '.py', '.pot', '.example', '.sh'}
 SKIP = {'.git', 'node_modules', 'vendor'}
 
 patterns = {
@@ -17,7 +17,7 @@ patterns = {
     'Google API key': re.compile(r'\bAIza[0-9A-Za-z_-]{30,}\b'),
     'Slack token': re.compile(r'\bxox[baprs]-[A-Za-z0-9-]{10,}\b'),
     'generic bearer token': re.compile(r'(?i)authorization\s*:\s*bearer\s+[A-Za-z0-9._~-]{16,}'),
-    'realistic email': re.compile(r'\b[A-Z0-9._%+-]+@(?!example\.(?:com|org|net)\b)[A-Z0-9.-]+\.[A-Z]{2,}\b', re.I),
+    'realistic email': re.compile(r'\b[A-Z0-9._%+-]+@(?!example\.(?:com|org|net|test)\b)[A-Z0-9.-]+\.[A-Z]{2,}\b', re.I),
 }
 
 allowed_password_lines = {

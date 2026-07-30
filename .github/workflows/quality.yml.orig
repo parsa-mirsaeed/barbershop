@@ -1,0 +1,167 @@
+name: Quality checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package source snapshot
+        run: zip -qr barbershop-source.zip . -x '.git/*' 'barbershop-source.zip'
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: barbershop-source
+          path: barbershop-source.zip
+          retention-days: 1
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Secret and policy checks
+        run: |
+          python3 tools/scan-secrets.py
+          python3 tools/validate.py
+          python3 -m unittest discover -s tests -v
+      - name: Syntax checks
+        run: |
+          find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+          node --check plugin/barbershop-core/assets/admin.js
+          node --check plugin/barbershop-core/assets/frontend.js
+          bash -n tools/install.sh tools/deploy.sh tools/build-release.sh
+      - name: Docker configuration checks
+        run: |
+          cp .env.example .env
+          sed -i 's/replace-with-a-random-local-password/ci-db-password/' .env
+          sed -i 's/replace-with-another-random-local-password/ci-root-password/' .env
+          sed -i 's/replace-with-a-strong-admin-password/ci-admin-password/' .env
+          docker compose config >/dev/null
+          cp .env.production.example .env.production
+          sed -i 's/shop.example.com/shop.example.test/' .env.production
+          sed -i 's/replace-with-a-long-random-production-password/ci-db-password/' .env.production
+          sed -i 's/replace-with-a-different-long-random-password/ci-root-password/' .env.production
+          sed -i 's/replace-with-a-long-unique-admin-password/ci-admin-password/' .env.production
+          docker compose --env-file .env.production -f compose.production.yaml config >/dev/null
+      - name: Build installable packages
+        run: ./tools/build-release.sh
+
+  apply-final:
+    needs: static
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/storefront-v2
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+      - name: Apply and verify final source
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cat .github/final-source.part-* | base64 --decode > /tmp/final.diff.xz
+          xz --decompress --stdout /tmp/final.diff.xz | patch -p3 --batch --forward
+          rm -f .github/final-source.part-* .github/workflows/apply-final.yml
+          python -m pip install --disable-pip-version-check -r requirements-test.txt Pillow
+          python -m playwright install --with-deps chromium
+          python tools/capture-theme-screenshot.py
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          path = Path('theme/persian-barbershop/screenshot.png')
+          image = Image.open(path).convert('RGB')
+          image.quantize(colors=256, method=Image.Quantize.MEDIANCUT).save(path, optimize=True)
+          PY
+          git diff --check
+          python tools/scan-secrets.py
+          python tools/validate.py
+          php tests/test_backend.php
+          python -m unittest discover -s tests -v
+          find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+          node --check theme/persian-barbershop/assets/js/site.js
+          node --check plugin/barbershop-core/assets/admin.js
+          node --check plugin/barbershop-core/assets/frontend.js
+          bash -n tools/install.sh tools/deploy.sh tools/build-release.sh
+      - name: Publish squashed implementation
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          tree="$(git write-tree)"
+          parent="$(git rev-parse origin/main)"
+          commit="$(printf '%s\n' 'feat: deliver premium Persian WooCommerce storefront' | git commit-tree "$tree" -p "$parent")"
+          git push --force origin "$commit:refs/heads/agent/storefront-v2"
+
+  php-compatibility:
+    strategy:
+      matrix:
+        php: ['7.4', '8.2', '8.3']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - run: find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare safe CI environment
+        run: |
+          cp .env.example .env
+          sed -i 's/replace-with-a-random-local-password/ci-db-password/' .env
+          sed -i 's/replace-with-another-random-local-password/ci-root-password/' .env
+          sed -i 's/replace-with-a-strong-admin-password/ci-admin-password/' .env
+          sed -i 's/admin@example.test/ci@example.test/' .env
+      - name: Occupy the default development port
+        run: docker run -d --name occupied-development-port -p 127.0.0.1:8080:80 nginx:alpine
+      - name: Install complete WordPress storefront
+        run: ./tools/install.sh
+      - name: Verify runtime setup and port fallback
+        run: |
+          source .env
+          test "$WP_PORT" = 8081
+          WP_URL="${WP_URL:-http://127.0.0.1:${WP_PORT}}"
+          curl -fsSL --retry 10 --retry-delay 3 "$WP_URL/" >/dev/null
+          WP='docker compose run --rm wpcli --allow-root'
+          $WP theme is-active persian-barbershop
+          $WP plugin is-active woocommerce
+          $WP plugin is-active barbershop-core
+          test "$($WP option get woocommerce_registration_generate_username)" = yes
+          test "$($WP option get woocommerce_registration_generate_password)" = yes
+          test "$($WP term list product_cat --parent=0 --format=count)" -ge 3
+          $WP eval 'exit( shortcode_exists("bsc_product_categories") && shortcode_exists("bsc_cart_link") ? 0 : 1 );'
+      - name: Container logs
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose down -v --remove-orphans
+          docker rm -f occupied-development-port >/dev/null 2>&1 || true

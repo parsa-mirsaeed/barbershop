@@ -3,201 +3,65 @@
   "version": 3,
   "settings": {
     "appearanceTools": true,
-    "layout": {
-      "contentSize": "760px",
-      "wideSize": "1280px"
-    },
+    "layout": { "contentSize": "760px", "wideSize": "1320px" },
     "color": {
       "defaultPalette": false,
       "palette": [
-        {
-          "slug": "charcoal",
-          "name": "Charcoal",
-          "color": "#0f0c08"
-        },
-        {
-          "slug": "graphite",
-          "name": "Graphite",
-          "color": "#17120d"
-        },
-        {
-          "slug": "warm-white",
-          "name": "Warm white",
-          "color": "#fff8eb"
-        },
-        {
-          "slug": "paper",
-          "name": "Paper",
-          "color": "#f4f0e8"
-        },
-        {
-          "slug": "sand",
-          "name": "Sand",
-          "color": "#c9bba8"
-        },
-        {
-          "slug": "muted-gold",
-          "name": "Muted gold",
-          "color": "#c4a464"
-        },
-        {
-          "slug": "muted-gold-dark",
-          "name": "Muted gold dark",
-          "color": "#8e6f35"
-        },
-        {
-          "slug": "ink",
-          "name": "Ink",
-          "color": "#1c1711"
-        }
+        { "slug": "navy", "name": "سرمه‌ای تیره", "color": "#071A3D" },
+        { "slug": "navy-deep", "name": "سرمه‌ای عمیق", "color": "#020E1E" },
+        { "slug": "navy-soft", "name": "سرمه‌ای روشن", "color": "#0B254C" },
+        { "slug": "emerald", "name": "سبز زمردی", "color": "#0E8F6A" },
+        { "slug": "emerald-bright", "name": "سبز روشن", "color": "#21D2A3" },
+        { "slug": "white", "name": "سفید", "color": "#FFFFFF" },
+        { "slug": "mist", "name": "سفید مه‌آلود", "color": "#F6F9FC" },
+        { "slug": "muted", "name": "خاکستری آبی", "color": "#A9B8C8" },
+        { "slug": "ink", "name": "متن تیره", "color": "#071326" }
       ]
     },
     "spacing": {
-      "units": [
-        "px",
-        "rem",
-        "%",
-        "vw",
-        "vh"
-      ],
+      "units": ["px", "rem", "%", "vw", "vh"],
       "spacingSizes": [
-        {
-          "slug": "20",
-          "size": ".5rem",
-          "name": "2XS"
-        },
-        {
-          "slug": "30",
-          "size": ".75rem",
-          "name": "XS"
-        },
-        {
-          "slug": "40",
-          "size": "1rem",
-          "name": "S"
-        },
-        {
-          "slug": "50",
-          "size": "1.5rem",
-          "name": "M"
-        },
-        {
-          "slug": "60",
-          "size": "2rem",
-          "name": "L"
-        },
-        {
-          "slug": "70",
-          "size": "3rem",
-          "name": "XL"
-        },
-        {
-          "slug": "80",
-          "size": "clamp(4rem,8vw,7rem)",
-          "name": "2XL"
-        }
+        { "slug": "20", "size": ".5rem", "name": "2XS" },
+        { "slug": "30", "size": ".75rem", "name": "XS" },
+        { "slug": "40", "size": "1rem", "name": "S" },
+        { "slug": "50", "size": "1.5rem", "name": "M" },
+        { "slug": "60", "size": "2rem", "name": "L" },
+        { "slug": "70", "size": "3rem", "name": "XL" },
+        { "slug": "80", "size": "clamp(4rem,8vw,7.5rem)", "name": "2XL" }
       ]
     },
     "typography": {
       "fluid": true,
       "fontFamilies": [
-        {
-          "slug": "system-persian",
-          "name": "System Persian",
-          "fontFamily": "Tahoma, Arial, sans-serif"
-        }
+        { "slug": "vazirmatn", "name": "وزیرمتن", "fontFamily": "Vazirmatn, Tahoma, Arial, sans-serif" }
       ],
       "fontSizes": [
-        {
-          "slug": "tiny",
-          "size": ".75rem",
-          "name": "Tiny"
-        },
-        {
-          "slug": "small",
-          "size": ".9rem",
-          "name": "Small"
-        },
-        {
-          "slug": "body",
-          "size": "1rem",
-          "name": "Body"
-        },
-        {
-          "slug": "lead",
-          "size": "clamp(1.1rem,2vw,1.35rem)",
-          "name": "Lead"
-        },
-        {
-          "slug": "heading-3",
-          "size": "clamp(1.4rem,3vw,2rem)",
-          "name": "Heading 3"
-        },
-        {
-          "slug": "heading-2",
-          "size": "clamp(2.2rem,5vw,4.4rem)",
-          "name": "Heading 2"
-        },
-        {
-          "slug": "display",
-          "size": "clamp(3.2rem,8vw,7.8rem)",
-          "name": "Display"
-        }
+        { "slug": "tiny", "size": ".78rem", "name": "بسیار کوچک" },
+        { "slug": "small", "size": ".92rem", "name": "کوچک" },
+        { "slug": "body", "size": "1rem", "name": "متن" },
+        { "slug": "lead", "size": "clamp(1.08rem,2vw,1.36rem)", "name": "لید" },
+        { "slug": "heading-3", "size": "clamp(1.35rem,3vw,2rem)", "name": "عنوان ۳" },
+        { "slug": "heading-2", "size": "clamp(2rem,5vw,4.4rem)", "name": "عنوان ۲" },
+        { "slug": "display", "size": "clamp(3rem,8vw,7.4rem)", "name": "نمایشی" }
       ]
     }
   },
   "styles": {
-    "color": {
-      "background": "var:preset|color|charcoal",
-      "text": "var:preset|color|warm-white"
-    },
-    "spacing": {
-      "blockGap": "1.25rem"
-    },
-    "typography": {
-      "fontFamily": "var:preset|font-family|system-persian",
-      "lineHeight": "1.8"
-    },
+    "color": { "background": "var:preset|color|navy", "text": "var:preset|color|white" },
+    "spacing": { "blockGap": "1.25rem" },
+    "typography": { "fontFamily": "var:preset|font-family|vazirmatn", "lineHeight": "1.82" },
     "elements": {
-      "link": {
-        "color": {
-          "text": "var:preset|color|muted-gold"
-        },
-        "typography": {
-          "textDecoration": "none"
-        }
-      },
-      "heading": {
-        "typography": {
-          "fontWeight": "850",
-          "lineHeight": "1.12"
-        }
-      }
+      "link": { "color": { "text": "var:preset|color|emerald-bright" }, "typography": { "textDecoration": "none" } },
+      "heading": { "typography": { "fontWeight": "850", "lineHeight": "1.14" } }
     },
     "blocks": {
-      "core/button": {
-        "color": {
-          "background": "var:preset|color|muted-gold",
-          "text": "var:preset|color|charcoal"
-        }
-      },
-      "core/paragraph": {
-        "typography": {
-          "lineHeight": "1.9"
-        }
-      }
+      "core/button": { "color": { "background": "var:preset|color|emerald", "text": "var:preset|color|white" }, "typography": { "fontWeight": "800" } },
+      "core/paragraph": { "typography": { "lineHeight": "1.9" } },
+      "core/navigation": { "typography": { "fontWeight": "700" } }
     }
   },
   "templateParts": [
-    {
-      "area": "header",
-      "name": "header",
-      "title": "سربرگ"
-    },
-    {
-      "area": "footer",
-      "name": "footer",
-      "title": "پابرگ"
-    }
+    { "area": "header", "name": "header", "title": "سربرگ" },
+    { "area": "footer", "name": "footer", "title": "پابرگ" }
   ]
 }

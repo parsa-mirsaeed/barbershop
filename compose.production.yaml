@@ -1,0 +1,84 @@
+services:
+  database:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:?Set DB_NAME}
+      MARIADB_USER: ${DB_USER:?Set DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD}
+    volumes:
+      - database_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks: [internal]
+
+  wordpress:
+    image: wordpress:php8.2-apache
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment: &wordpress-environment
+      WORDPRESS_DB_HOST: database:3306
+      WORDPRESS_DB_NAME: ${DB_NAME:?Set DB_NAME}
+      WORDPRESS_DB_USER: ${DB_USER:?Set DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'WP_ENVIRONMENT_TYPE', 'production' );
+        define( 'DISALLOW_FILE_EDIT', true );
+        define( 'FORCE_SSL_ADMIN', true );
+        define( 'WP_AUTO_UPDATE_CORE', true );
+        define( 'AUTOMATIC_UPDATER_DISABLED', false );
+        define( 'WP_DEBUG', false );
+        define( 'WP_DEBUG_DISPLAY', false );
+        define( 'WP_DEBUG_LOG', false );
+        if ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO'] ) { $_SERVER['HTTPS'] = 'on'; }
+    volumes: &wordpress-volumes
+      - wordpress_data:/var/www/html
+      - ./theme/persian-barbershop:/var/www/html/wp-content/themes/persian-barbershop:ro
+      - ./plugin/barbershop-core:/var/www/html/wp-content/plugins/barbershop-core:ro
+    networks: [internal]
+
+  wpcli:
+    image: wordpress:cli-php8.2
+    entrypoint: ["wp"]
+    user: "33:33"
+    working_dir: /var/www/html
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      <<: *wordpress-environment
+      HOME: /tmp
+    volumes: *wordpress-volumes
+    networks: [internal]
+
+  caddy:
+    image: caddy:2.9-alpine
+    restart: unless-stopped
+    depends_on: [wordpress]
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [internal]
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  database_data:
+  wordpress_data:
+  caddy_data:
+  caddy_config:
