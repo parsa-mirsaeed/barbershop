@@ -29,15 +29,19 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("wp bsc font install", installer)
         self.assertNotIn("fonts.googleapis.com", "\n".join(p.read_text(errors="ignore") for base in (THEME, PLUGIN) for p in base.rglob("*") if p.is_file()))
 
-    def test_registration_is_short_and_phone_optional(self) -> None:
+    def test_registration_is_short_explicit_and_phone_optional(self) -> None:
         source = (PLUGIN / "includes" / "account.php").read_text()
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
+        setup = (PLUGIN / "includes" / "setup.php").read_text()
         self.assertIn("نام خانوادگی", source)
         self.assertIn("(اختیاری)", source)
         self.assertIn("unset( $items['edit-address'] )", source)
         self.assertIn("bsc-registration-trap", source)
-        setup = (PLUGIN / "includes" / "setup.php").read_text()
-        self.assertIn("woocommerce_registration_generate_username", setup)
-        self.assertIn("woocommerce_registration_generate_password", setup)
+        self.assertIn("woocommerce_registration_generate_username', 'yes'", setup)
+        self.assertIn("woocommerce_registration_generate_password', 'no'", setup)
+        self.assertIn("حداقل ۱۲ نویسه", barber)
+        self.assertIn("woocommerce_registration_errors", barber)
+        self.assertTrue((PLUGIN / "assets" / "account.css").is_file())
 
     def test_cart_is_obvious_on_desktop_and_mobile(self) -> None:
         header = (THEME / "parts" / "header.html").read_text()
@@ -46,6 +50,8 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("[bsc_cart_link]", header)
         self.assertIn("woocommerce_add_to_cart_fragments", cart)
         self.assertIn("bsc-mobile-dock", cart)
+        self.assertIn("مدیریت فروشگاه", cart)
+        self.assertIn("bsc_account_destination", cart)
         self.assertRegex(css, re.compile(r"@media\(max-width:781px\).*bsc-mobile-dock", re.S))
 
     def test_requested_product_categories_are_seeded_and_editable(self) -> None:
@@ -60,22 +66,67 @@ class StorefrontRepositoryTests(unittest.TestCase):
 
     def test_category_icons_are_editable_large_and_accessible(self) -> None:
         php = (PLUGIN / "includes" / "categories.php").read_text()
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
         css = (PLUGIN / "assets" / "frontend.css").read_text()
         self.assertIn("product_cat_add_form_fields", php)
         self.assertIn("product_cat_edit_form_fields", php)
         self.assertIn("_bsc_category_icon_id", php)
         self.assertIn("manage_product_terms", php)
         self.assertIn('role="list"', php)
+        self.assertIn("bsc_categories", barber)
+        self.assertIn("data-bsc-media-target", barber)
         self.assertIn("height:7rem", css)
         self.assertIn("width:7rem", css)
 
-    def test_logo_is_present_and_replaceable(self) -> None:
+    def test_logo_and_all_primary_placeholders_are_managed_in_barber_dashboard(self) -> None:
         self.assertTrue((THEME / "assets" / "images" / "brand-mark.svg").is_file())
         header = (THEME / "parts" / "header.html").read_text()
         functions = (THEME / "functions.php").read_text()
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
         self.assertIn("wp:site-logo", header)
         self.assertIn("pbs_default_site_logo", functions)
         self.assertIn("render_block_core/site-logo", functions)
+        for token in (
+            "bsc_store_content_defaults", "brand_name", "hero_image_id", "contact_image_id",
+            "gallery_1_id", "contact_phone", "services_heading", "reviews_heading",
+            "set_theme_mod( 'custom_logo'", "بدون ویرایشگر ظاهری",
+        ):
+            self.assertIn(token, barber)
+        self.assertTrue((PLUGIN / "assets" / "barber-dashboard.css").is_file())
+
+    def test_barber_role_is_least_privilege_and_operational(self) -> None:
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
+        core = (PLUGIN / "barbershop-core.php").read_text()
+        for token in (
+            "add_role( 'barber'", "manage_barbershop", "manage_woocommerce", "edit_products",
+            "داشبورد آرایشگر", "محصولات و موجودی", "سفارش‌ها", "قبل و بعد",
+            "bsc_block_barber_visual_editors", "bsc_staff_login_redirect",
+            "bsc_redirect_staff_away_from_customer_account",
+        ):
+            self.assertIn(token, barber)
+        self.assertIn("includes/barber.php", core)
+        self.assertNotIn("manage_options' => true", barber)
+
+    def test_live_storefront_and_seed_cleanup_are_enforced(self) -> None:
+        setup = (PLUGIN / "includes" / "setup.php").read_text()
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
+        for token in (
+            "woocommerce_coming_soon', 'no'", "woocommerce_store_pages_only', 'no'",
+            "fresh_site', 0", "bsc_remove_seed_content", "bsc_localize_woocommerce_pages",
+        ):
+            self.assertTrue(token in setup or token in barber, token)
+        self.assertIn("hello-world", barber)
+        self.assertIn("حساب کاربری", barber)
+
+    def test_raw_shortcodes_have_runtime_render_guards(self) -> None:
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
+        workflow = (ROOT / ".github" / "workflows" / "quality.yml").read_text()
+        self.assertIn("render_block_core/shortcode", barber)
+        self.assertIn("bsc_product_categories_shortcode", barber)
+        self.assertIn("bsc_gallery_shortcode", barber)
+        self.assertIn("do_shortcode( '[products", barber)
+        for token in ("! grep -Fq '[products '", "! grep -Fq '[bsc_product_categories'", "! grep -Fq '[barbershop_before_after_gallery'"):
+            self.assertIn(token, workflow)
 
     def test_wordfence_and_layered_hardening_are_installed(self) -> None:
         install = (ROOT / "tools" / "install.sh").read_text()
@@ -92,9 +143,12 @@ class StorefrontRepositoryTests(unittest.TestCase):
 
     def test_woocommerce_ui_is_farsi_and_touch_friendly(self) -> None:
         php = (PLUGIN / "includes" / "woocommerce.php").read_text()
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
         css = (THEME / "assets" / "css" / "woocommerce.css").read_text()
         for label in ("افزودن به سبد خرید", "ثبت سفارش و پرداخت", "اطلاعات سفارش‌دهنده", "دیدگاه خریداران"):
             self.assertIn(label, php)
+        for label in ("حساب کاربری", "سفارش‌ها", "اطلاعات حساب", "سبد خرید شما خالی است"):
+            self.assertIn(label, barber)
         self.assertIn("min-height: 3rem", css)
         self.assertIn("min-height: 3.2rem", css)
         self.assertIn("woocommerce-checkout", css)
@@ -102,10 +156,13 @@ class StorefrontRepositoryTests(unittest.TestCase):
 
     def test_admin_dashboard_and_product_editor_are_improved(self) -> None:
         settings = (PLUGIN / "includes" / "settings.php").read_text()
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
         products = (PLUGIN / "includes" / "products.php").read_text()
         admin_css = (PLUGIN / "assets" / "admin.css").read_text()
         for label in ("مرکز کنترل فروشگاه", "Wordfence", "محصولات و موجودی", "سفارش‌ها", "تنظیمات سفارش"):
             self.assertIn(label, settings)
+        for label in ("پنل اختصاصی آرایشگر", "هویت، متن‌ها و اطلاعات تماس", "لوگو و تصاویر جای‌نگهدار"):
+            self.assertIn(label, barber)
         self.assertIn("چک‌لیست انتشار حرفه‌ای", products)
         self.assertIn(".bsc-stat-grid", admin_css)
         self.assertIn("min-height:42px", admin_css)
@@ -113,10 +170,12 @@ class StorefrontRepositoryTests(unittest.TestCase):
     def test_accessibility_and_motion_tokens_exist(self) -> None:
         css = (THEME / "style.css").read_text()
         frontend = (PLUGIN / "assets" / "frontend.css").read_text()
+        dashboard = (PLUGIN / "assets" / "barber-dashboard.css").read_text()
         self.assertIn("min-height: 44px", css)
         self.assertIn(":focus-visible", css)
         self.assertIn("prefers-reduced-motion", css)
         self.assertIn("min-height:44px", frontend)
+        self.assertIn(":focus-visible", dashboard)
         self.assertIn("aria-label", (PLUGIN / "includes" / "cart.php").read_text())
 
     def test_docker_defaults_do_not_publish_database(self) -> None:
@@ -136,6 +195,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("Trying local development port $fallback_port instead", installer)
         self.assertIn("set_env_value WP_PORT", installer)
         self.assertIn("Production does not use this fallback", installer)
+        self.assertIn("docker compose up -d database wordpress", installer)
 
     def test_local_installer_recovers_stale_docker_volumes(self) -> None:
         installer = (ROOT / "tools" / "install.sh").read_text()
@@ -144,10 +204,15 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("mariadb --protocol=TCP", installer)
         self.assertIn("credentials in .env do not match its existing data", installer)
         self.assertIn("restore the previous .env file", installer)
+        self.assertIn("language plugin install woocommerce fa_IR", installer)
 
     def test_quality_workflow_runs_ui_backend_and_runtime_checks(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "quality.yml").read_text()
-        for token in ("playwright install", "tests/test_backend.php", "python3 -m unittest discover", "docker-smoke", "plugin is-active wordfence", "bsc font install"):
+        for token in (
+            "playwright install", "tests/test_backend.php", "python3 -m unittest discover", "docker-smoke",
+            "plugin is-active wordfence", "bsc font install", "woocommerce_coming_soon", "get_role(\"barber\")",
+            "name=\"password\"", "bsc-category-grid",
+        ):
             self.assertIn(token, workflow)
         self.assertNotIn("Upload source snapshot", workflow)
 
