@@ -1,6 +1,8 @@
-.PHONY: install up down logs test release deploy screenshot
+.PHONY: install reset up down logs test release deploy screenshot
 install:
 	./tools/install.sh
+reset:
+	./tools/install.sh --reset
 up:
 	docker compose up -d
 down:
