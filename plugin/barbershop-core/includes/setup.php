@@ -24,7 +24,7 @@ function bsc_capabilities() {
 }
 
 function bsc_grant_caps() {
-	foreach ( array( 'administrator', 'shop_manager' ) as $role_name ) {
+	foreach ( array( 'administrator', 'shop_manager', 'barber' ) as $role_name ) {
 		$role = get_role( $role_name );
 		if ( ! $role ) {
 			continue;
@@ -176,19 +176,32 @@ function bsc_apply_woocommerce_defaults() {
 	}
 	update_option( 'users_can_register', 0 );
 	update_option( 'default_role', 'customer' );
+	update_option( 'WPLANG', 'fa_IR' );
+	update_option( 'fresh_site', 0 );
 	update_option( 'woocommerce_enable_myaccount_registration', 'yes' );
 	update_option( 'woocommerce_registration_generate_username', 'yes' );
-	update_option( 'woocommerce_registration_generate_password', 'yes' );
+	update_option( 'woocommerce_registration_generate_password', 'no' );
 	update_option( 'woocommerce_enable_checkout_login_reminder', 'yes' );
 	update_option( 'woocommerce_cart_redirect_after_add', 'yes' );
 	update_option( 'woocommerce_checkout_highlight_required_fields', 'yes' );
 	update_option( 'woocommerce_allow_tracking', 'no' );
+	update_option( 'woocommerce_coming_soon', 'no' );
+	update_option( 'woocommerce_store_pages_only', 'no' );
 	update_option( 'bsc_disable_xmlrpc', get_option( 'bsc_disable_xmlrpc', 'yes' ) );
 	if ( class_exists( 'WC_Install' ) ) {
 		WC_Install::create_pages();
 	}
 	bsc_seed_product_categories();
 	bsc_install_vazirmatn_font();
+	if ( function_exists( 'bsc_sync_barber_role' ) ) {
+		bsc_sync_barber_role();
+	}
+	if ( function_exists( 'bsc_localize_woocommerce_pages' ) ) {
+		bsc_localize_woocommerce_pages();
+	}
+	if ( function_exists( 'bsc_remove_seed_content' ) ) {
+		bsc_remove_seed_content();
+	}
 	update_option( 'bsc_setup_version', BSC_VERSION, false );
 	return true;
 }
@@ -202,6 +215,9 @@ add_action( 'init', 'bsc_maybe_apply_setup', 40 );
 
 function bsc_activate() {
 	bsc_grant_caps();
+	if ( function_exists( 'bsc_sync_barber_role' ) ) {
+		bsc_sync_barber_role();
+	}
 	bsc_apply_woocommerce_defaults();
 	flush_rewrite_rules();
 }
@@ -213,6 +229,9 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			WP_CLI::error( 'WooCommerce must be installed and active first.' );
 		}
 		bsc_grant_caps();
+		if ( function_exists( 'bsc_sync_barber_role' ) ) {
+			bsc_sync_barber_role();
+		}
 		bsc_apply_woocommerce_defaults();
 		WP_CLI::success( 'Barbershop storefront setup completed.' );
 	}
