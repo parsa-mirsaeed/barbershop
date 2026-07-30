@@ -25,6 +25,7 @@ esac
 
 command -v docker >/dev/null 2>&1 || { echo "Docker is required." >&2; exit 1; }
 docker compose version >/dev/null 2>&1 || { echo "Docker Compose v2 is required." >&2; exit 1; }
+command -v python3 >/dev/null 2>&1 || { echo "Python 3 is required by the local installer." >&2; exit 1; }
 
 random_secret() {
   if command -v openssl >/dev/null 2>&1; then openssl rand -hex 32; else python3 -c 'import secrets; print(secrets.token_hex(32))'; fi
@@ -48,8 +49,7 @@ PY
 
 port_is_free() {
   local port="$1"
-  if command -v python3 >/dev/null 2>&1; then
-    python3 - "$port" <<'PY'
+  python3 - "$port" <<'PY'
 import socket, sys
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -59,29 +59,52 @@ except OSError:
 finally:
     sock.close()
 PY
-    return
-  fi
-  if command -v ss >/dev/null 2>&1; then ! ss -ltnH "sport = :$port" | grep -q .; return; fi
-  if command -v lsof >/dev/null 2>&1; then ! lsof -nP -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1; return; fi
-  return 0
 }
 
 if [[ ! -f .env ]]; then
   cp .env.example .env
-  DB_PASSWORD_VALUE="$(random_secret)"
-  DB_ROOT_PASSWORD_VALUE="$(random_secret)"
-  WP_ADMIN_PASSWORD_VALUE="$(random_secret)"
-  python3 - "$DB_PASSWORD_VALUE" "$DB_ROOT_PASSWORD_VALUE" "$WP_ADMIN_PASSWORD_VALUE" <<'PY'
+  echo "Created .env from .env.example."
+fi
+
+# Existing clones may already have an .env file containing example values.
+# Replace only missing, empty, or example secrets; preserve user-supplied values.
+DB_PASSWORD_VALUE="$(random_secret)"
+DB_ROOT_PASSWORD_VALUE="$(random_secret)"
+WP_ADMIN_PASSWORD_VALUE="$(random_secret)"
+generated_secret_names="$(python3 - "$DB_PASSWORD_VALUE" "$DB_ROOT_PASSWORD_VALUE" "$WP_ADMIN_PASSWORD_VALUE" <<'PY'
 from pathlib import Path
+import re
 import sys
-p = Path('.env')
-s = p.read_text()
-s = s.replace('replace-with-a-random-local-password', sys.argv[1])
-s = s.replace('replace-with-another-random-local-password', sys.argv[2])
-s = s.replace('replace-with-a-strong-admin-password', sys.argv[3])
-p.write_text(s)
+
+path = Path('.env')
+text = path.read_text()
+replacements = {
+    'DB_PASSWORD': sys.argv[1],
+    'DB_ROOT_PASSWORD': sys.argv[2],
+    'WP_ADMIN_PASSWORD': sys.argv[3],
+}
+changed = []
+
+for name, replacement in replacements.items():
+    pattern = re.compile(rf'^{re.escape(name)}=(.*)$', re.MULTILINE)
+    match = pattern.search(text)
+    if match:
+        value = match.group(1).strip().strip('"').strip("'")
+        if not value or value.startswith('replace-with-'):
+            text = text[:match.start()] + f'{name}={replacement}' + text[match.end():]
+            changed.append(name)
+    else:
+        text = text.rstrip() + f'\n{name}={replacement}\n'
+        changed.append(name)
+
+path.write_text(text)
+print(' '.join(changed))
 PY
-  echo "Created .env with random local passwords. Review WP_TITLE and WP_ADMIN_EMAIL when needed."
+)"
+
+if [[ -n "$generated_secret_names" ]]; then
+  echo "Generated secure local values for: $generated_secret_names"
+  echo "Review WP_TITLE and WP_ADMIN_EMAIL in .env when needed."
 fi
 
 set -a
@@ -92,7 +115,7 @@ set +a
 for required_name in DB_PASSWORD DB_ROOT_PASSWORD WP_ADMIN_PASSWORD; do
   required_value="${!required_name:-}"
   if [[ -z "$required_value" || "$required_value" == replace-with-* ]]; then
-    echo "Set a non-example value for $required_name in .env." >&2
+    echo "Unable to generate a valid value for $required_name in .env." >&2
     exit 1
   fi
 done
