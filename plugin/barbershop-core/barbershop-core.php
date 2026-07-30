@@ -33,5 +33,6 @@ require_once BSC_DIR . 'includes/portfolio.php';
 require_once BSC_DIR . 'includes/barber.php';
 require_once BSC_DIR . 'includes/content-overrides.php';
 require_once BSC_DIR . 'includes/settings.php';
+require_once BSC_DIR . 'includes/dashboard-extras.php';
 
 register_activation_hook( __FILE__, 'bsc_activate' );
