@@ -76,20 +76,21 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare safe CI environment
+      - name: Prepare example environment exactly like a fresh clone
         run: |
           cp .env.example .env
-          sed -i 's/replace-with-a-random-local-password/ci-db-password/' .env
-          sed -i 's/replace-with-another-random-local-password/ci-root-password/' .env
-          sed -i 's/replace-with-a-strong-admin-password/ci-admin-password/' .env
           sed -i 's/admin@example.test/ci@example.test/' .env
       - name: Occupy the default development port
         run: docker run -d --name occupied-development-port -p 127.0.0.1:8080:80 nginx:alpine
-      - name: Install complete WordPress storefront
-        run: ./tools/install.sh
-      - name: Verify runtime setup, security plugin, font, and port fallback
+      - name: Reset and install complete WordPress storefront
+        run: ./tools/install.sh --reset
+      - name: Verify generated secrets, runtime setup, security plugin, font, and port fallback
         run: |
+          ! grep -q 'replace-with-' .env
           source .env
+          test "${#DB_PASSWORD}" -ge 32
+          test "${#DB_ROOT_PASSWORD}" -ge 32
+          test "${#WP_ADMIN_PASSWORD}" -ge 32
           test "$WP_PORT" = 8081
           WP_URL="${WP_URL:-http://127.0.0.1:${WP_PORT}}"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/" >/dev/null
