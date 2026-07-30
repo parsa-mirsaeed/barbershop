@@ -25,9 +25,11 @@ if ! wp core is-installed >/dev/null 2>&1; then
 fi
 wp option update home "https://${SITE_DOMAIN}"
 wp option update siteurl "https://${SITE_DOMAIN}"
-wp language core install fa_IR --activate >/dev/null 2>&1 || echo "Persian language pack could not be installed; continuing with the current locale."
+wp language core install fa_IR --activate >/dev/null 2>&1 || echo "Persian core language pack could not be installed; continuing with the current locale."
 install_plugin woocommerce
 install_plugin wordfence
+wp language plugin install woocommerce fa_IR >/dev/null 2>&1 || echo "Persian WooCommerce language pack was unavailable; built-in Persian fallbacks remain active."
+wp language plugin install wordfence fa_IR >/dev/null 2>&1 || true
 wp theme activate persian-barbershop
 wp plugin activate barbershop-core
 wp bsc setup
@@ -36,4 +38,5 @@ wp plugin auto-updates enable woocommerce wordfence >/dev/null 2>&1 || true
 wp rewrite structure '/%postname%/' --hard
 wp rewrite flush --hard
 printf 'Deployment started at https://%s\n' "$SITE_DOMAIN"
-printf 'Required post-deploy step: finish Wordfence firewall optimization, alerts, and administrator 2FA; then configure encrypted backups and a tested restore procedure.\n'
+printf 'Barber dashboard: https://%s/wp-admin/admin.php?page=bsc-store-setup\n' "$SITE_DOMAIN"
+printf 'Required post-deploy step: finish Wordfence firewall optimization, alerts, and administrator/barber 2FA; then configure encrypted backups and a tested restore procedure.\n'
