@@ -2,6 +2,27 @@
 set -Eeuo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+RESET_LOCAL=0
+case "${1:-}" in
+  "") ;;
+  --reset|--fresh) RESET_LOCAL=1 ;;
+  --help|-h)
+    cat <<'EOF'
+Usage: ./tools/install.sh [--reset]
+
+  --reset, --fresh  Delete only this project's local Docker volumes and reinstall.
+                    Use this when an old clone left database/WordPress volumes
+                    whose credentials no longer match the current .env file.
+EOF
+    exit 0
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    echo "Usage: ./tools/install.sh [--reset]" >&2
+    exit 2
+    ;;
+esac
+
 command -v docker >/dev/null 2>&1 || { echo "Docker is required." >&2; exit 1; }
 docker compose version >/dev/null 2>&1 || { echo "Docker Compose v2 is required." >&2; exit 1; }
 
@@ -68,6 +89,20 @@ set -a
 source .env
 set +a
 
+for required_name in DB_PASSWORD DB_ROOT_PASSWORD WP_ADMIN_PASSWORD; do
+  required_value="${!required_name:-}"
+  if [[ -z "$required_value" || "$required_value" == replace-with-* ]]; then
+    echo "Set a non-example value for $required_name in .env." >&2
+    exit 1
+  fi
+done
+
+if (( RESET_LOCAL )); then
+  echo "Resetting this project's local Docker data before installation."
+  echo "This removes the local WordPress and MariaDB volumes for this Compose project only."
+  docker compose down -v --remove-orphans || true
+fi
+
 requested_port="${WP_PORT:-8080}"
 if ! [[ "$requested_port" =~ ^[0-9]+$ ]] || (( requested_port < 1 || requested_port > 65535 )); then
   echo "WP_PORT must be an integer from 1 to 65535." >&2
@@ -97,13 +132,6 @@ if [[ -z "$wordpress_running" ]] && ! port_is_free "$requested_port"; then
 fi
 
 WP_URL="${WP_URL:-http://127.0.0.1:${WP_PORT:-8080}}"
-for required_name in DB_PASSWORD DB_ROOT_PASSWORD WP_ADMIN_PASSWORD; do
-  required_value="${!required_name:-}"
-  if [[ -z "$required_value" || "$required_value" == replace-with-* ]]; then
-    echo "Set a non-example value for $required_name in .env." >&2
-    exit 1
-  fi
-done
 
 wp() { docker compose run --rm wpcli --allow-root "$@"; }
 install_plugin() {
@@ -113,7 +141,35 @@ install_plugin() {
 }
 
 docker compose up -d database wordpress
-printf 'Waiting for WordPress files and database'
+
+printf 'Waiting for MariaDB credentials'
+database_ready=0
+for _ in $(seq 1 60); do
+  if docker compose exec -T database mariadb --protocol=TCP -h 127.0.0.1 \
+    -u"${DB_USER:-wordpress}" "-p${DB_PASSWORD}" "${DB_NAME:-wordpress}" \
+    -Nse 'SELECT 1' >/dev/null 2>&1; then
+    database_ready=1
+    echo
+    break
+  fi
+  printf '.'
+  sleep 3
+done
+
+if (( ! database_ready )); then
+  echo >&2
+  echo "The database container started, but the credentials in .env do not match its existing data." >&2
+  echo "This commonly happens after re-cloning the project while old Docker volumes remain." >&2
+  echo >&2
+  echo "For a clean local reinstall that deletes only this project's Docker data, run:" >&2
+  echo "  ./tools/install.sh --reset" >&2
+  echo >&2
+  echo "To preserve old local data, restore the previous .env file instead, then rerun the installer." >&2
+  docker compose ps >&2 || true
+  exit 1
+fi
+
+printf 'Waiting for WordPress files'
 for _ in $(seq 1 60); do
   if wp core version >/dev/null 2>&1; then echo; break; fi
   printf '.'; sleep 3
