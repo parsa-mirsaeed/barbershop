@@ -84,8 +84,9 @@ jobs:
         run: docker run -d --name occupied-development-port -p 127.0.0.1:8080:80 nginx:alpine
       - name: Reset and install complete WordPress storefront
         run: ./tools/install.sh --reset
-      - name: Verify generated secrets, runtime setup, security plugin, font, and port fallback
+      - name: Verify guest storefront, barber role, customer auth, Persian UI, and runtime setup
         run: |
+          set -Eeuo pipefail
           ! grep -q 'replace-with-' .env
           source .env
           test "${#DB_PASSWORD}" -ge 32
@@ -93,18 +94,37 @@ jobs:
           test "${#WP_ADMIN_PASSWORD}" -ge 32
           test "$WP_PORT" = 8081
           WP_URL="${WP_URL:-http://127.0.0.1:${WP_PORT}}"
-          curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/" >/dev/null
           WP='docker compose run --rm wpcli --allow-root'
           $WP theme is-active persian-barbershop
           $WP plugin is-active woocommerce
           $WP plugin is-active wordfence
           $WP plugin is-active barbershop-core
           $WP bsc font install
+          test "$($WP option get WPLANG)" = fa_IR
           test "$($WP option get woocommerce_registration_generate_username)" = yes
-          test "$($WP option get woocommerce_registration_generate_password)" = yes
+          test "$($WP option get woocommerce_registration_generate_password)" = no
+          test "$($WP option get woocommerce_coming_soon)" = no
+          test "$($WP option get woocommerce_store_pages_only)" = no
           test "$($WP term list product_cat --parent=0 --format=count)" -ge 4
-          $WP eval 'exit( shortcode_exists("bsc_product_categories") && shortcode_exists("bsc_cart_link") && shortcode_exists("bsc_account_link") ? 0 : 1 );'
+          test "$($WP post get "$($WP option get woocommerce_myaccount_page_id)" --field=post_title)" = 'حساب کاربری'
+          $WP eval '$role = get_role("barber"); exit( $role && $role->has_cap("manage_barbershop") && $role->has_cap("manage_woocommerce") && $role->has_cap("edit_products") ? 0 : 1 );'
+          $WP eval 'exit( shortcode_exists("bsc_product_categories") && shortcode_exists("bsc_cart_link") && shortcode_exists("bsc_account_link") && shortcode_exists("barbershop_before_after_gallery") ? 0 : 1 );'
+          $WP eval 'exit( get_page_by_path("hello-world", OBJECT, "post") ? 1 : 0 );'
           $WP eval 'exit( is_readable( wp_upload_dir()["basedir"] . "/barbershop-fonts/Vazirmatn-Variable.woff2" ) ? 0 : 1 );'
+          home_html="$(mktemp)"
+          account_html="$(mktemp)"
+          curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/" > "$home_html"
+          curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/my-account/" > "$account_html"
+          grep -Fq 'bsc-category-grid' "$home_html"
+          grep -Fq 'قدرت طبیعت' "$home_html"
+          ! grep -Fq '[products ' "$home_html"
+          ! grep -Fq '[bsc_product_categories' "$home_html"
+          ! grep -Fq '[barbershop_before_after_gallery' "$home_html"
+          ! grep -Fqi 'Pardon our dust' "$home_html"
+          ! grep -Fqi 'Coming soon' "$home_html"
+          grep -Fq 'name="password"' "$account_html"
+          grep -Fq 'ساخت حساب' "$account_html"
+          rm -f "$home_html" "$account_html"
       - name: Container logs
         if: failure()
         run: docker compose logs --no-color
