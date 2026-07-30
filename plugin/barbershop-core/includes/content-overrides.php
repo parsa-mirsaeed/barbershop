@@ -1,5 +1,5 @@
 <?php
-/** Complete the dashboard-driven replacement of independently editable storefront placeholders. */
+/** Complete dashboard-driven replacements and public/staff presentation separation. */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -30,3 +30,9 @@ function bsc_render_extended_storefront_content( $block_content, $block ) {
 	return $block_content;
 }
 add_filter( 'render_block', 'bsc_render_extended_storefront_content', 45, 2 );
+
+/** Keep the public storefront visually separate from wp-admin for every role. */
+function bsc_hide_public_admin_toolbar( $show ) {
+	return is_admin() ? $show : false;
+}
+add_filter( 'show_admin_bar', 'bsc_hide_public_admin_toolbar', 100 );
