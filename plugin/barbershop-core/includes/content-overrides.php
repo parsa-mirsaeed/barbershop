@@ -4,6 +4,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/* Avoid writing role capabilities on every public request; sync only after upgrades. */
+remove_action( 'init', 'bsc_sync_barber_role', 35 );
+function bsc_maybe_sync_barber_role() {
+	if ( BSC_VERSION !== get_option( 'bsc_barber_role_version' ) || ! get_role( 'barber' ) ) {
+		bsc_sync_barber_role();
+	}
+}
+add_action( 'init', 'bsc_maybe_sync_barber_role', 35 );
+
 function bsc_render_extended_storefront_content( $block_content, $block ) {
 	unset( $block );
 	$content = bsc_get_store_content();
