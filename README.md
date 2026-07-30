@@ -18,13 +18,13 @@ No real person, business, address, phone, customer, merchant credential, payment
 
 ## Local installation
 
-Requirements: Docker with Compose v2 and Bash.
+Requirements: Docker with Compose v2, Bash, and Python 3.
 
 ```bash
 ./tools/install.sh
 ```
 
-The installer creates `.env` with random local passwords, finds a free localhost port, installs WordPress, Persian language files when available, WooCommerce, Wordfence, the theme and plugin, editable categories, local Vazirmatn, and clean permalinks.
+The installer creates `.env` when missing and automatically replaces empty or example local passwords with cryptographically random values. It preserves any real values you already supplied, finds a free localhost port, starts Docker Compose, installs WordPress, Persian language files when available, WooCommerce, Wordfence, the theme and plugin, editable categories, local Vazirmatn, and clean permalinks.
 
 Open the URL printed by the installer and review the generated administrator password in `.env`. Then open Wordfence and finish firewall optimization, alert email, and administrator 2FA.
 
@@ -38,7 +38,7 @@ For a clean local reinstall when no old local shop data is needed:
 ./tools/install.sh --reset
 ```
 
-This deletes only the Docker volumes belonging to this Compose project and rebuilds the local site. To preserve the old database, restore the previous `.env` instead of using `--reset`.
+This fills any remaining example secrets, deletes only the Docker volumes belonging to this Compose project, and rebuilds the local site. To preserve the old database, restore the previous `.env` instead of using `--reset`.
 
 Useful checks:
 
