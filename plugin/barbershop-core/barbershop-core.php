@@ -31,6 +31,7 @@ require_once BSC_DIR . 'includes/woocommerce.php';
 require_once BSC_DIR . 'includes/products.php';
 require_once BSC_DIR . 'includes/portfolio.php';
 require_once BSC_DIR . 'includes/barber.php';
+require_once BSC_DIR . 'includes/content-overrides.php';
 require_once BSC_DIR . 'includes/settings.php';
 
 register_activation_hook( __FILE__, 'bsc_activate' );
