@@ -137,6 +137,14 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("set_env_value WP_PORT", installer)
         self.assertIn("Production does not use this fallback", installer)
 
+    def test_local_installer_recovers_stale_docker_volumes(self) -> None:
+        installer = (ROOT / "tools" / "install.sh").read_text()
+        self.assertIn("--reset|--fresh", installer)
+        self.assertIn("docker compose down -v --remove-orphans", installer)
+        self.assertIn("mariadb --protocol=TCP", installer)
+        self.assertIn("credentials in .env do not match its existing data", installer)
+        self.assertIn("restore the previous .env file", installer)
+
     def test_quality_workflow_runs_ui_backend_and_runtime_checks(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "quality.yml").read_text()
         for token in ("playwright install", "tests/test_backend.php", "python3 -m unittest discover", "docker-smoke", "plugin is-active wordfence", "bsc font install"):
