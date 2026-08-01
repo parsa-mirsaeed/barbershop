@@ -120,8 +120,9 @@ class ResponsiveContractTests(unittest.TestCase):
 
     def test_responsive_release_cache_busts_plugin_assets(self) -> None:
         core = (PLUGIN / "barbershop-core.php").read_text(encoding="utf-8")
-        self.assertIn("Version: 3.3.0", core)
-        self.assertIn("define( 'BSC_VERSION', '3.3.0' )", core)
+        self.assertIn("Version: 3.3.1", core)
+        self.assertIn("define( 'BSC_VERSION', '3.3.1' )", core)
+        self.assertIn("includes/mobile-live-fixes.php", core)
 
 
 if __name__ == "__main__":
