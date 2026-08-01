@@ -64,7 +64,8 @@ def rendered_fixture_html() -> str:
     }.items():
         html = html.replace(f'<link rel="stylesheet" href="{href}">', f'<style>{path.read_text(encoding="utf-8")}</style>')
     runtime_css = (ROOT / "plugin" / "barbershop-core" / "assets" / "runtime-storefront.css").read_text(encoding="utf-8")
-    html = html.replace("</head>", f"<style>{runtime_css}</style></head>")
+    touch_css = (ROOT / "plugin" / "barbershop-core" / "assets" / "touch-targets.css").read_text(encoding="utf-8")
+    html = html.replace("</head>", f"<style>{runtime_css}\n{touch_css}</style></head>")
     for src, path in {
         "../../theme/persian-barbershop/assets/js/site.js": ROOT / "theme" / "persian-barbershop" / "assets" / "js" / "site.js",
         "../../plugin/barbershop-core/assets/frontend.js": ROOT / "plugin" / "barbershop-core" / "assets" / "frontend.js",
