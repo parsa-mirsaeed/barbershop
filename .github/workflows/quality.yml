@@ -127,7 +127,7 @@ jobs:
           $WP eval '$role = get_role("barber"); exit( $role && $role->has_cap("manage_barbershop") && $role->has_cap("manage_woocommerce") && $role->has_cap("edit_products") ? 0 : 1 );'
           $WP eval 'exit( shortcode_exists("bsc_product_categories") && shortcode_exists("bsc_cart_link") && shortcode_exists("bsc_account_link") && shortcode_exists("barbershop_before_after_gallery") ? 0 : 1 );'
           $WP eval 'exit( function_exists("hidden") && " hidden=\"hidden\"" === hidden( true, true, false ) ? 0 : 1 );'
-          $WP --skip-plugins=persian-woocommerce-sms,persian-woocommerce-shipping,gateland,wordfence eval 'exit( "09121234567" === bsc_normalize_iran_mobile("+989121234567") ? 0 : 1 );'
+          $WP --skip-plugins eval 'require_once WP_PLUGIN_DIR . "/barbershop-core/includes/account.php"; exit( "09121234567" === bsc_normalize_iran_mobile("+989121234567") ? 0 : 1 );'
           $WP eval 'wp_set_current_user(1); ob_start(); bsc_render_media_control("logo_id", "لوگوی برند", 0); $html = ob_get_clean(); exit( false !== strpos( $html, "data-bsc-media-target" ) ? 0 : 1 );'
           $WP eval 'wp_set_current_user(1); do_action("admin_menu"); ob_start(); do_action("toplevel_page_bsc-store-setup"); $html = ob_get_clean(); exit( 1 === substr_count($html, "مدیریت کامل فروشگاه، بدون ویرایشگر ظاهری") && 0 === substr_count($html, "فروشگاه حرفه‌ای، مدیریت ساده") ? 0 : 1 );'
           $WP eval 'ob_start(); bsc_qa_cart_gateway_summary(); $html = ob_get_clean(); exit( false !== strpos( $html, "روش‌های پرداخت فعال" ) ? 0 : 1 );'
