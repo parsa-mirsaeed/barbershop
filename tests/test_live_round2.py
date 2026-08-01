@@ -69,9 +69,10 @@ class LiveRoundTwoRegressionTests(unittest.TestCase):
 
     def test_runtime_repairs_are_loaded_and_cache_busted(self) -> None:
         core = (PLUGIN / "barbershop-core.php").read_text()
-        self.assertIn("Version: 3.3.0", core)
-        self.assertIn("define( 'BSC_VERSION', '3.3.0' )", core)
+        self.assertIn("Version: 3.3.1", core)
+        self.assertIn("define( 'BSC_VERSION', '3.3.1' )", core)
         self.assertIn("includes/runtime-repairs.php", core)
+        self.assertIn("includes/mobile-live-fixes.php", core)
 
 
 if __name__ == "__main__":
