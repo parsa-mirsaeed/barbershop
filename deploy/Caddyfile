@@ -1,0 +1,18 @@
+{$SITE_DOMAIN} {
+  encode zstd gzip
+
+  @static path *.css *.js *.jpg *.jpeg *.png *.gif *.webp *.avif *.svg *.ico *.woff *.woff2
+  header @static Cache-Control "public, max-age=604800, immutable"
+
+  reverse_proxy wordpress:80
+
+  header {
+    Strict-Transport-Security "max-age=31536000"
+    X-Content-Type-Options nosniff
+    X-Frame-Options SAMEORIGIN
+    X-Permitted-Cross-Domain-Policies none
+    Referrer-Policy strict-origin-when-cross-origin
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    -Server
+  }
+}

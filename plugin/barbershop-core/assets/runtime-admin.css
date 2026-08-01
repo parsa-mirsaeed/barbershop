@@ -1,0 +1,318 @@
+/*
+ * Final responsive admin layer for the barber dashboard and the WooCommerce
+ * operations screens used by the barber role.
+ */
+
+body.rtl.toplevel_page_bsc-store-setup,
+body.rtl.toplevel_page_bsc-store-setup #wpwrap,
+body.rtl.toplevel_page_bsc-store-setup #wpcontent,
+body.rtl.toplevel_page_bsc-store-setup #wpbody,
+body.rtl.toplevel_page_bsc-store-setup #wpbody-content {
+  min-width: 0;
+}
+body.rtl.toplevel_page_bsc-store-setup #wpbody-content {
+  overflow-x: clip;
+}
+body.rtl.toplevel_page_bsc-store-setup .wrap,
+body.rtl.toplevel_page_bsc-store-setup .bsc-setup-page,
+body.rtl.toplevel_page_bsc-store-setup .bsc-barber-dashboard {
+  box-sizing: border-box;
+  margin-inline: 0;
+  max-width: none;
+  min-width: 0;
+  width: auto;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-barber-dashboard,
+body.rtl.toplevel_page_bsc-store-setup .bsc-barber-dashboard *,
+body.rtl.toplevel_page_bsc-store-setup .bsc-setup-page,
+body.rtl.toplevel_page_bsc-store-setup .bsc-setup-page * {
+  box-sizing: border-box;
+}
+
+/* Keep every grid child shrinkable; min-content widths were responsible for
+   the narrow dashboard column and horizontal overflow in the screenshots. */
+body.rtl.toplevel_page_bsc-store-setup :where(
+  .bsc-admin-hero,
+  .bsc-stat-grid,
+  .bsc-stat,
+  .bsc-admin-panel,
+  .bsc-panel-heading,
+  .bsc-status-grid,
+  .bsc-status-item,
+  .bsc-setup-grid,
+  .bsc-setup-card,
+  .bsc-repair-form,
+  .bsc-dashboard-actions,
+  .bsc-dashboard-form,
+  .bsc-dashboard-field-grid,
+  .bsc-dashboard-media-grid,
+  .bsc-dashboard-media-field,
+  .bsc-dashboard-category-grid,
+  .bsc-dashboard-category,
+  .bsc-media-grid,
+  .bsc-media-actions,
+  .bsc-dashboard-save
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+body.rtl.toplevel_page_bsc-store-setup :where(h1, h2, h3, p, label, span, small, strong, a) {
+  overflow-wrap: anywhere;
+}
+
+/* Inputs remain readable and tappable in mobile WordPress. */
+body.rtl.toplevel_page_bsc-store-setup :where(
+  input:not([type="hidden"]),
+  select,
+  textarea,
+  button,
+  .button,
+  .button-primary,
+  .button-secondary
+) {
+  max-width: 100%;
+  min-height: 44px;
+}
+body.rtl.toplevel_page_bsc-store-setup :where(
+  .bsc-dashboard-field-grid input,
+  .bsc-dashboard-field-grid textarea,
+  .bsc-dashboard-category input,
+  .bsc-dashboard-category select,
+  .bsc-dashboard-media-field input
+) {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Save action stays in the form that owns the edited values. It is sticky,
+   safe-area aware, and never covers the whole mobile viewport. */
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save {
+  align-items: center;
+  bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  inset: auto !important;
+  margin: 0 !important;
+  max-width: none !important;
+  position: sticky !important;
+  width: 100% !important;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-form {
+  min-width: 0;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save .button {
+  min-height: 46px;
+}
+
+/* Dashboard media and category controls. */
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-preview,
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-preview img,
+body.rtl.toplevel_page_bsc-store-setup .bsc-media-grid img,
+body.rtl.toplevel_page_bsc-store-setup .bsc-term-icon-preview img {
+  max-width: 100%;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-preview img {
+  height: auto;
+  max-height: 15rem;
+  object-fit: contain;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-media-actions,
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-actions {
+  align-items: stretch;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-media-actions .button,
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-actions a {
+  min-height: 44px;
+}
+
+/* Dense WooCommerce admin data is allowed a local, labelled horizontal scroll
+   rather than forcing the entire WordPress admin page wider than the viewport. */
+body.rtl :where(.post-type-product, .post-type-shop_order, .woocommerce_page_wc-orders, .woocommerce_page_wc-settings) .tablenav,
+body.rtl :where(.post-type-product, .post-type-shop_order, .woocommerce_page_wc-orders, .woocommerce_page_wc-settings) .wp-list-table,
+body.rtl :where(.post-type-product, .post-type-shop_order, .woocommerce_page_wc-orders, .woocommerce_page_wc-settings) .form-table {
+  max-width: 100%;
+}
+body.rtl.post-type-product .wp-list-table,
+body.rtl.post-type-shop_order .wp-list-table,
+body.rtl.woocommerce_page_wc-orders .wp-list-table {
+  display: table;
+  min-width: 44rem;
+}
+body.rtl.post-type-product .wrap,
+body.rtl.post-type-shop_order .wrap,
+body.rtl.woocommerce_page_wc-orders .wrap {
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+}
+body.rtl.woocommerce_page_wc-settings :where(input, select, textarea, button, .button) {
+  min-height: 44px;
+  max-width: 100%;
+}
+
+@media (max-width: 1280px) {
+  body.rtl.toplevel_page_bsc-store-setup .bsc-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-setup-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  body.rtl.toplevel_page_bsc-store-setup .bsc-admin-hero,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-panel-heading,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-repair-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-admin-hero .button,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-repair-form .button {
+    width: 100%;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-status-grid,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-field-grid {
+    grid-template-columns: 1fr;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-field-grid label.is-wide {
+    grid-column: auto;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* WordPress collapses its admin menu at this boundary. The content layer must
+   not retain desktop gaps or two-column forms after that collapse. */
+@media (max-width: 782px) {
+  body.rtl.toplevel_page_bsc-store-setup #wpcontent,
+  body.rtl.toplevel_page_bsc-store-setup #wpfooter {
+    margin-inline: 0;
+  }
+  body.rtl.toplevel_page_bsc-store-setup #wpbody-content {
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
+  body.rtl.toplevel_page_bsc-store-setup .wrap,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-setup-page,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-barber-dashboard {
+    margin: 0;
+    padding-inline: .75rem;
+    width: 100%;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-admin-hero {
+    border-radius: 18px;
+    gap: 1rem;
+    margin-block: .75rem 1rem;
+    padding: clamp(1.25rem, 6vw, 2rem);
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-admin-hero h1 {
+    font-size: clamp(1.65rem, 1.3rem + 2vw, 2.2rem);
+    line-height: 1.35;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-admin-panel {
+    border-radius: 16px;
+    margin-bottom: 1rem;
+    padding: clamp(1rem, 4vw, 1.35rem);
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-stat-grid,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-status-grid,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-setup-grid,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-field-grid,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-grid,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-category-grid,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-media-grid {
+    grid-template-columns: 1fr;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-stat,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-status-item,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-setup-card,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-field,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-category {
+    border-radius: 14px;
+    min-height: 0;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save {
+    align-items: stretch;
+    border-radius: 14px;
+    bottom: max(6px, env(safe-area-inset-bottom)) !important;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save .button {
+    margin: 0;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-media-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-media-actions .button {
+    justify-content: center;
+    margin: 0;
+    width: 100%;
+  }
+  body.rtl.toplevel_page_bsc-store-setup :where(input, select, textarea, button, .button) {
+    font-size: 16px;
+  }
+  body.rtl.post-type-product .wrap,
+  body.rtl.post-type-shop_order .wrap,
+  body.rtl.woocommerce_page_wc-orders .wrap {
+    margin-inline: 0;
+    padding-bottom: .75rem;
+  }
+}
+
+@media (max-width: 520px) {
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-actions,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-media-actions {
+    grid-template-columns: 1fr;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-panel-heading > a,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-panel-heading .button,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-setup-card .button {
+    white-space: normal;
+    width: 100%;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-preview {
+    min-height: 9rem;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-status-item {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 360px) {
+  body.rtl.toplevel_page_bsc-store-setup .wrap,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-setup-page,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-barber-dashboard {
+    padding-inline: .5rem;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-admin-panel,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-field,
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-category {
+    padding: .85rem;
+  }
+}
+
+@media (pointer: coarse) {
+  body.rtl.toplevel_page_bsc-store-setup :where(a.button, button, input[type="submit"], input[type="button"], .bsc-dashboard-actions a) {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.rtl.toplevel_page_bsc-store-setup *,
+  body.rtl.toplevel_page_bsc-store-setup *::before,
+  body.rtl.toplevel_page_bsc-store-setup *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}

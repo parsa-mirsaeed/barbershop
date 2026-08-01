@@ -1,0 +1,607 @@
+/* Account, authentication, and mobile navigation refinements.
+ * Loaded after all theme, WooCommerce, and mobile repair styles.
+ */
+
+/* ---------- Mobile navigation must escape the filtered sticky header ---------- */
+@media (max-width: 781px) {
+  html.bsc-nav-open,
+  body.bsc-nav-open {
+    block-size: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+
+  .site-header-shell.bsc-nav-open {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    contain: none !important;
+    filter: none !important;
+    transform: none !important;
+    z-index: 100000 !important;
+  }
+
+  .pbs-header-navigation .wp-block-navigation__responsive-container.is-menu-open {
+    background:
+      radial-gradient(circle at 12% 12%, rgba(14, 143, 106, .22), transparent 22rem),
+      linear-gradient(180deg, #020e1e, #071a3d) !important;
+    block-size: 100vh !important;
+    block-size: 100dvh !important;
+    inset: 0 !important;
+    margin: 0 !important;
+    max-block-size: 100dvh !important;
+    max-inline-size: none !important;
+    min-block-size: 100vh !important;
+    min-block-size: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 0 !important;
+    position: fixed !important;
+    width: 100vw !important;
+    z-index: 100001 !important;
+  }
+
+  .pbs-header-navigation .wp-block-navigation__responsive-container-close {
+    align-items: center;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 999px;
+    color: #fff;
+    display: inline-flex;
+    inset: max(.85rem, env(safe-area-inset-top)) auto auto max(.85rem, env(safe-area-inset-left));
+    justify-content: center;
+    margin: 0;
+    position: absolute;
+    z-index: 3;
+  }
+
+  .pbs-header-navigation .wp-block-navigation__responsive-container-content {
+    align-items: stretch !important;
+    display: flex !important;
+    inline-size: min(100%, 34rem) !important;
+    justify-content: flex-start !important;
+    margin-inline: auto !important;
+    min-block-size: 100dvh;
+    overflow: visible !important;
+    padding:
+      calc(5.5rem + env(safe-area-inset-top))
+      1rem
+      calc(6.5rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .pbs-header-navigation .wp-block-navigation__container {
+    align-content: start;
+    align-items: stretch !important;
+    display: grid !important;
+    gap: .6rem !important;
+    inline-size: 100% !important;
+    margin: 0 !important;
+  }
+
+  .pbs-header-navigation .wp-block-navigation-item,
+  .pbs-header-navigation .wp-block-navigation-item__content {
+    inline-size: 100% !important;
+  }
+
+  .pbs-header-navigation .wp-block-navigation-item__content {
+    background: rgba(255, 255, 255, .055);
+    border: 1px solid rgba(255, 255, 255, .11);
+    border-radius: 1rem;
+    color: #fff !important;
+    font-size: 1rem !important;
+    font-weight: 850;
+    justify-content: space-between;
+    min-block-size: 3.5rem !important;
+    padding: .85rem 1rem !important;
+  }
+
+  .pbs-header-navigation .wp-block-navigation-item__content:hover,
+  .pbs-header-navigation .wp-block-navigation-item__content:focus-visible {
+    background: rgba(14, 143, 106, .22);
+    border-color: rgba(82, 228, 189, .35);
+  }
+}
+
+/* ---------- Shared account shell ---------- */
+body.woocommerce-account .wp-block-post-title {
+  font-size: clamp(2.15rem, 4.5vw, 3.8rem) !important;
+  letter-spacing: -.045em;
+  line-height: 1.15;
+  margin-block: clamp(2.25rem, 6vw, 4.75rem) 1.6rem !important;
+}
+
+body.woocommerce-account .woocommerce {
+  inline-size: min(100%, 74rem);
+}
+
+body.woocommerce-account .woocommerce :where(a, button, input) {
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+/* ---------- Logged-out login and registration ---------- */
+body.woocommerce-account:not(.logged-in) .woocommerce {
+  display: block !important;
+}
+
+body.woocommerce-account:not(.logged-in) #customer_login {
+  align-items: start;
+  display: grid !important;
+  gap: 1.15rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.woocommerce-account:not(.logged-in) #customer_login::before,
+body.woocommerce-account:not(.logged-in) #customer_login::after {
+  display: none !important;
+}
+
+body.woocommerce-account:not(.logged-in) #customer_login > div {
+  background: linear-gradient(155deg, rgba(255, 255, 255, .085), rgba(255, 255, 255, .04));
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 1.4rem;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .2);
+  float: none !important;
+  inline-size: 100% !important;
+  margin: 0 !important;
+  overflow: hidden;
+}
+
+body.woocommerce-account:not(.logged-in) #customer_login > div > h2 {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  display: flex;
+  font-size: 1.25rem;
+  gap: .7rem;
+  margin: 0;
+  padding: 1.05rem 1.25rem;
+}
+
+body.woocommerce-account:not(.logged-in) #customer_login > div > h2::before {
+  align-items: center;
+  background: rgba(14, 143, 106, .18);
+  border: 1px solid rgba(82, 228, 189, .3);
+  border-radius: .75rem;
+  color: #52e4bd;
+  content: "";
+  display: inline-flex;
+  flex: 0 0 2.2rem;
+  block-size: 2.2rem;
+  inline-size: 2.2rem;
+}
+
+body.woocommerce-account:not(.logged-in) #customer_login .u-column1 > h2::before {
+  background-image: radial-gradient(circle at 50% 37%, currentColor 0 16%, transparent 17%), linear-gradient(currentColor, currentColor);
+  background-position: center, center 78%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 46% 24%;
+}
+
+body.woocommerce-account:not(.logged-in) #customer_login .u-column2 > h2::before {
+  background-image: linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor);
+  background-position: center, center;
+  background-repeat: no-repeat;
+  background-size: 45% 2px, 2px 45%;
+}
+
+body.woocommerce-account:not(.logged-in) form.login,
+body.woocommerce-account:not(.logged-in) form.register {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  max-inline-size: none !important;
+  min-block-size: 0 !important;
+  padding: 1.25rem !important;
+}
+
+body.woocommerce-account:not(.logged-in) .woocommerce-form-row label {
+  color: rgba(255, 255, 255, .92);
+  font-size: .86rem;
+  margin-block-end: .4rem;
+}
+
+body.woocommerce-account:not(.logged-in) .woocommerce-form-row input.input-text {
+  background: rgba(2, 14, 30, .78);
+  border-color: rgba(255, 255, 255, .15);
+  min-block-size: 3.25rem;
+}
+
+body.woocommerce-account:not(.logged-in) .woocommerce-form-row input.input-text:focus {
+  border-color: #52e4bd;
+  box-shadow: 0 0 0 4px rgba(82, 228, 189, .12);
+  outline: 0;
+}
+
+.bsc-register-intro {
+  background: linear-gradient(135deg, rgba(14, 143, 106, .2), rgba(33, 210, 163, .07)) !important;
+  border-color: rgba(82, 228, 189, .28) !important;
+  border-radius: 1rem !important;
+  gap: .3rem !important;
+  margin-block-end: 1.1rem !important;
+  padding: .95rem 1rem !important;
+}
+
+.bsc-register-intro strong {
+  font-size: .96rem;
+}
+
+.bsc-register-intro span,
+.bsc-register-note,
+.bsc-password-help {
+  color: #b8c7d6 !important;
+}
+
+.bsc-register-note {
+  background: rgba(87, 167, 255, .08);
+  border: 1px solid rgba(87, 167, 255, .18);
+  border-radius: .85rem;
+  margin: .7rem 0 1rem;
+  padding: .75rem .85rem;
+}
+
+.bsc-registration-consent {
+  align-items: flex-start;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 1rem;
+  display: flex;
+  gap: .7rem;
+  line-height: 1.9;
+  margin: .9rem 0 1rem;
+  padding: .85rem .9rem;
+}
+
+.bsc-registration-consent input {
+  accent-color: #21d2a3;
+  block-size: 1.15rem;
+  flex: 0 0 auto;
+  inline-size: 1.15rem;
+  margin-block-start: .35rem;
+  min-block-size: 0 !important;
+}
+
+.bsc-registration-consent label {
+  color: #c2cfdb;
+  font-size: .83rem;
+  font-weight: 500 !important;
+  margin: 0 !important;
+}
+
+.bsc-registration-consent a {
+  color: #52e4bd;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.bsc-registration-trap,
+.woocommerce-privacy-policy-text:empty {
+  display: none !important;
+}
+
+body.woocommerce-account:not(.logged-in) .woocommerce-form-login__submit,
+body.woocommerce-account:not(.logged-in) .woocommerce-form-register__submit {
+  box-shadow: 0 14px 35px rgba(14, 143, 106, .2);
+  inline-size: 100%;
+  min-block-size: 3.2rem;
+}
+
+body.woocommerce-account:not(.logged-in) .woocommerce-LostPassword {
+  margin-block: .8rem 0;
+  text-align: center;
+}
+
+body.woocommerce-account:not(.logged-in) .woocommerce-LostPassword a {
+  color: #c8d5e1;
+  font-size: .86rem;
+}
+
+/* ---------- Logged-in account dashboard ---------- */
+body.woocommerce-account.logged-in .woocommerce {
+  align-items: start;
+  display: grid !important;
+  gap: 1.25rem;
+  grid-template-columns: minmax(15rem, .78fr) minmax(0, 2.22fr);
+}
+
+body.woocommerce-account.logged-in .woocommerce::before,
+body.woocommerce-account.logged-in .woocommerce::after {
+  display: none !important;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation,
+body.woocommerce-account.logged-in .woocommerce-MyAccount-content {
+  float: none !important;
+  inline-size: 100% !important;
+  margin: 0 !important;
+  min-block-size: 0 !important;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation {
+  background: linear-gradient(155deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .035));
+  border-color: rgba(255, 255, 255, .14);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .18);
+  padding: .75rem !important;
+  position: sticky;
+  top: 7rem;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation ul {
+  display: grid !important;
+  gap: .5rem;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation li {
+  inline-size: 100%;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation a {
+  align-items: center;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid transparent;
+  border-radius: .95rem;
+  color: #d6e0e9 !important;
+  display: flex;
+  font-size: .9rem;
+  font-weight: 780;
+  gap: .7rem;
+  justify-content: space-between;
+  min-block-size: 3.2rem;
+  padding: .75rem .9rem;
+  white-space: normal !important;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation a::after {
+  color: #8295a8;
+  content: "‹";
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation a:hover {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .14);
+  color: #fff !important;
+  transform: translateX(-2px);
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation .is-active a {
+  background: linear-gradient(135deg, #0e8f6a, #0a7558);
+  border-color: rgba(82, 228, 189, .35);
+  box-shadow: 0 12px 28px rgba(14, 143, 106, .22);
+  color: #fff !important;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation .is-active a::after {
+  color: #fff;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation-link--customer-logout a {
+  color: #ffb1b5 !important;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-content {
+  background: linear-gradient(155deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .035));
+  border-color: rgba(255, 255, 255, .14);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .18);
+  min-inline-size: 0;
+  padding: clamp(1rem, 3vw, 1.55rem) !important;
+}
+
+body.bsc-account-dashboard .woocommerce-MyAccount-content > p:first-of-type,
+body.bsc-account-dashboard .woocommerce-MyAccount-content > p:nth-of-type(2) {
+  display: none;
+}
+
+.bsc-account-overview {
+  display: grid;
+  gap: 1rem;
+}
+
+.bsc-account-welcome {
+  align-items: center;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(82, 228, 189, .18), transparent 16rem),
+    linear-gradient(135deg, rgba(14, 143, 106, .2), rgba(255, 255, 255, .045));
+  border: 1px solid rgba(82, 228, 189, .22);
+  border-radius: 1.25rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: clamp(1rem, 3vw, 1.4rem);
+}
+
+.bsc-account-avatar {
+  align-items: center;
+  background: linear-gradient(145deg, #21d2a3, #0e8f6a);
+  border: 4px solid rgba(255, 255, 255, .12);
+  border-radius: 50%;
+  box-shadow: 0 12px 30px rgba(14, 143, 106, .28);
+  color: #fff;
+  display: inline-flex;
+  font-size: 1.2rem;
+  font-weight: 950;
+  block-size: 4rem;
+  inline-size: 4rem;
+  justify-content: center;
+}
+
+.bsc-account-welcome h2 {
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  margin: 0 0 .3rem;
+}
+
+.bsc-account-welcome p {
+  color: #b7c6d4;
+  line-height: 1.85;
+  margin: 0;
+}
+
+.bsc-account-identifiers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  grid-column: 1 / -1;
+}
+
+.bsc-account-chip {
+  background: rgba(2, 14, 30, .55);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 999px;
+  color: #cbd8e3;
+  direction: ltr;
+  font-size: .8rem;
+  padding: .45rem .75rem;
+  unicode-bidi: plaintext;
+}
+
+.bsc-account-metrics {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bsc-account-metric {
+  background: rgba(2, 14, 30, .42);
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 1rem;
+  display: grid;
+  gap: .3rem;
+  padding: 1rem;
+}
+
+.bsc-account-metric strong {
+  color: #fff;
+  font-size: 1.45rem;
+}
+
+.bsc-account-metric span {
+  color: #9fb1c2;
+  font-size: .82rem;
+}
+
+.bsc-account-actions {
+  display: grid;
+  gap: .7rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.bsc-account-actions a {
+  align-items: center;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 1rem;
+  color: #fff !important;
+  display: flex;
+  font-size: .86rem;
+  font-weight: 800;
+  justify-content: center;
+  min-block-size: 3.25rem;
+  padding: .7rem;
+  text-align: center;
+  text-decoration: none !important;
+}
+
+.bsc-account-actions a:first-child {
+  background: #0e8f6a;
+  border-color: #0e8f6a;
+}
+
+.bsc-account-actions a:hover {
+  border-color: rgba(82, 228, 189, .38);
+  transform: translateY(-2px);
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-content .woocommerce-info,
+body.woocommerce-account.logged-in .woocommerce-MyAccount-content .woocommerce-message {
+  align-items: center;
+  background: rgba(87, 167, 255, .08) !important;
+  border: 1px solid rgba(87, 167, 255, .22) !important;
+  color: #fff !important;
+  display: flex;
+  inline-size: 100%;
+  justify-content: space-between;
+  min-block-size: 6rem;
+  padding: 1rem !important;
+}
+
+body.woocommerce-account.logged-in .woocommerce-MyAccount-content .woocommerce-info .button,
+body.woocommerce-account.logged-in .woocommerce-MyAccount-content .woocommerce-message .button {
+  flex: 0 0 auto;
+  margin: 0 !important;
+}
+
+/* ---------- Responsive account layouts ---------- */
+@media (max-width: 900px) {
+  body.woocommerce-account:not(.logged-in) #customer_login,
+  body.woocommerce-account.logged-in .woocommerce {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation {
+    position: static;
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation ul {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  body.woocommerce-account .wp-block-post-title {
+    margin-block: 2rem 1.15rem !important;
+    text-align: center !important;
+  }
+
+  body.woocommerce-account:not(.logged-in) #customer_login > div {
+    border-radius: 1.15rem;
+  }
+
+  body.woocommerce-account:not(.logged-in) form.login,
+  body.woocommerce-account:not(.logged-in) form.register {
+    padding: 1rem !important;
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation ul {
+    gap: .4rem;
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-navigation a {
+    font-size: .78rem;
+    min-block-size: 3rem;
+    padding: .65rem .7rem;
+  }
+
+  .bsc-account-welcome {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .bsc-account-avatar {
+    margin-inline: auto;
+  }
+
+  .bsc-account-identifiers {
+    justify-content: center;
+  }
+
+  .bsc-account-metrics,
+  .bsc-account-actions {
+    grid-template-columns: 1fr;
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content .woocommerce-info,
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content .woocommerce-message {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content .woocommerce-info .button,
+  body.woocommerce-account.logged-in .woocommerce-MyAccount-content .woocommerce-message .button {
+    inline-size: 100% !important;
+  }
+}

@@ -1,0 +1,128 @@
+/* Admin regression layer for barber operations and WooCommerce screens. */
+body.rtl.toplevel_page_bsc-store-setup,
+body.rtl.toplevel_page_bsc-store-setup button,
+body.rtl.toplevel_page_bsc-store-setup input,
+body.rtl.toplevel_page_bsc-store-setup select,
+body.rtl.toplevel_page_bsc-store-setup textarea,
+body.rtl.post-type-product,
+body.rtl.post-type-shop_order,
+body.rtl.post-type-barbershop_result,
+body.rtl.woocommerce_page_wc-settings,
+body.rtl.woocommerce_page_wc-orders {
+  font-family: Vazirmatn, Tahoma, Arial, sans-serif !important;
+}
+
+body.rtl.toplevel_page_bsc-store-setup .bsc-barber-dashboard,
+body.rtl.toplevel_page_bsc-store-setup .bsc-barber-dashboard * {
+  direction: rtl;
+  text-align: right;
+}
+
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-form {
+  padding-bottom: 7rem;
+}
+
+/* The original save row lived only after every field, so users could finish a
+   section without ever seeing an action. Keep it visible throughout editing. */
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save {
+  align-items: center;
+  backdrop-filter: blur(16px);
+  background: rgba(255,255,255,.97);
+  border: 1px solid #cbd9e5;
+  border-radius: 18px;
+  bottom: 20px;
+  box-shadow: 0 20px 55px rgba(7,26,61,.24);
+  display: flex;
+  gap: 10px;
+  inset-inline: auto 24px;
+  justify-content: flex-start;
+  margin: 0;
+  max-width: calc(100vw - 220px);
+  padding: 12px;
+  position: fixed !important;
+  width: auto;
+  z-index: 10000;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save::before {
+  color: #607287;
+  content: "تغییرات این صفحه را ذخیره کنید";
+  font-size: 13px;
+  font-weight: 750;
+  margin-inline: 4px 8px;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-form[data-bsc-dirty="true"] .bsc-dashboard-save::before {
+  color: #9a5b00;
+  content: "تغییرات ذخیره‌نشده دارید";
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save .button-primary {
+  background: #0e8f6a;
+  border-color: #0e8f6a;
+  color: #fff;
+  min-height: 46px;
+  min-width: 190px;
+}
+
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-preview:empty::before {
+  color: #6a7c8d;
+  content: "هنوز تصویری انتخاب نشده است";
+  font-size: 13px;
+  padding: 16px;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-preview img[hidden] {
+  display: none !important;
+}
+
+/* Keep WooCommerce order/settings surfaces readable in Persian RTL without
+   altering third-party plugin controls. */
+body.rtl.post-type-shop_order .wp-list-table,
+body.rtl.woocommerce_page_wc-orders .wp-list-table,
+body.rtl.woocommerce_page_wc-settings .form-table,
+body.rtl.post-type-product .wp-list-table {
+  direction: rtl;
+  font-family: Vazirmatn, Tahoma, Arial, sans-serif !important;
+  text-align: right;
+}
+body.rtl.post-type-shop_order .wp-list-table th,
+body.rtl.post-type-shop_order .wp-list-table td,
+body.rtl.woocommerce_page_wc-orders .wp-list-table th,
+body.rtl.woocommerce_page_wc-orders .wp-list-table td,
+body.rtl.post-type-product .wp-list-table th,
+body.rtl.post-type-product .wp-list-table td {
+  color: #1d2b3a;
+  font-size: 13px;
+  line-height: 1.8;
+  text-align: right;
+  vertical-align: middle;
+}
+body.rtl.woocommerce_page_wc-settings input,
+body.rtl.woocommerce_page_wc-settings select,
+body.rtl.woocommerce_page_wc-settings textarea,
+body.rtl.woocommerce_page_wc-settings button,
+body.rtl.woocommerce_page_wc-orders input,
+body.rtl.woocommerce_page_wc-orders select,
+body.rtl.woocommerce_page_wc-orders button {
+  font-family: Vazirmatn, Tahoma, Arial, sans-serif !important;
+}
+
+@media (max-width: 960px) {
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save {
+    inset-inline: 12px;
+    max-width: none;
+    width: auto;
+  }
+}
+
+@media (max-width: 782px) {
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save {
+    bottom: 8px;
+    flex-direction: row;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save::before {
+    display: none;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save .button {
+    margin: 0;
+    min-width: 0;
+    width: 50%;
+  }
+}

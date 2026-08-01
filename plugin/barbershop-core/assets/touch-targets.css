@@ -1,0 +1,13 @@
+/* Final physical touch-target guard. Use a small buffer above the 44px baseline
+ * because fractional device scaling can otherwise report 43.999px. */
+@media (max-width: 781px) {
+  .bsc-mobile-dock > a,
+  .bsc-category-card > a,
+  .woocommerce ul.products li.product .button,
+  .woocommerce ul.products li.product a.button,
+  .woocommerce a.button,
+  .woocommerce button.button,
+  .woocommerce input.button {
+    min-block-size: 45px !important;
+  }
+}

@@ -1,0 +1,544 @@
+/*
+ * Capture-driven mobile fixes.
+ *
+ * The first responsive pass was validated against an HTML fixture that already
+ * had a viewport meta tag. The live block theme did not, so real phones rendered
+ * a desktop layout viewport and then clipped/scaled it. This final layer also
+ * resets inherited desktop component styles that were visible in the captures.
+ */
+
+/* ---------- Real full-width block geometry ---------- */
+html,
+body {
+  inline-size: 100%;
+  max-inline-size: 100%;
+}
+html {
+  overflow-x: hidden;
+}
+body {
+  overflow-x: clip;
+}
+#wp-site-blocks,
+.wp-site-blocks,
+main,
+main.wp-block-group,
+.wp-block-post-content {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+#wp-site-blocks,
+.wp-site-blocks,
+main {
+  overflow-x: clip;
+}
+:where(.alignfull, .wp-block-group.alignfull) {
+  inline-size: 100% !important;
+  margin-inline: 0 !important;
+  max-inline-size: 100% !important;
+}
+:where(.alignwide, .wp-block-group.alignwide, .wp-block-columns.alignwide, .wp-block-query.alignwide, .woocommerce.alignwide) {
+  inline-size: min(100%, var(--wp--style--global--wide-size, 1320px)) !important;
+  margin-inline: auto !important;
+  max-inline-size: calc(100% - clamp(1.5rem, 5vw, 3rem)) !important;
+}
+:where(.wp-block-columns, .wp-block-column, .wp-block-group, .wp-block-query, .wp-block-post-template, .woocommerce, .woocommerce-page, form, fieldset) {
+  min-inline-size: 0;
+}
+:where(img, picture, svg, video, canvas, iframe) {
+  block-size: auto;
+  max-inline-size: 100% !important;
+}
+
+/* ---------- Header containment ---------- */
+.site-header-shell {
+  inline-size: 100%;
+  max-inline-size: 100%;
+}
+.pbs-header-inner {
+  inline-size: min(100%, var(--wp--style--global--wide-size, 1320px));
+  margin-inline: auto;
+  min-inline-size: 0;
+}
+.pbs-brand-lockup,
+.pbs-header-navigation,
+.pbs-header-actions,
+.pbs-header-actions .wp-block-shortcode {
+  min-inline-size: 0;
+}
+
+/* ---------- Sections must size to their content, not a device viewport ---------- */
+.pbs-section,
+#categories,
+#products,
+#services,
+#gallery,
+#articles,
+#reviews,
+#contact {
+  block-size: auto !important;
+  min-block-size: 0 !important;
+}
+.pbs-content-shell {
+  min-block-size: 0;
+}
+.pbs-section-heading,
+.pbs-section-heading > *,
+.pbs-section-heading h2,
+.pbs-section-heading p {
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+#gallery .has-text-align-center,
+#articles .wp-block-query-no-results,
+#articles .wp-block-query-no-results p {
+  margin-inline: auto;
+  max-inline-size: 42rem;
+}
+
+/* ---------- Media and cards seen overflowing in the captures ---------- */
+.pbs-hero-visual,
+.pbs-gallery-item,
+.pbs-contact-panel figure,
+.pbs-contact-panel figure img,
+.bsc-ba,
+.bsc-ba__media,
+.woocommerce-product-gallery,
+.woocommerce-product-gallery__wrapper,
+.woocommerce-product-gallery__image {
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+.pbs-gallery-item img,
+.pbs-contact-panel figure img,
+.bsc-ba__media img {
+  inline-size: 100% !important;
+}
+
+/* ---------- Commerce and account wrappers ---------- */
+body.woocommerce-page main,
+body.woocommerce-account main,
+body.woocommerce-cart main,
+body.woocommerce-checkout main,
+body.woocommerce-account .wp-block-post-content,
+body.woocommerce-cart .wp-block-post-content,
+body.woocommerce-checkout .wp-block-post-content {
+  inline-size: 100% !important;
+  max-inline-size: 100% !important;
+  min-inline-size: 0;
+}
+body.woocommerce-account .woocommerce,
+body.woocommerce-cart .woocommerce,
+body.woocommerce-checkout .woocommerce {
+  min-inline-size: 0;
+}
+body.woocommerce-account #customer_login,
+body.woocommerce-account #customer_login > *,
+body.woocommerce-account #customer_login form,
+body.woocommerce-account #customer_login .form-row,
+body.woocommerce-account #customer_login input,
+body.woocommerce-account #customer_login button {
+  max-inline-size: 100% !important;
+  min-inline-size: 0 !important;
+}
+
+/* ---------- Phone portrait ---------- */
+@media (max-width: 781px) {
+  body {
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  :where(.alignwide, .wp-block-group.alignwide, .wp-block-columns.alignwide, .wp-block-query.alignwide, .woocommerce.alignwide) {
+    inline-size: calc(100% - 1.5rem) !important;
+    max-inline-size: calc(100% - 1.5rem) !important;
+  }
+
+  /* Only the brand and menu trigger belong in the mobile header. The account
+     and cart already exist in the persistent bottom navigation. */
+  .pbs-header-inner {
+    align-items: center;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: .65rem;
+    inline-size: 100%;
+    min-block-size: 4.5rem;
+    padding: calc(.4rem + env(safe-area-inset-top)) .85rem .4rem;
+  }
+  .pbs-header-actions,
+  .pbs-header-inner > .pbs-header-actions {
+    display: none !important;
+  }
+  .pbs-brand-lockup {
+    flex: 1 1 auto;
+    gap: .55rem;
+    margin: 0 !important;
+    max-inline-size: calc(100% - 3.5rem) !important;
+    min-inline-size: 0;
+  }
+  .pbs-brand-lockup .wp-block-site-title,
+  .pbs-brand-lockup .wp-block-site-title a {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pbs-header-navigation {
+    flex: 0 0 auto;
+    margin: 0 !important;
+  }
+  .pbs-header-navigation .wp-block-navigation__responsive-container-open,
+  .pbs-header-navigation .wp-block-navigation__responsive-container-close {
+    block-size: 44px;
+    inline-size: 44px;
+    min-block-size: 44px;
+    min-inline-size: 44px;
+  }
+
+  /* The hero must be a true one-column flow. Inline flex-basis values from the
+     saved block pattern are explicitly neutralized. */
+  .pbs-hero {
+    block-size: auto !important;
+    inline-size: 100% !important;
+    min-block-size: 0 !important;
+    padding-block: 2.35rem 2.75rem !important;
+  }
+  .pbs-hero > .wp-block-columns,
+  .pbs-hero .wp-block-columns {
+    align-items: stretch !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2rem !important;
+    inline-size: calc(100% - 1.5rem) !important;
+    margin-inline: auto !important;
+    max-inline-size: calc(100% - 1.5rem) !important;
+  }
+  .pbs-hero-copy,
+  .pbs-hero-media {
+    flex: 0 1 auto !important;
+    inline-size: 100% !important;
+    margin: 0 !important;
+    max-inline-size: 100% !important;
+    min-inline-size: 0 !important;
+    transform: none !important;
+  }
+  .pbs-hero-copy > *,
+  .pbs-hero-copy > p,
+  .pbs-hero-copy .wp-block-buttons,
+  .pbs-hero-copy .wp-block-button,
+  .pbs-hero-copy .wp-block-button__link {
+    max-inline-size: 100% !important;
+  }
+  .pbs-hero h1 {
+    font-size: clamp(2rem, 9.5vw, 2.85rem) !important;
+    letter-spacing: -.035em;
+    line-height: 1.2;
+    margin-block: .55rem 1rem;
+    max-inline-size: 100% !important;
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+  .pbs-hero-copy > p.has-lead-font-size,
+  .pbs-hero-copy > p {
+    font-size: 1rem !important;
+    line-height: 1.9;
+  }
+  .pbs-hero-copy .wp-block-buttons {
+    align-items: stretch;
+    display: grid !important;
+    gap: .7rem;
+    grid-template-columns: 1fr;
+    inline-size: 100%;
+  }
+  .pbs-hero-copy .wp-block-button,
+  .pbs-hero-copy .wp-block-button__link {
+    inline-size: 100% !important;
+  }
+  .pbs-hero-proof {
+    inline-size: 100%;
+    margin-block-start: 1.5rem;
+  }
+  .pbs-hero-visual {
+    inline-size: min(100%, 31rem);
+    margin-inline: auto !important;
+  }
+  .pbs-hero-visual img {
+    inline-size: 100% !important;
+  }
+  .pbs-trust-strip {
+    inline-size: calc(100% - 1.5rem) !important;
+    margin: 2rem auto 0 !important;
+    max-inline-size: calc(100% - 1.5rem) !important;
+  }
+
+  /* Empty content should remain compact instead of resembling an empty screen. */
+  .pbs-section {
+    padding-block: 2.75rem !important;
+  }
+  .pbs-section-heading {
+    margin-block-end: 1.5rem !important;
+  }
+  .pbs-section-heading h2 {
+    font-size: clamp(1.75rem, 8vw, 2.35rem) !important;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+  .pbs-card-grid,
+  .pbs-gallery-grid,
+  .pbs-contact-panel,
+  .wp-block-post-template,
+  .bsc-ba-grid,
+  .bsc-category-grid {
+    inline-size: 100%;
+    max-inline-size: 100%;
+  }
+  .pbs-contact-panel,
+  .pbs-footer .wp-block-columns {
+    flex-direction: column !important;
+  }
+  .pbs-contact-panel > .wp-block-column,
+  .pbs-footer .wp-block-column {
+    flex-basis: auto !important;
+    inline-size: 100% !important;
+    max-inline-size: 100%;
+  }
+  .pbs-contact-panel figure img {
+    aspect-ratio: 16 / 10;
+    block-size: auto !important;
+    max-block-size: 22rem;
+    object-fit: cover;
+  }
+
+  /* Account/login forms are always one column on phones, regardless of saved
+     WooCommerce or block inline widths. */
+  body.woocommerce-account .woocommerce,
+  body.woocommerce-cart .woocommerce,
+  body.woocommerce-checkout .woocommerce {
+    inline-size: calc(100% - 1.5rem) !important;
+    margin-inline: auto !important;
+    max-inline-size: calc(100% - 1.5rem) !important;
+    padding-inline: 0 !important;
+  }
+  body.woocommerce-account #customer_login,
+  body.woocommerce-account.logged-in .woocommerce {
+    display: grid !important;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 1fr) !important;
+    inline-size: 100% !important;
+  }
+  body.woocommerce-account #customer_login .u-column1,
+  body.woocommerce-account #customer_login .u-column2,
+  body.woocommerce-account #customer_login .col-1,
+  body.woocommerce-account #customer_login .col-2 {
+    float: none !important;
+    inline-size: 100% !important;
+    margin: 0 !important;
+  }
+  body.woocommerce-account #customer_login form.login,
+  body.woocommerce-account #customer_login form.register {
+    inline-size: 100% !important;
+    margin: 0 !important;
+    padding: 1rem !important;
+  }
+  body.woocommerce-account #customer_login input.input-text,
+  body.woocommerce-account #customer_login button,
+  body.woocommerce-account #customer_login .button {
+    inline-size: 100% !important;
+  }
+
+  /* Reset every desktop cart-link declaration inside the dock. The captured
+     green pill and the partially missing fourth cell came from these inherited
+     desktop/floating styles. */
+  .bsc-mobile-dock {
+    direction: rtl;
+    inline-size: auto !important;
+    inset-inline: max(.55rem, env(safe-area-inset-left)) max(.55rem, env(safe-area-inset-right)) !important;
+    max-inline-size: none !important;
+  }
+  .bsc-mobile-dock > a,
+  .bsc-mobile-dock > a.bsc-cart-link,
+  .bsc-mobile-dock > a.bsc-cart-link--floating {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    block-size: auto;
+    box-shadow: none !important;
+    display: flex !important;
+    filter: none !important;
+    float: none !important;
+    inline-size: 100% !important;
+    inset: auto !important;
+    margin: 0 !important;
+    max-inline-size: 100% !important;
+    min-inline-size: 0 !important;
+    padding: .5rem .15rem !important;
+    position: relative !important;
+    transform: none !important;
+    white-space: normal !important;
+  }
+  .bsc-mobile-dock > a:hover,
+  .bsc-mobile-dock > a:focus-visible,
+  .bsc-mobile-dock > a[aria-current="page"] {
+    background: rgba(14, 143, 106, .22) !important;
+  }
+  .bsc-mobile-dock .bsc-cart-link__label {
+    display: block !important;
+  }
+  .bsc-mobile-dock .bsc-cart-link__count {
+    inset: .35rem auto auto calc(50% - 1.45rem) !important;
+    margin: 0 !important;
+    position: absolute !important;
+  }
+
+  .pbs-footer {
+    padding-block: 2.5rem calc(6.5rem + env(safe-area-inset-bottom)) !important;
+  }
+  .pbs-footer .wp-block-columns {
+    gap: 1.5rem !important;
+  }
+  .pbs-footer .pbs-brand-lockup {
+    max-inline-size: 100% !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .pbs-header-inner .wp-block-site-title {
+    display: none !important;
+  }
+  .pbs-brand-lockup {
+    max-inline-size: 3.25rem !important;
+  }
+  .pbs-brand-lockup .wp-block-site-logo,
+  .pbs-brand-lockup .custom-logo-link,
+  .pbs-brand-lockup .wp-block-site-logo img,
+  .pbs-brand-lockup img.custom-logo {
+    block-size: 3rem !important;
+    inline-size: 3rem !important;
+    max-block-size: 3rem !important;
+    max-inline-size: 3rem !important;
+  }
+}
+
+/* ---------- Short landscape phones and small tablets ---------- */
+@media (min-width: 782px) and (max-width: 1024px) and (max-height: 520px) {
+  .pbs-header-inner {
+    gap: .7rem;
+    min-block-size: 4rem;
+    padding-block: .35rem;
+  }
+  .pbs-brand-lockup {
+    flex: 0 0 auto;
+    max-inline-size: 3rem !important;
+  }
+  .pbs-brand-lockup .wp-block-site-title {
+    display: none !important;
+  }
+  .pbs-brand-lockup .wp-block-site-logo,
+  .pbs-brand-lockup .custom-logo-link,
+  .pbs-brand-lockup .wp-block-site-logo img,
+  .pbs-brand-lockup img.custom-logo {
+    block-size: 2.75rem !important;
+    inline-size: 2.75rem !important;
+    max-block-size: 2.75rem !important;
+    max-inline-size: 2.75rem !important;
+  }
+  .pbs-header-navigation {
+    flex: 1 1 auto;
+    margin-inline: 0 !important;
+    min-inline-size: 0;
+  }
+  .pbs-header-navigation .wp-block-navigation__container {
+    flex-wrap: nowrap !important;
+    gap: .05rem !important;
+    justify-content: center;
+  }
+  .pbs-header-navigation .wp-block-navigation-item__content {
+    font-size: .76rem;
+    min-block-size: 40px;
+    padding: .45rem .5rem;
+    white-space: nowrap;
+  }
+  .pbs-header-actions {
+    display: flex !important;
+    flex: 0 0 auto;
+    gap: .35rem;
+  }
+  .pbs-header-actions .bsc-account-link,
+  .pbs-header-actions .bsc-cart-link {
+    block-size: 44px;
+    inline-size: 44px;
+    min-block-size: 44px;
+    min-inline-size: 44px;
+    padding: .35rem !important;
+    position: relative;
+  }
+  .pbs-header-actions .bsc-account-link > span:last-child,
+  .pbs-header-actions .bsc-cart-link__label {
+    display: none !important;
+  }
+  .pbs-header-actions .bsc-cart-link__count {
+    block-size: 1.05rem;
+    font-size: .58rem;
+    inset: .15rem auto auto .05rem;
+    min-inline-size: 1.05rem;
+    padding: 0 .15rem;
+    position: absolute;
+  }
+
+  /* Preserve a side-by-side hero/contact composition in landscape instead of
+     stacking a near-square image to the full 915px width. */
+  .pbs-hero {
+    padding-block: 1.75rem 2rem !important;
+  }
+  .pbs-hero .wp-block-columns {
+    align-items: center !important;
+    flex-direction: row !important;
+    gap: 1.5rem !important;
+  }
+  .pbs-hero-copy {
+    flex-basis: 58% !important;
+    inline-size: 58% !important;
+  }
+  .pbs-hero-media {
+    flex-basis: 42% !important;
+    inline-size: 42% !important;
+  }
+  .pbs-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.25rem) !important;
+    line-height: 1.12;
+  }
+  .pbs-hero-copy > p {
+    font-size: .9rem !important;
+    line-height: 1.75;
+  }
+  .pbs-hero-proof {
+    display: none;
+  }
+  .pbs-hero-visual img {
+    aspect-ratio: 4 / 3;
+    max-block-size: 16rem;
+    object-fit: cover;
+  }
+  .pbs-trust-strip {
+    margin-block-start: 1.5rem;
+  }
+  .pbs-section {
+    padding-block: 2.25rem !important;
+  }
+  .pbs-contact-panel {
+    flex-direction: row !important;
+  }
+  .pbs-contact-panel > .wp-block-column:first-child {
+    flex-basis: 58% !important;
+  }
+  .pbs-contact-panel > .wp-block-column:last-child {
+    flex-basis: 42% !important;
+  }
+  .pbs-contact-panel figure img {
+    aspect-ratio: 4 / 3;
+    block-size: 100% !important;
+    max-block-size: 20rem;
+    object-fit: cover;
+  }
+}

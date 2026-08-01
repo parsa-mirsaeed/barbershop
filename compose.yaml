@@ -13,19 +13,25 @@ services:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
-      retries: 15
-    networks:
-      - internal
+      retries: 20
+    networks: [internal]
 
   wordpress:
-    image: wordpress:php8.2-apache
+    image: barbershop-wordpress:php8.2-apache
+    build:
+      context: .
+      dockerfile: docker/wordpress/Dockerfile
+      args:
+        WORDPRESS_IMAGE: wordpress:php8.2-apache
     restart: unless-stopped
     depends_on:
       database:
         condition: service_healthy
+    # Secure default equivalent: 127.0.0.1:${WP_PORT:-8080}:80
+    # tools/mobile-test.sh temporarily sets WP_BIND_ADDRESS=0.0.0.0 on a trusted LAN.
     ports:
-      - "127.0.0.1:${WP_PORT:-8080}:80"
-    environment:
+      - "${WP_BIND_ADDRESS:-127.0.0.1}:${WP_PORT:-8080}:80"
+    environment: &wordpress-environment
       WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
       WORDPRESS_DB_USER: ${DB_USER:-wordpress}
@@ -33,13 +39,30 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define( 'WP_ENVIRONMENT_TYPE', 'local' );
         define( 'DISALLOW_FILE_EDIT', true );
-        define( 'WP_DEBUG', false );
-    volumes:
+    volumes: &wordpress-volumes
       - wordpress_data:/var/www/html
       - ./theme/persian-barbershop:/var/www/html/wp-content/themes/persian-barbershop:ro
       - ./plugin/barbershop-core:/var/www/html/wp-content/plugins/barbershop-core:ro
-    networks:
-      - internal
+    networks: [internal]
+
+  wpcli:
+    image: barbershop-wordpress-cli:php8.2
+    build:
+      context: .
+      dockerfile: docker/wordpress/Dockerfile
+      args:
+        WORDPRESS_IMAGE: wordpress:cli-php8.2
+    entrypoint: ["wp"]
+    user: "33:33"
+    working_dir: /var/www/html
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      <<: *wordpress-environment
+      HOME: /tmp
+    volumes: *wordpress-volumes
+    networks: [internal]
 
 networks:
   internal:

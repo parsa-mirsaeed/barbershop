@@ -1,17 +1,13 @@
 # Customization
 
-The bundled Persian copy is deliberately generic. Replace bracketed placeholders through the Site Editor before launch.
+The source uses the exact visual palette requested for the design direction:
 
-## Identity
+- Navy: `#071A3D`
+- Emerald: `#0E8F6A`
+- White: `#FFFFFF`
 
-Set the site title, logo, and icon in WordPress. Do not hard-code a real person's name into reusable source files unless public attribution is intentional.
+All brand identity remains generic. Replace the logo through the Site Editor, edit homepage patterns visually, and manage WooCommerce products and categories in the standard admin interface.
 
-## Contact
+Product-category icons are stored as WordPress media attachment IDs in term metadata. A barber can replace each icon without code. If no custom icon is selected, a large accessible SVG fallback appears.
 
-Replace visible contact placeholders and the `tel:` target together. Add only the business information intended for public display.
-
-## Portfolio and reviews
-
-Use the **Before & After** post type supplied by Barbershop Core. Keep written consent records outside public WordPress content. Do not put customer names, phone numbers, social handles, appointment notes, or identifying metadata into portfolio posts.
-
-Replace review placeholders with genuine, approved testimonials. Avoid invented ratings or claims.
+Do not hard-code personal details into reusable source files. Keep real contact and business details in WordPress content/options and keep credentials outside Git.

@@ -1,75 +1,141 @@
-# Barbershop WordPress
+# Barbershop WordPress Storefront
 
-A generalized, Persian-first RTL WordPress block theme with WooCommerce styling, a privacy-aware before/after portfolio plugin, and a safe local Docker development stack.
+A generalized Persian-first RTL WordPress and WooCommerce storefront for a modern barbershop. It follows the supplied premium product-care direction with deep navy (`#071A3D`), emerald (`#0E8F6A`), true white, large editable icons, product-led imagery, smooth restrained motion, and a fully editable neutral identity.
 
-This repository is intentionally free of personal names, real contact information, customer data, merchant credentials, database dumps, production configuration, and private project history.
+## What is implemented
 
-## Included
+- **Short customer account:** first name, last name, email, a customer-chosen password, and optional phone. Address and city are not requested during registration.
+- **Dedicated barber role:** a least-privilege `barber` role can manage the operational store without receiving full administrator access.
+- **Barber dashboard:** brand name, logo, hero/contact/gallery images, contact details, services, reviews, category names/order/icons, products, orders, and consent-gated before/after entries are managed from one Persian dashboard—without the visual Site Editor.
+- **Separated staff/customer paths:** staff log in through `/wp-admin/` and are routed to the barber dashboard; customers use the storefront account page. Staff are prevented from using the customer account interface.
+- **Obvious cart access:** desktop header cart with live count and a four-item mobile bottom dock.
+- **Editable taxonomy:** hair/beard styling, hair care, skin care, and professional tools, with editable subcategories, order, descriptions, and media-library icons.
+- **Responsive purchase journey:** home sections, product discovery, product detail, cart, checkout, payment gateways, login/registration, account, orders, addresses, and the barber dashboard reflow from 320 CSS px through tablet, landscape, laptop, and desktop sizes.
+- **Modern Persian WooCommerce:** redesigned product archive, product detail, cart, checkout, account, authentication, forms, messages, buttons, empty states, labels, and mobile layouts.
+- **Vazirmatn:** the installer downloads the open-source variable font once and serves it locally; no runtime Google Fonts dependency.
+- **Layered security:** Wordfence Free is installed and activated, custom writes use nonce/capability checks, private commerce pages are not cached/indexed, user enumeration is restricted, browser/server headers are added, and production uses HTTPS.
+- **One-command setup:** local Docker installation and generic Caddy/HTTPS production deployment.
+- **Quality gates:** static policy checks, secret scan, PHP compatibility, backend unit tests, Playwright multi-viewport responsive/UI tests, release build, Compose validation, and a complete guest-visible Docker WordPress/WooCommerce/Wordfence smoke test.
 
-- `theme/persian-barbershop` — dark charcoal, warm-white, and muted-gold block theme.
-- `plugin/barbershop-core` — managed before/after entries, publication-consent checks, and configurable new-order notification recipient.
-- `compose.yaml` — local-only WordPress and MariaDB environment using values from `.env`.
-- `tools/validate.py` — structure and policy checks.
-- `tools/scan-secrets.py` — conservative repository secret scanner.
+No real person, business, address, phone, customer, merchant credential, payment credential, or copied brand identity is included.
 
-## Safe local setup
+## Local installation
 
-1. Copy the environment template:
+Requirements: Docker with Compose v2, Bash, and Python 3.
 
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+./tools/install.sh
+```
 
-2. Generate unique local passwords instead of reusing the examples:
+The installer creates `.env` when missing and automatically replaces empty or example local passwords with cryptographically random values. It preserves any real values you already supplied, finds a free localhost port, starts Docker Compose, installs WordPress, Persian language files when available, WooCommerce, Wordfence, the theme and plugin, editable categories, local Vazirmatn, and clean permalinks. It also disables WooCommerce Coming Soon mode, creates the barber role, enables explicit customer passwords, localizes commerce page titles, and removes WordPress seed content.
 
-   ```bash
-   openssl rand -hex 32
-   ```
+Open the URL printed by the installer and review the generated administrator password in `.env`. Then open Wordfence and finish firewall optimization, alert email, and administrator/barber 2FA.
 
-3. Put the generated values in `.env`.
-4. Start the stack:
+### Test the local site from a phone
 
-   ```bash
-   docker compose up -d
-   ```
+Keep the phone and computer on the same trusted private Wi-Fi or Ethernet network, then run:
 
-5. Open `http://127.0.0.1:8080` unless `WP_PORT` was changed.
-6. Complete WordPress setup, activate **Persian Barbershop**, then activate **Barbershop Core**.
-7. Install WooCommerce only when storefront functionality is required.
+```bash
+make mobile
+# equivalent: bash tools/mobile-test.sh
+```
 
-The port binds to `127.0.0.1` by default. This stack is a development baseline, not a production hosting recipe.
+The helper detects the computer's private LAN IPv4 address, recreates only the WordPress web container with an opt-in `0.0.0.0` development binding, updates the local WordPress URL, and prints the exact address to open on the phone, such as `http://192.168.1.25:8080`.
+
+When automatic detection chooses the wrong interface, pass the correct private address explicitly:
+
+```bash
+bash tools/mobile-test.sh 192.168.1.25
+```
+
+Do not forward this port through the router. Keep the operating-system firewall enabled and, if prompted, allow access only from the private/local network. Restore loopback-only access after testing:
+
+```bash
+make mobile-local
+# equivalent: bash tools/mobile-test.sh --local
+```
+
+Show the current published port and WordPress URL with:
+
+```bash
+make mobile-status
+```
+
+### Upgrade an existing local site
+
+After pulling a newer branch version, rerun the installer without deleting data:
+
+```bash
+./tools/install.sh
+```
+
+Use `--reset` only when a clean local reinstall is intended.
+
+### Re-cloned project or stale Docker volumes
+
+`docker compose down` stops and removes containers, but it deliberately keeps the named WordPress and MariaDB volumes. If the project is later re-cloned and a new `.env` is generated, those old volumes can still contain database credentials from the previous `.env`.
+
+For a clean local reinstall when no old local shop data is needed:
+
+```bash
+./tools/install.sh --reset
+```
+
+This fills any remaining example secrets, deletes only the Docker volumes belonging to this Compose project, and rebuilds the local site. To preserve the old database, restore the previous `.env` instead of using `--reset`.
+
+Useful checks:
+
+```bash
+docker compose ps -a
+docker compose logs --no-color database wordpress
+```
+
+## Production Docker deployment
+
+```bash
+cp .env.production.example .env.production
+# replace every example value and point DNS to the server
+./tools/deploy.sh
+```
+
+Caddy obtains HTTPS certificates. The repository is an engineering baseline, not a managed hosting/security service: production still needs encrypted off-server backups with tested restores, monitoring, authenticated email, a maintained Zarinpal/WooCommerce gateway, legal pages, and jurisdiction-specific review. See [deployment](docs/DEPLOYMENT.md) and [security hardening](docs/SECURITY-HARDENING.fa.md).
+
+## Daily editing
+
+Open **داشبورد آرایشگر** in WordPress admin:
+
+- identity and content → brand name, logo, hero image, contact image, gallery placeholders, service text, reviews, footer and contact values;
+- categories → primary category names, order and icons inline; subcategories and descriptions through the linked taxonomy screen;
+- products → images, title, price, inventory, attributes and publishing checklist;
+- orders → payment and fulfilment workflow;
+- before/after → paired images, service label and mandatory publication-consent confirmation;
+- security → Wordfence status and next actions.
+
+Persian instructions: [STORE-MANAGEMENT.fa.md](docs/STORE-MANAGEMENT.fa.md).
+
+## Authentication model
+
+WordPress authentication is shared across the public and administrative areas of the same site. The project therefore separates **routes and roles**, not browser cookies: administrators and barbers are redirected away from the customer account screen to the staff dashboard, while customer accounts cannot access administration. Use a private/incognito window or a separate browser profile when testing the customer experience while a staff session is open.
+
+## Tests
+
+```bash
+make test
+```
+
+The browser suite covers 320×800, 360×800, 390×844, 412×915, 768×1024, 1024×768, 1280×720, and 1440×900 viewports, plus text-spacing, reduced-motion, touch-target, orientation, overflow, and fixed-dock focus checks. The CI workflow also runs a complete Docker smoke test. It checks the logged-out homepage, explicit password registration, barber capabilities, Persian page names, Coming Soon state, raw-shortcode absence, WooCommerce/Wordfence activation and the locally hosted font. Build normal WordPress upload packages with:
+
+```bash
+make release
+```
+
+## Standards
+
+The project targets WCAG 2.2 AA, WordPress Coding Standards, OWASP ASVS 5.0.0 as a verification guide, WordPress/WooCommerce hardening guidance, and Core Web Vitals “good” thresholds. These are test targets rather than a claim of external certification. See [QUALITY-STANDARDS.md](docs/QUALITY-STANDARDS.md) and the implementation-level [responsive plan](docs/RESPONSIVE-PLAN.md).
 
 ## Required customization
 
-Replace every bracketed placeholder before deployment:
-
-- `[نام کسب‌وکار]`
-- `[نام آرایشگر]`
-- `[شماره تماس]`
-- `[نشانی]`
-- `[ساعت پاسخ‌گویی]`
-- `[توضیح خدمت]`
-- `[نظر واقعی مشتری با اجازه انتشار]`
-
-Use only permission-cleared portfolio images and genuine reviews with publication consent.
-
-## Validation
-
-```bash
-python3 tools/scan-secrets.py
-python3 tools/validate.py
-find theme plugin -name '*.php' -print0 | xargs -0 -n1 php -l
-node --check plugin/barbershop-core/assets/admin.js
-node --check plugin/barbershop-core/assets/frontend.js
-```
-
-## Production notes
-
-- Keep all credentials outside Git and rotate any value that was accidentally committed.
-- Use HTTPS, MFA, least privilege, encrypted backups, tested restores, secure cookies, rate limiting, and authenticated transactional email.
-- Use a maintained hosted-payment gateway plugin. Never collect card numbers, security codes, PINs, expiry dates, or gateway secrets in this theme or plugin.
-- Keep WordPress core, WooCommerce, plugins, PHP, the database, and the host patched.
-- Review privacy, consumer, tax, retention, accessibility, and payment obligations for the deployment jurisdiction.
+Replace every placeholder, neutral image, product content, contact value, legal text, shipping setting, email configuration, payment configuration, and consent-cleared portfolio/review item before launch.
 
 ## License
 

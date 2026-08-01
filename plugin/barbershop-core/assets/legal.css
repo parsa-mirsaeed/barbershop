@@ -1,0 +1,78 @@
+body.bsc-legal-document .wp-block-post-title {
+  font-size: clamp(2.1rem, 5vw, 4rem);
+  letter-spacing: -.045em;
+  line-height: 1.2;
+  margin-block: clamp(2.5rem, 7vw, 5rem) 1.5rem;
+}
+
+body.bsc-legal-document .wp-block-post-content {
+  margin-inline: auto;
+  max-inline-size: 58rem;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+}
+
+.bsc-legal-page {
+  background: linear-gradient(155deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .035));
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 1.6rem;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .2);
+  color: #d7e1e9;
+  line-height: 2;
+  margin-block-end: clamp(3rem, 8vw, 7rem);
+  padding: clamp(1.1rem, 4vw, 2.2rem);
+}
+
+.bsc-legal-page h2 {
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  color: #fff;
+  font-size: clamp(1.15rem, 3vw, 1.45rem);
+  margin: 1.5rem 0 .55rem;
+  padding-top: 1.25rem;
+}
+
+.bsc-legal-page h2:first-of-type {
+  border-top: 0;
+  margin-top: 1rem;
+  padding-top: 0;
+}
+
+.bsc-legal-page p,
+.bsc-legal-page li {
+  color: #c2cfda;
+}
+
+.bsc-legal-page ul {
+  display: grid;
+  gap: .45rem;
+  padding-inline-start: 1.25rem;
+}
+
+.bsc-legal-lead {
+  background: linear-gradient(135deg, rgba(14, 143, 106, .2), rgba(33, 210, 163, .07));
+  border: 1px solid rgba(82, 228, 189, .24);
+  border-radius: 1rem;
+  color: #eefbf7 !important;
+  font-size: 1rem;
+  margin-top: 0;
+  padding: 1rem 1.1rem;
+}
+
+.bsc-legal-admin-note {
+  background: rgba(255, 184, 77, .08);
+  border: 1px solid rgba(255, 184, 77, .22);
+  border-radius: 1rem;
+  color: #f5dfbd;
+  margin-top: 1.6rem;
+  padding: .9rem 1rem;
+}
+
+@media (max-width: 520px) {
+  body.bsc-legal-document .wp-block-post-title {
+    text-align: center;
+  }
+
+  .bsc-legal-page {
+    border-radius: 1.2rem;
+    padding: 1rem;
+  }
+}
