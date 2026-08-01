@@ -17,6 +17,7 @@ install_plugin() {
   wp plugin is-installed "$slug" >/dev/null 2>&1 || wp plugin install "$slug"
   wp plugin activate "$slug"
 }
+"${COMPOSE[@]}" build wordpress wpcli
 "${COMPOSE[@]}" up -d database wordpress caddy
 for _ in $(seq 1 60); do wp core version >/dev/null 2>&1 && break; sleep 3; done
 wp core version >/dev/null
@@ -27,16 +28,21 @@ wp option update home "https://${SITE_DOMAIN}"
 wp option update siteurl "https://${SITE_DOMAIN}"
 wp language core install fa_IR --activate >/dev/null 2>&1 || echo "Persian core language pack could not be installed; continuing with the current locale."
 install_plugin woocommerce
+install_plugin zarinpal-woocommerce-payment-gateway
+install_plugin gateland
 install_plugin wordfence
 wp language plugin install woocommerce fa_IR >/dev/null 2>&1 || echo "Persian WooCommerce language pack was unavailable; built-in Persian fallbacks remain active."
+wp language plugin install zarinpal-woocommerce-payment-gateway fa_IR >/dev/null 2>&1 || true
+wp language plugin install gateland fa_IR >/dev/null 2>&1 || true
 wp language plugin install wordfence fa_IR >/dev/null 2>&1 || true
 wp theme activate persian-barbershop
 wp plugin activate barbershop-core
 wp bsc setup
 wp bsc font install
-wp plugin auto-updates enable woocommerce wordfence >/dev/null 2>&1 || true
+wp plugin auto-updates enable woocommerce zarinpal-woocommerce-payment-gateway gateland wordfence >/dev/null 2>&1 || true
 wp rewrite structure '/%postname%/' --hard
 wp rewrite flush --hard
 printf 'Deployment started at https://%s\n' "$SITE_DOMAIN"
 printf 'Barber dashboard: https://%s/wp-admin/admin.php?page=bsc-store-setup\n' "$SITE_DOMAIN"
+printf 'Payment setup: configure and test ZarinPal or Gateland in sandbox/test mode before accepting live orders.\n'
 printf 'Required post-deploy step: finish Wordfence firewall optimization, alerts, and administrator/barber 2FA; then configure encrypted backups and a tested restore procedure.\n'
