@@ -40,7 +40,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertNotIn('name="website"', source)
         self.assertIn("شماره موبایل یا ایمیل", source)
         self.assertIn("bsc_authenticate_with_mobile", source)
-        self.assertIn("bsc_registration-consent", source)
+        self.assertIn("bsc-registration-consent", source)
         self.assertIn("woocommerce_registration_privacy_policy_text", source)
         self.assertIn("unset( $items['edit-address'], $items['downloads'] )", source)
         self.assertIn("woocommerce_registration_generate_username', 'yes'", setup)
@@ -75,7 +75,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
             self.assertIn(f"install_plugin {slug}", installer)
         self.assertIn("make iran-commerce", docs)
         self.assertIn("OTP", docs)
-        self.assertIn("rate", docs.lower())
+        self.assertIn("محدودیت تلاش", docs)
         self.assertIn("iran-commerce:", makefile)
         self.assertNotIn("install_plugin persian-woocommerce-sms", (ROOT / "tools" / "install.sh").read_text())
 
