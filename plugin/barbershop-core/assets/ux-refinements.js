@@ -6,6 +6,15 @@
   const header = document.querySelector('.site-header-shell');
   let scheduled = false;
 
+  const loginIdentity = document.querySelector(
+    'body.woocommerce-account:not(.logged-in) form.login input[name="username"]'
+  );
+  if (loginIdentity) {
+    loginIdentity.setAttribute('placeholder', 'شماره موبایل یا ایمیل');
+    loginIdentity.setAttribute('autocomplete', 'username');
+    loginIdentity.setAttribute('inputmode', 'email');
+  }
+
   const syncNavigationState = () => {
     scheduled = false;
     const openMenu = document.querySelector(
