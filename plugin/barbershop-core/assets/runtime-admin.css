@@ -1,0 +1,44 @@
+/* Final dashboard layout fixes after the earlier regression stylesheet. */
+body.rtl.toplevel_page_bsc-store-setup .bsc-barber-dashboard {
+  box-sizing: border-box;
+  max-width: none;
+  width: auto;
+}
+
+/* A fixed control could remain visible while a duplicated second form was being
+   edited, causing the wrong form to submit. Keep the action sticky inside its
+   own form so its fields and media IDs always match the submitted payload. */
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save {
+  bottom: 12px !important;
+  inset: auto !important;
+  margin: 0 !important;
+  max-width: none !important;
+  position: sticky !important;
+  width: 100% !important;
+}
+
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-form {
+  min-width: 0;
+  padding-bottom: 1rem;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-admin-panel,
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-field-grid,
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-media-grid,
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-category-grid {
+  min-width: 0;
+}
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-field-grid input,
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-field-grid textarea,
+body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-category input {
+  max-width: 100%;
+}
+
+@media (max-width: 782px) {
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  body.rtl.toplevel_page_bsc-store-setup .bsc-dashboard-save .button {
+    width: 100% !important;
+  }
+}
