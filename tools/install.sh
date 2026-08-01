@@ -163,7 +163,10 @@ install_plugin() {
   wp plugin activate "$slug"
 }
 
-# This is the command that starts the local Compose services.
+# Rebuild both PHP runtimes so payment plugins that use PDO (including
+# Gateland) cannot crash wp-admin, checkout, or WP-CLI with a missing driver.
+echo "Building the WordPress and WP-CLI payment-compatible PHP images."
+docker compose build wordpress wpcli
 docker compose up -d database wordpress
 
 printf 'Waiting for MariaDB credentials'
@@ -209,16 +212,21 @@ wp option update siteurl "$WP_URL"
 wp language core install fa_IR --activate >/dev/null 2>&1 || echo "Persian core language pack could not be installed; continuing with the current locale."
 wp rewrite structure '/%postname%/' --hard
 install_plugin woocommerce
+install_plugin zarinpal-woocommerce-payment-gateway
+install_plugin gateland
 install_plugin wordfence
 wp language plugin install woocommerce fa_IR >/dev/null 2>&1 || echo "Persian WooCommerce language pack was unavailable; built-in Persian fallbacks remain active."
+wp language plugin install zarinpal-woocommerce-payment-gateway fa_IR >/dev/null 2>&1 || true
+wp language plugin install gateland fa_IR >/dev/null 2>&1 || true
 wp language plugin install wordfence fa_IR >/dev/null 2>&1 || true
 wp theme activate persian-barbershop
 wp plugin activate barbershop-core
 wp bsc setup
 wp bsc font install
-wp plugin auto-updates enable woocommerce wordfence >/dev/null 2>&1 || true
+wp plugin auto-updates enable woocommerce zarinpal-woocommerce-payment-gateway gateland wordfence >/dev/null 2>&1 || true
 wp rewrite flush --hard
 
 printf '\nInstallation complete: %s\nAdmin: %s/wp-admin/\nBarber dashboard: %s/wp-admin/admin.php?page=bsc-store-setup\n' "$WP_URL" "$WP_URL" "$WP_URL"
 printf 'Customer login and registration: %s/my-account/\n' "$WP_URL"
+printf 'Payment setup: configure ZarinPal or Gateland under WooCommerce > Settings > Payments before accepting live orders.\n'
 printf 'Security next step: open Wordfence, finish firewall optimization, configure alerts, and enable 2FA for administrator and barber accounts.\n'
