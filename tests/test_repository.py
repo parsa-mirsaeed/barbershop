@@ -29,19 +29,55 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("wp bsc font install", installer)
         self.assertNotIn("fonts.googleapis.com", "\n".join(p.read_text(errors="ignore") for base in (THEME, PLUGIN) for p in base.rglob("*") if p.is_file()))
 
-    def test_registration_is_short_explicit_and_phone_optional(self) -> None:
+    def test_registration_is_short_explicit_and_uses_mobile_or_email(self) -> None:
         source = (PLUGIN / "includes" / "account.php").read_text()
         barber = (PLUGIN / "includes" / "barber.php").read_text()
         setup = (PLUGIN / "includes" / "setup.php").read_text()
-        self.assertIn("نام خانوادگی", source)
-        self.assertIn("(اختیاری)", source)
-        self.assertIn("unset( $items['edit-address'] )", source)
-        self.assertIn("bsc-registration-trap", source)
+        self.assertIn('name="full_name"', source)
+        self.assertIn("نام و نام خانوادگی", source)
+        self.assertNotIn('name="first_name"', source)
+        self.assertNotIn('name="last_name"', source)
+        self.assertNotIn('name="website"', source)
+        self.assertIn("شماره موبایل یا ایمیل", source)
+        self.assertIn("bsc_authenticate_with_mobile", source)
+        self.assertIn("bsc_registration-consent", source)
+        self.assertIn("woocommerce_registration_privacy_policy_text", source)
+        self.assertIn("unset( $items['edit-address'], $items['downloads'] )", source)
         self.assertIn("woocommerce_registration_generate_username', 'yes'", setup)
         self.assertIn("woocommerce_registration_generate_password', 'no'", setup)
         self.assertIn("حداقل ۱۲ نویسه", barber)
         self.assertIn("woocommerce_registration_errors", barber)
         self.assertTrue((PLUGIN / "assets" / "account.css").is_file())
+        self.assertTrue((PLUGIN / "assets" / "ux-refinements.css").is_file())
+
+    def test_persian_legal_pages_are_created_without_overwriting_edits(self) -> None:
+        legal = (PLUGIN / "includes" / "legal.php").read_text()
+        css = (PLUGIN / "assets" / "legal.css").read_text()
+        core = (PLUGIN / "barbershop-core.php").read_text()
+        for token in (
+            "privacy-policy",
+            "terms-and-conditions",
+            "سیاست حریم خصوصی",
+            "شرایط استفاده و خرید",
+            "wp_page_for_privacy_policy",
+            "woocommerce_terms_page_id",
+            "get_page_by_path",
+        ):
+            self.assertIn(token, legal)
+        self.assertIn("includes/legal.php", core)
+        self.assertIn(".bsc-legal-page", css)
+
+    def test_iranian_commerce_addons_are_opt_in_and_documented(self) -> None:
+        installer = (ROOT / "tools" / "install-iran-commerce.sh").read_text()
+        docs = (ROOT / "docs" / "SMS-AND-IRAN-COMMERCE.fa.md").read_text()
+        makefile = (ROOT / "Makefile").read_text()
+        for slug in ("persian-woocommerce-sms", "persian-woocommerce-shipping", "gateland"):
+            self.assertIn(f"install_plugin {slug}", installer)
+        self.assertIn("make iran-commerce", docs)
+        self.assertIn("OTP", docs)
+        self.assertIn("rate", docs.lower())
+        self.assertIn("iran-commerce:", makefile)
+        self.assertNotIn("install_plugin persian-woocommerce-sms", (ROOT / "tools" / "install.sh").read_text())
 
     def test_cart_is_obvious_on_desktop_and_mobile(self) -> None:
         header = (THEME / "parts" / "header.html").read_text()
