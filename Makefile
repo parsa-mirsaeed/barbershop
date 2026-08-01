@@ -1,4 +1,4 @@
-.PHONY: install reset up down logs test release deploy screenshot mobile mobile-local mobile-status
+.PHONY: install reset up down logs test release deploy screenshot mobile mobile-local mobile-status iran-commerce
 install:
 	./tools/install.sh
 reset:
@@ -15,6 +15,8 @@ mobile-local:
 	bash tools/mobile-test.sh --local
 mobile-status:
 	bash tools/mobile-test.sh --status
+iran-commerce:
+	bash tools/install-iran-commerce.sh
 test:
 	python3 tools/scan-secrets.py
 	python3 tools/validate.py
@@ -24,7 +26,8 @@ test:
 	node --check theme/persian-barbershop/assets/js/site.js
 	node --check plugin/barbershop-core/assets/admin.js
 	node --check plugin/barbershop-core/assets/frontend.js
-	bash -n tools/install.sh tools/deploy.sh tools/build-release.sh tools/mobile-test.sh
+	node --check plugin/barbershop-core/assets/ux-refinements.js
+	bash -n tools/install.sh tools/deploy.sh tools/build-release.sh tools/mobile-test.sh tools/install-iran-commerce.sh
 release:
 	./tools/build-release.sh
 deploy:
