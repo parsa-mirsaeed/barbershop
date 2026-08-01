@@ -17,19 +17,24 @@ required = [
     ROOT / ".env.example", ROOT / ".env.production.example", ROOT / "compose.yaml",
     ROOT / "compose.production.yaml", ROOT / "deploy" / "Caddyfile",
     ROOT / "requirements-test.txt", ROOT / "docs" / "QUALITY-STANDARDS.md",
-    ROOT / "docs" / "SECURITY-HARDENING.fa.md", ROOT / "tests" / "test_backend.php",
-    ROOT / "tests" / "test_ui.py", ROOT / "tests" / "fixtures" / "storefront.html",
-    ROOT / "tools" / "install.sh", ROOT / "tools" / "deploy.sh", ROOT / "tools" / "build-release.sh",
+    ROOT / "docs" / "SECURITY-HARDENING.fa.md", ROOT / "docs" / "SMS-AND-IRAN-COMMERCE.fa.md",
+    ROOT / "tests" / "test_backend.php", ROOT / "tests" / "test_ui.py",
+    ROOT / "tests" / "test_account_navigation_round4.py", ROOT / "tests" / "fixtures" / "storefront.html",
+    ROOT / "tools" / "install.sh", ROOT / "tools" / "install-iran-commerce.sh",
+    ROOT / "tools" / "deploy.sh", ROOT / "tools" / "build-release.sh",
     THEME / "style.css", THEME / "theme.json", THEME / "functions.php", THEME / "screenshot.png",
     THEME / "assets" / "js" / "site.js", THEME / "assets" / "css" / "woocommerce.css",
     THEME / "assets" / "images" / "brand-mark.svg", THEME / "assets" / "images" / "product-hero.svg",
     THEME / "parts" / "header.html", THEME / "templates" / "front-page.html",
     PLUGIN / "barbershop-core.php", PLUGIN / "includes" / "account.php",
+    PLUGIN / "includes" / "legal.php", PLUGIN / "includes" / "ux-refinements.php",
     PLUGIN / "includes" / "categories.php", PLUGIN / "includes" / "cart.php",
     PLUGIN / "includes" / "setup.php", PLUGIN / "includes" / "security.php",
     PLUGIN / "includes" / "woocommerce.php", PLUGIN / "includes" / "products.php",
     PLUGIN / "assets" / "admin.css", PLUGIN / "assets" / "admin.js",
     PLUGIN / "assets" / "frontend.css", PLUGIN / "assets" / "frontend.js",
+    PLUGIN / "assets" / "ux-refinements.css", PLUGIN / "assets" / "ux-refinements.js",
+    PLUGIN / "assets" / "legal.css",
 ]
 for path in required:
     if not path.is_file():
@@ -65,11 +70,33 @@ for token in ("SITE_DOMAIN", "FORCE_SSL_ADMIN", "DISALLOW_FILE_EDIT", "WP_DEBUG_
         errors.append(f"Production Docker setup token missing: {token}")
 
 account = (PLUGIN / "includes" / "account.php").read_text(encoding="utf-8")
-for token in ("woocommerce_register_form_start", "first_name", "last_name", "billing_phone", "woocommerce_created_customer", "edit-address", "woocommerce_account_menu_items", "bsc-registration-trap"):
+for token in (
+    "woocommerce_register_form_start", 'name="full_name"', "billing_phone",
+    "bsc_legal_consent", "woocommerce_created_customer", "bsc_authenticate_with_mobile",
+    "bsc_normalize_iran_mobile", "شماره موبایل یا ایمیل", "edit-address",
+    "woocommerce_account_menu_items", "bsc_render_account_overview",
+):
     if token not in account:
         errors.append(f"Minimal account implementation token missing: {token}")
-if "(اختیاری)" not in account:
-    errors.append("Phone field is not marked optional.")
+for removed in ('name="website"', 'name="first_name"', 'name="last_name"'):
+    if removed in account:
+        errors.append(f"Removed registration field returned: {removed}")
+if 'name="billing_phone"' not in account or "required aria-required=\"true\"" not in account:
+    errors.append("Registration mobile field must be explicitly required.")
+
+legal = (PLUGIN / "includes" / "legal.php").read_text(encoding="utf-8")
+for token in ("privacy-policy", "terms-and-conditions", "wp_page_for_privacy_policy", "woocommerce_terms_page_id", "سیاست حریم خصوصی", "شرایط استفاده و خرید"):
+    if token not in legal:
+        errors.append(f"Persian legal page token missing: {token}")
+
+ux_css = (PLUGIN / "assets" / "ux-refinements.css").read_text(encoding="utf-8")
+for token in ("100dvh", "position: fixed !important", ".bsc-account-overview", ".bsc-registration-consent", ".woocommerce-MyAccount-navigation"):
+    if token not in ux_css:
+        errors.append(f"Account/navigation refinement token missing: {token}")
+ux_js = (PLUGIN / "assets" / "ux-refinements.js").read_text(encoding="utf-8")
+for token in ("MutationObserver", "bsc-nav-open", "aria-modal", "شماره موبایل یا ایمیل"):
+    if token not in ux_js:
+        errors.append(f"Navigation refinement script token missing: {token}")
 
 setup = (PLUGIN / "includes" / "setup.php").read_text(encoding="utf-8")
 for label in ("حالت‌دهنده ریش و مو", "واکس و پماد مو", "تافت و اسپری مو", "مراقبت مو", "شامپو", "نرم‌کننده", "ماسک و ویتامینه مو", "مراقبت پوست", "اسکراب", "شوینده", "تونر", "اصلاح و ابزار حرفه‌ای"):
@@ -110,9 +137,17 @@ for script in (ROOT / "tools" / "install.sh", ROOT / "tools" / "deploy.sh"):
     for token in ("install_plugin woocommerce", "install_plugin wordfence", "wp theme activate persian-barbershop", "wp plugin activate barbershop-core", "wp bsc setup", "wp bsc font install"):
         if token not in content:
             errors.append(f"{script.name} is missing installer step: {token}")
+iran_installer = (ROOT / "tools" / "install-iran-commerce.sh").read_text(encoding="utf-8")
+for token in ("install_plugin persian-woocommerce-sms", "install_plugin persian-woocommerce-shipping", "install_plugin gateland", "OTP"):
+    if token not in iran_installer:
+        errors.append(f"Iranian commerce installer token missing: {token}")
 
 workflow = (ROOT / ".github" / "workflows" / "quality.yml").read_text(encoding="utf-8")
-for token in ("playwright install", "tests/test_backend.php", "docker-smoke", "plugin is-active wordfence", "bsc font install"):
+for token in (
+    "playwright install", "tests/test_backend.php", "docker-smoke", "plugin is-active wordfence",
+    "plugin is-active persian-woocommerce-sms", "plugin is-active persian-woocommerce-shipping",
+    "ux-refinements.css", "bsc_legal_consent", "bsc font install",
+):
     if token not in workflow:
         errors.append(f"Quality workflow token missing: {token}")
 if "Upload source snapshot" in workflow:
@@ -159,4 +194,4 @@ if errors:
     for error in errors:
         print(f"- {error}")
     sys.exit(1)
-print(f"Validation passed: design, accessibility, accounts, cart, categories, security, installers, CI, and {placeholder_count} placeholders verified.")
+print(f"Validation passed: design, accessibility, accounts, legal pages, mobile navigation, Iranian commerce, security, installers, CI, and {placeholder_count} placeholders verified.")
