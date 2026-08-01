@@ -41,6 +41,7 @@ jobs:
           node --check theme/persian-barbershop/assets/js/site.js
           node --check plugin/barbershop-core/assets/admin.js
           node --check plugin/barbershop-core/assets/frontend.js
+          node --check plugin/barbershop-core/assets/qa-admin.js
           bash -n tools/install.sh tools/deploy.sh tools/build-release.sh
       - name: Docker configuration checks
         run: |
@@ -73,7 +74,7 @@ jobs:
 
   docker-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Prepare example environment exactly like a fresh clone
@@ -84,7 +85,7 @@ jobs:
         run: docker run -d --name occupied-development-port -p 127.0.0.1:8080:80 nginx:alpine
       - name: Reset and install complete WordPress storefront
         run: ./tools/install.sh --reset
-      - name: Verify guest storefront, barber role, customer auth, Persian UI, and runtime setup
+      - name: Verify gateways, dashboard, guest storefront, customer auth, Persian UI, and runtime setup
         run: |
           set -Eeuo pipefail
           ! grep -q 'replace-with-' .env
@@ -95,8 +96,12 @@ jobs:
           test "$WP_PORT" = 8081
           WP_URL="${WP_URL:-http://127.0.0.1:${WP_PORT}}"
           WP='docker compose run --rm wpcli --allow-root'
+          docker compose exec -T wordpress php -r 'exit(extension_loaded("pdo_mysql") ? 0 : 1);'
+          $WP eval 'exit( extension_loaded("pdo_mysql") ? 0 : 1 );'
           $WP theme is-active persian-barbershop
           $WP plugin is-active woocommerce
+          $WP plugin is-active zarinpal-woocommerce-payment-gateway
+          $WP plugin is-active gateland
           $WP plugin is-active wordfence
           $WP plugin is-active barbershop-core
           $WP bsc font install
@@ -107,14 +112,22 @@ jobs:
           test "$($WP option get woocommerce_store_pages_only)" = no
           test "$($WP term list product_cat --parent=0 --format=count)" -ge 4
           test "$($WP post get "$($WP option get woocommerce_myaccount_page_id)" --field=post_title)" = 'حساب کاربری'
+          test "$($WP post get "$($WP option get woocommerce_cart_page_id)" --field=post_content)" = '[woocommerce_cart]'
+          test "$($WP post get "$($WP option get woocommerce_checkout_page_id)" --field=post_content)" = '[woocommerce_checkout]'
           $WP eval '$role = get_role("barber"); exit( $role && $role->has_cap("manage_barbershop") && $role->has_cap("manage_woocommerce") && $role->has_cap("edit_products") ? 0 : 1 );'
           $WP eval 'exit( shortcode_exists("bsc_product_categories") && shortcode_exists("bsc_cart_link") && shortcode_exists("bsc_account_link") && shortcode_exists("barbershop_before_after_gallery") ? 0 : 1 );'
+          $WP eval 'exit( function_exists("hidden") && " hidden=\"hidden\"" === hidden( true, true, false ) ? 0 : 1 );'
+          $WP eval 'wp_set_current_user(1); ob_start(); bsc_render_media_control("logo_id", "لوگوی برند", 0); $html = ob_get_clean(); exit( false !== strpos( $html, "data-bsc-media-target" ) ? 0 : 1 );'
+          $WP eval 'wp_set_current_user(1); ob_start(); bsc_render_barber_dashboard(); $html = ob_get_clean(); exit( false !== strpos( $html, "ذخیره همه تغییرات" ) ? 0 : 1 );'
+          $WP eval 'ob_start(); bsc_qa_cart_gateway_summary(); $html = ob_get_clean(); exit( false !== strpos( $html, "روش‌های پرداخت فعال" ) ? 0 : 1 );'
           $WP eval 'exit( get_page_by_path("hello-world", OBJECT, "post") ? 1 : 0 );'
           $WP eval 'exit( is_readable( wp_upload_dir()["basedir"] . "/barbershop-fonts/Vazirmatn-Variable.woff2" ) ? 0 : 1 );'
           home_html="$(mktemp)"
           account_html="$(mktemp)"
+          cart_html="$(mktemp)"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/" > "$home_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/my-account/" > "$account_html"
+          curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/cart/" > "$cart_html"
           grep -Fq 'bsc-category-grid' "$home_html"
           grep -Fq 'قدرت طبیعت' "$home_html"
           ! grep -Fq '[products ' "$home_html"
@@ -124,7 +137,11 @@ jobs:
           ! grep -Fqi 'Coming soon' "$home_html"
           grep -Fq 'name="password"' "$account_html"
           grep -Fq 'ساخت حساب' "$account_html"
-          rm -f "$home_html" "$account_html"
+          grep -Fq 'سبد خرید شما خالی است' "$cart_html"
+          ! grep -Fq 'Your cart is currently empty' "$cart_html"
+          ! grep -Fq 'New in store' "$cart_html"
+          ! docker compose logs --no-color wordpress | grep -E 'PHP Fatal error|Uncaught PDOException|Call to undefined function hidden'
+          rm -f "$home_html" "$account_html" "$cart_html"
       - name: Container logs
         if: failure()
         run: docker compose logs --no-color
