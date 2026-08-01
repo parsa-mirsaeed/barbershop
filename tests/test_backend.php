@@ -20,6 +20,9 @@ function bsc_test_assert_same( $expected, $actual, $message ) {
 
 bsc_test_assert_same( '0912 123 4567', bsc_normalize_phone( ' ۰۹۱۲ ۱۲۳ ۴۵۶۷ ' ), 'Persian phone digits are normalized.' );
 bsc_test_assert_same( '+989121234567', bsc_normalize_phone( '+٩٨٩١٢١٢٣٤٥٦٧' ), 'Arabic-Indic phone digits are normalized.' );
+bsc_test_assert_same( '09121234567', bsc_normalize_iran_mobile( '+989121234567' ), 'International Iranian mobile numbers are normalized.' );
+bsc_test_assert_same( '09121234567', bsc_normalize_iran_mobile( '0098 912 123 4567' ), '0098 Iranian mobile numbers are normalized.' );
+bsc_test_assert_same( '09121234567', bsc_normalize_iran_mobile( '۹۱۲۱۲۳۴۵۶۷' ), 'Ten-digit Persian mobile numbers receive the domestic zero.' );
 bsc_test_assert_same( 'افزودن به سبد خرید', bsc_translate_woocommerce_text( 'Add to cart', 'Add to cart', 'woocommerce' ), 'WooCommerce purchase text is translated.' );
 bsc_test_assert_same( 'Other', bsc_translate_woocommerce_text( 'Other', 'Other', 'default' ), 'Other text domains are untouched.' );
 $menu = bsc_account_menu_items( array( 'dashboard' => 'Dashboard', 'orders' => 'Orders', 'edit-address' => 'Addresses', 'downloads' => 'Downloads' ) );
