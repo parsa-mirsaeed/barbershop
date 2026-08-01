@@ -222,6 +222,10 @@ wp language plugin install wordfence fa_IR >/dev/null 2>&1 || true
 wp theme activate persian-barbershop
 wp plugin activate barbershop-core
 wp bsc setup
+# Gateland's own installer only consumes its activation marker on selected
+# wp-admin screens. Run its idempotent official table creator during every
+# install/upgrade so opening the Gateland dashboard can never precede schema.
+wp bsc gateland repair
 wp bsc font install
 wp plugin auto-updates enable woocommerce wordfence >/dev/null 2>&1 || true
 wp plugin auto-updates enable zarinpal-woocommerce-payment-gateway gateland >/dev/null 2>&1 || true
