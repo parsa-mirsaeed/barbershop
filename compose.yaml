@@ -27,8 +27,10 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    # Secure default equivalent: 127.0.0.1:${WP_PORT:-8080}:80
+    # tools/mobile-test.sh temporarily sets WP_BIND_ADDRESS=0.0.0.0 on a trusted LAN.
     ports:
-      - "127.0.0.1:${WP_PORT:-8080}:80"
+      - "${WP_BIND_ADDRESS:-127.0.0.1}:${WP_PORT:-8080}:80"
     environment: &wordpress-environment
       WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_NAME: ${DB_NAME:-wordpress}
