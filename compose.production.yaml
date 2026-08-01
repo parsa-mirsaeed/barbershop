@@ -17,7 +17,12 @@ services:
     networks: [internal]
 
   wordpress:
-    image: wordpress:php8.2-apache
+    image: barbershop-wordpress:php8.2-apache
+    build:
+      context: .
+      dockerfile: docker/wordpress/Dockerfile
+      args:
+        WORDPRESS_IMAGE: wordpress:php8.2-apache
     restart: unless-stopped
     depends_on:
       database:
@@ -44,7 +49,12 @@ services:
     networks: [internal]
 
   wpcli:
-    image: wordpress:cli-php8.2
+    image: barbershop-wordpress-cli:php8.2
+    build:
+      context: .
+      dockerfile: docker/wordpress/Dockerfile
+      args:
+        WORDPRESS_IMAGE: wordpress:cli-php8.2
     entrypoint: ["wp"]
     user: "33:33"
     working_dir: /var/www/html
