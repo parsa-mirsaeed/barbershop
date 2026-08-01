@@ -1,0 +1,86 @@
+/* Live screenshot repairs loaded after the theme and WooCommerce styles. */
+
+/* Inline navigation SVGs must remain icons even if a cache or block template
+   renders before a component stylesheet. */
+.bsc-cart-link__icon,
+.bsc-account-link__icon,
+.bsc-mobile-dock__icon {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 1.4rem;
+  height: 1.4rem !important;
+  justify-content: center;
+  max-height: 1.4rem;
+  max-width: 1.4rem;
+  overflow: hidden;
+  width: 1.4rem !important;
+}
+.bsc-cart-link__icon svg,
+.bsc-account-link__icon svg,
+.bsc-mobile-dock__icon svg {
+  display: block;
+  height: 1.4rem !important;
+  max-height: 1.4rem !important;
+  max-width: 1.4rem !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  width: 1.4rem !important;
+}
+
+/* The dock is hidden on desktop even if another stylesheet applies generic nav
+   display rules. It becomes a compact four-item dock only on small screens. */
+.bsc-mobile-dock {
+  display: none !important;
+}
+@media (max-width: 781px) {
+  .bsc-mobile-dock {
+    display: grid !important;
+  }
+}
+
+/* auto-fit lets a single product stretch across the whole white section.
+   Fixed maximum tracks keep one or two products at a normal retail-card size. */
+.pbs-products-section .woocommerce ul.products,
+.pbs-products-section .woocommerce-page ul.products {
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 18rem)) !important;
+  justify-content: center;
+}
+.pbs-products-section .woocommerce ul.products li.product,
+.pbs-products-section .woocommerce-page ul.products li.product {
+  max-width: 18rem;
+  width: 100% !important;
+}
+.pbs-products-section .woocommerce ul.products li.product img {
+  aspect-ratio: 1 / 1;
+  max-height: 18rem;
+  object-fit: cover;
+}
+
+/* Defensive bounds for the default/custom logo in repeated block-template
+   locations such as header and footer. */
+.pbs-brand-lockup .wp-block-site-logo,
+.pbs-brand-lockup .custom-logo-link {
+  flex: 0 0 auto;
+  max-height: 4.5rem;
+  max-width: 4.5rem;
+}
+.pbs-brand-lockup .wp-block-site-logo img,
+.pbs-brand-lockup img.custom-logo {
+  height: 4.5rem !important;
+  max-height: 4.5rem !important;
+  max-width: 4.5rem !important;
+  object-fit: contain;
+  width: 4.5rem !important;
+}
+
+@media (max-width: 520px) {
+  .pbs-products-section .woocommerce ul.products,
+  .pbs-products-section .woocommerce-page ul.products {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .pbs-products-section .woocommerce ul.products li.product,
+  .pbs-products-section .woocommerce-page ul.products li.product {
+    margin-inline: auto !important;
+    max-width: 20rem;
+  }
+}
