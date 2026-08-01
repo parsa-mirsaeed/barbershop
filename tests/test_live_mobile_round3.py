@@ -18,6 +18,17 @@ LIVE_CSS = PLUGIN / "assets" / "mobile-live-fixes.css"
 def live_fixture_html() -> str:
     html = rendered_fixture_html()
     css = LIVE_CSS.read_text(encoding="utf-8")
+    footer = """
+    <footer class="wp-block-group alignfull pbs-footer">
+      <div class="wp-block-columns alignwide">
+        <div class="wp-block-column" style="flex-basis:45%"><div class="pbs-brand-lockup"><span class="wp-block-site-logo"></span><p class="wp-block-site-title">فروشگاه نمونه</p></div><p>توضیح کوتاه برند</p></div>
+        <div class="wp-block-column"><h3>دسترسی سریع</h3><p>فروشگاه</p><p>حساب کاربری</p></div>
+        <div class="wp-block-column"><h3>اطلاعات تماس</h3><p>شماره و ساعت پاسخ‌گویی</p></div>
+      </div>
+    </footer>
+    """
+    if 'class="wp-block-group alignfull pbs-footer"' not in html:
+        html = html.replace("</body>", footer + "</body>")
     return html.replace("</head>", f"<style>{css}</style></head>")
 
 
