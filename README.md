@@ -10,11 +10,12 @@ A generalized Persian-first RTL WordPress and WooCommerce storefront for a moder
 - **Separated staff/customer paths:** staff log in through `/wp-admin/` and are routed to the barber dashboard; customers use the storefront account page. Staff are prevented from using the customer account interface.
 - **Obvious cart access:** desktop header cart with live count and a four-item mobile bottom dock.
 - **Editable taxonomy:** hair/beard styling, hair care, skin care, and professional tools, with editable subcategories, order, descriptions, and media-library icons.
+- **Responsive purchase journey:** home sections, product discovery, product detail, cart, checkout, payment gateways, login/registration, account, orders, addresses, and the barber dashboard reflow from 320 CSS px through tablet, landscape, laptop, and desktop sizes.
 - **Modern Persian WooCommerce:** redesigned product archive, product detail, cart, checkout, account, authentication, forms, messages, buttons, empty states, labels, and mobile layouts.
 - **Vazirmatn:** the installer downloads the open-source variable font once and serves it locally; no runtime Google Fonts dependency.
 - **Layered security:** Wordfence Free is installed and activated, custom writes use nonce/capability checks, private commerce pages are not cached/indexed, user enumeration is restricted, browser/server headers are added, and production uses HTTPS.
 - **One-command setup:** local Docker installation and generic Caddy/HTTPS production deployment.
-- **Quality gates:** static policy checks, secret scan, PHP compatibility, backend unit tests, Playwright desktop/mobile UI tests, release build, Compose validation, and a complete guest-visible Docker WordPress/WooCommerce/Wordfence smoke test.
+- **Quality gates:** static policy checks, secret scan, PHP compatibility, backend unit tests, Playwright multi-viewport responsive/UI tests, release build, Compose validation, and a complete guest-visible Docker WordPress/WooCommerce/Wordfence smoke test.
 
 No real person, business, address, phone, customer, merchant credential, payment credential, or copied brand identity is included.
 
@@ -29,6 +30,36 @@ Requirements: Docker with Compose v2, Bash, and Python 3.
 The installer creates `.env` when missing and automatically replaces empty or example local passwords with cryptographically random values. It preserves any real values you already supplied, finds a free localhost port, starts Docker Compose, installs WordPress, Persian language files when available, WooCommerce, Wordfence, the theme and plugin, editable categories, local Vazirmatn, and clean permalinks. It also disables WooCommerce Coming Soon mode, creates the barber role, enables explicit customer passwords, localizes commerce page titles, and removes WordPress seed content.
 
 Open the URL printed by the installer and review the generated administrator password in `.env`. Then open Wordfence and finish firewall optimization, alert email, and administrator/barber 2FA.
+
+### Test the local site from a phone
+
+Keep the phone and computer on the same trusted private Wi-Fi or Ethernet network, then run:
+
+```bash
+make mobile
+# equivalent: bash tools/mobile-test.sh
+```
+
+The helper detects the computer's private LAN IPv4 address, recreates only the WordPress web container with an opt-in `0.0.0.0` development binding, updates the local WordPress URL, and prints the exact address to open on the phone, such as `http://192.168.1.25:8080`.
+
+When automatic detection chooses the wrong interface, pass the correct private address explicitly:
+
+```bash
+bash tools/mobile-test.sh 192.168.1.25
+```
+
+Do not forward this port through the router. Keep the operating-system firewall enabled and, if prompted, allow access only from the private/local network. Restore loopback-only access after testing:
+
+```bash
+make mobile-local
+# equivalent: bash tools/mobile-test.sh --local
+```
+
+Show the current published port and WordPress URL with:
+
+```bash
+make mobile-status
+```
 
 ### Upgrade an existing local site
 
@@ -92,7 +123,7 @@ WordPress authentication is shared across the public and administrative areas of
 make test
 ```
 
-The CI workflow also installs Chromium and runs a full Docker smoke test. It checks the logged-out homepage, explicit password registration, barber capabilities, Persian page names, Coming Soon state, raw-shortcode absence, WooCommerce/Wordfence activation and the locally hosted font. Build normal WordPress upload packages with:
+The browser suite covers 320×800, 360×800, 390×844, 412×915, 768×1024, 1024×768, 1280×720, and 1440×900 viewports, plus text-spacing, reduced-motion, touch-target, orientation, overflow, and fixed-dock focus checks. The CI workflow also runs a complete Docker smoke test. It checks the logged-out homepage, explicit password registration, barber capabilities, Persian page names, Coming Soon state, raw-shortcode absence, WooCommerce/Wordfence activation and the locally hosted font. Build normal WordPress upload packages with:
 
 ```bash
 make release
@@ -100,7 +131,7 @@ make release
 
 ## Standards
 
-The project targets WCAG 2.2 AA, WordPress Coding Standards, OWASP ASVS 5.0.0 as a verification guide, WordPress/WooCommerce hardening guidance, and Core Web Vitals “good” thresholds. These are test targets rather than a claim of external certification. See [QUALITY-STANDARDS.md](docs/QUALITY-STANDARDS.md).
+The project targets WCAG 2.2 AA, WordPress Coding Standards, OWASP ASVS 5.0.0 as a verification guide, WordPress/WooCommerce hardening guidance, and Core Web Vitals “good” thresholds. These are test targets rather than a claim of external certification. See [QUALITY-STANDARDS.md](docs/QUALITY-STANDARDS.md) and the implementation-level [responsive plan](docs/RESPONSIVE-PLAN.md).
 
 ## Required customization
 
