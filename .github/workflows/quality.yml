@@ -41,8 +41,9 @@ jobs:
           node --check theme/persian-barbershop/assets/js/site.js
           node --check plugin/barbershop-core/assets/admin.js
           node --check plugin/barbershop-core/assets/frontend.js
+          node --check plugin/barbershop-core/assets/ux-refinements.js
           node --check plugin/barbershop-core/assets/qa-admin.js
-          bash -n tools/install.sh tools/deploy.sh tools/build-release.sh tools/mobile-test.sh
+          bash -n tools/install.sh tools/deploy.sh tools/build-release.sh tools/mobile-test.sh tools/install-iran-commerce.sh
           bash tools/mobile-test.sh --help >/dev/null
       - name: Docker configuration checks
         run: |
@@ -86,8 +87,10 @@ jobs:
       - name: Occupy the default development port
         run: docker run -d --name occupied-development-port -p 127.0.0.1:8080:80 nginx:alpine
       - name: Reset and install complete WordPress storefront
-        run: ./tools/install.sh --reset
-      - name: Verify gateways, dashboard, guest storefront, customer auth, Persian UI, responsiveness, and runtime setup
+        run: |
+          ./tools/install.sh --reset
+          bash tools/install-iran-commerce.sh
+      - name: Verify gateways, messaging, shipping, account UX, Persian UI, responsiveness, and runtime setup
         run: |
           set -Eeuo pipefail
           ! grep -q 'replace-with-' .env
@@ -107,6 +110,8 @@ jobs:
           $WP plugin is-active gateland
           $WP plugin is-active wordfence
           $WP plugin is-active barbershop-core
+          $WP plugin is-active persian-woocommerce-sms
+          $WP plugin is-active persian-woocommerce-shipping
           $WP bsc font install
           test "$($WP option get WPLANG)" = fa_IR
           test "$($WP option get woocommerce_registration_generate_username)" = yes
@@ -117,9 +122,12 @@ jobs:
           test "$($WP post get "$($WP option get woocommerce_myaccount_page_id)" --field=post_title)" = 'حساب کاربری'
           test "$($WP post get "$($WP option get woocommerce_cart_page_id)" --field=post_content)" = '[woocommerce_cart]'
           test "$($WP post get "$($WP option get woocommerce_checkout_page_id)" --field=post_content)" = '[woocommerce_checkout]'
+          test "$($WP post get "$($WP option get wp_page_for_privacy_policy)" --field=post_title)" = 'سیاست حریم خصوصی'
+          test "$($WP post get "$($WP option get woocommerce_terms_page_id)" --field=post_title)" = 'شرایط استفاده و خرید'
           $WP eval '$role = get_role("barber"); exit( $role && $role->has_cap("manage_barbershop") && $role->has_cap("manage_woocommerce") && $role->has_cap("edit_products") ? 0 : 1 );'
           $WP eval 'exit( shortcode_exists("bsc_product_categories") && shortcode_exists("bsc_cart_link") && shortcode_exists("bsc_account_link") && shortcode_exists("barbershop_before_after_gallery") ? 0 : 1 );'
           $WP eval 'exit( function_exists("hidden") && " hidden=\"hidden\"" === hidden( true, true, false ) ? 0 : 1 );'
+          $WP eval 'exit( "09121234567" === bsc_normalize_iran_mobile("+989121234567") ? 0 : 1 );'
           $WP eval 'wp_set_current_user(1); ob_start(); bsc_render_media_control("logo_id", "لوگوی برند", 0); $html = ob_get_clean(); exit( false !== strpos( $html, "data-bsc-media-target" ) ? 0 : 1 );'
           $WP eval 'wp_set_current_user(1); do_action("admin_menu"); ob_start(); do_action("toplevel_page_bsc-store-setup"); $html = ob_get_clean(); exit( 1 === substr_count($html, "مدیریت کامل فروشگاه، بدون ویرایشگر ظاهری") && 0 === substr_count($html, "فروشگاه حرفه‌ای، مدیریت ساده") ? 0 : 1 );'
           $WP eval 'ob_start(); bsc_qa_cart_gateway_summary(); $html = ob_get_clean(); exit( false !== strpos( $html, "روش‌های پرداخت فعال" ) ? 0 : 1 );'
@@ -129,17 +137,22 @@ jobs:
           $WP eval 'exit( bsc_runtime_gateland_schema_ready() ? 0 : 1 );'
           $WP eval 'exit( get_page_by_path("hello-world", OBJECT, "post") ? 1 : 0 );'
           $WP eval 'exit( is_readable( wp_upload_dir()["basedir"] . "/barbershop-fonts/Vazirmatn-Variable.woff2" ) ? 0 : 1 );'
-          $WP eval '$source = "Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our privacy policy."; exit( false !== strpos( translate($source, "woocommerce"), "اطلاعات شخصی شما" ) ? 0 : 1 );'
           home_html="$(mktemp)"
           account_html="$(mktemp)"
           cart_html="$(mktemp)"
+          privacy_html="$(mktemp)"
+          terms_html="$(mktemp)"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/" > "$home_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/my-account/" > "$account_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/cart/" > "$cart_html"
+          curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/privacy-policy/" > "$privacy_html"
+          curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/terms-and-conditions/" > "$terms_html"
           grep -Fq 'bsc-category-grid' "$home_html"
           grep -Fq 'قدرت طبیعت' "$home_html"
           grep -Fq 'runtime-storefront.css' "$home_html"
           grep -Fq 'mobile-live-fixes.css' "$home_html"
+          grep -Fq 'ux-refinements.css' "$home_html"
+          grep -Fq 'ux-refinements.js' "$home_html"
           grep -Fq '3.3.1' "$home_html"
           grep -Fq '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' "$home_html"
           ! grep -Fq '[products ' "$home_html"
@@ -147,21 +160,33 @@ jobs:
           ! grep -Fq '[barbershop_before_after_gallery' "$home_html"
           ! grep -Fqi 'Pardon our dust' "$home_html"
           ! grep -Fqi 'Coming soon' "$home_html"
+          grep -Fq 'name="full_name"' "$account_html"
+          grep -Fq 'name="billing_phone"' "$account_html"
           grep -Fq 'name="password"' "$account_html"
+          grep -Fq 'bsc_legal_consent' "$account_html"
+          grep -Fq 'شماره موبایل یا ایمیل' "$account_html"
           grep -Fq 'ساخت حساب' "$account_html"
-          grep -Fq 'mobile-live-fixes.css' "$account_html"
+          grep -Fq 'ux-refinements.css' "$account_html"
+          ! grep -Fq 'name="website"' "$account_html"
+          ! grep -Fq 'Your personal data will be used' "$account_html"
           grep -Fq 'سبد خرید شما خالی است' "$cart_html"
           grep -Fq 'runtime-storefront.css' "$cart_html"
           grep -Fq 'mobile-live-fixes.css' "$cart_html"
           ! grep -Fq 'Your cart is currently empty' "$cart_html"
           ! grep -Fq 'New in store' "$cart_html"
+          grep -Fq 'چه اطلاعاتی دریافت می‌شود؟' "$privacy_html"
+          grep -Fq 'اشتراک‌گذاری محدود اطلاعات' "$privacy_html"
+          grep -Fq 'ثبت و پذیرش سفارش' "$terms_html"
+          grep -Fq 'لغو، انصراف و مرجوعی' "$terms_html"
+          grep -Fq 'legal.css' "$privacy_html"
           grep -Fq '@media (max-width: 480px)' plugin/barbershop-core/assets/runtime-storefront.css
           grep -Fq 'body.woocommerce-checkout' plugin/barbershop-core/assets/runtime-storefront.css
           grep -Fq 'body.woocommerce-account' plugin/barbershop-core/assets/runtime-storefront.css
           grep -Fq '@media (max-width: 781px)' plugin/barbershop-core/assets/mobile-live-fixes.css
           grep -Fq 'max-height: 520px' plugin/barbershop-core/assets/mobile-live-fixes.css
+          grep -Fq 'block-size: 100dvh' plugin/barbershop-core/assets/ux-refinements.css
           ! docker compose logs --no-color wordpress | grep -E 'PHP Fatal error|Uncaught PDOException|Call to undefined function hidden|Base table or view not found'
-          rm -f "$home_html" "$account_html" "$cart_html"
+          rm -f "$home_html" "$account_html" "$cart_html" "$privacy_html" "$terms_html"
       - name: Container logs
         if: failure()
         run: docker compose logs --no-color
