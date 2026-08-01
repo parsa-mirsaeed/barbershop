@@ -221,9 +221,17 @@ class AccountAndNavigationRoundFourTests(unittest.TestCase):
             self.assertEqual("none", page.locator(".woocommerce-MyAccount-content").evaluate("el => getComputedStyle(el).float"))
             nav_box = page.locator(".woocommerce-MyAccount-navigation").bounding_box()
             content_box = page.locator(".woocommerce-MyAccount-content").bounding_box()
+            self.assertIsNotNone(nav_box)
+            self.assertIsNotNone(content_box)
             self.assertGreater(nav_box["width"], 220)
             self.assertGreater(content_box["width"], 600)
-            self.assertGreater(content_box["x"], nav_box["x"] + nav_box["width"] - 2)
+            content_right = content_box["x"] + content_box["width"]
+            nav_right = nav_box["x"] + nav_box["width"]
+            self.assertTrue(
+                content_right <= nav_box["x"] + 2 or nav_right <= content_box["x"] + 2,
+                (nav_box, content_box),
+            )
+            self.assertGreater(nav_box["x"], content_box["x"])
             self.assertEqual("none", page.locator(".woocommerce-MyAccount-content > p:first-of-type").evaluate("el => getComputedStyle(el).display"))
             self.assertEqual(3, page.locator(".bsc-account-actions > a").count())
         finally:
