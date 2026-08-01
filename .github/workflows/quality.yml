@@ -139,7 +139,9 @@ jobs:
           grep -Fq 'bsc-category-grid' "$home_html"
           grep -Fq 'قدرت طبیعت' "$home_html"
           grep -Fq 'runtime-storefront.css' "$home_html"
-          grep -Fq '3.3.0' "$home_html"
+          grep -Fq 'mobile-live-fixes.css' "$home_html"
+          grep -Fq '3.3.1' "$home_html"
+          grep -Fq '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' "$home_html"
           ! grep -Fq '[products ' "$home_html"
           ! grep -Fq '[bsc_product_categories' "$home_html"
           ! grep -Fq '[barbershop_before_after_gallery' "$home_html"
@@ -147,13 +149,17 @@ jobs:
           ! grep -Fqi 'Coming soon' "$home_html"
           grep -Fq 'name="password"' "$account_html"
           grep -Fq 'ساخت حساب' "$account_html"
+          grep -Fq 'mobile-live-fixes.css' "$account_html"
           grep -Fq 'سبد خرید شما خالی است' "$cart_html"
           grep -Fq 'runtime-storefront.css' "$cart_html"
+          grep -Fq 'mobile-live-fixes.css' "$cart_html"
           ! grep -Fq 'Your cart is currently empty' "$cart_html"
           ! grep -Fq 'New in store' "$cart_html"
           grep -Fq '@media (max-width: 480px)' plugin/barbershop-core/assets/runtime-storefront.css
           grep -Fq 'body.woocommerce-checkout' plugin/barbershop-core/assets/runtime-storefront.css
           grep -Fq 'body.woocommerce-account' plugin/barbershop-core/assets/runtime-storefront.css
+          grep -Fq '@media (max-width: 781px)' plugin/barbershop-core/assets/mobile-live-fixes.css
+          grep -Fq 'max-height: 520px' plugin/barbershop-core/assets/mobile-live-fixes.css
           ! docker compose logs --no-color wordpress | grep -E 'PHP Fatal error|Uncaught PDOException|Call to undefined function hidden|Base table or view not found'
           rm -f "$home_html" "$account_html" "$cart_html"
       - name: Container logs
