@@ -7,6 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Create one managed legal page without overwriting merchant edits.
  *
+ * A fresh WordPress installation may already contain an unpublished English
+ * "Privacy Policy" draft at the requested slug. That untouched core draft is
+ * safe to localize; published or renamed merchant pages are always preserved.
+ *
  * @param string $slug Page slug.
  * @param string $title Page title.
  * @param string $content Starter HTML.
@@ -15,6 +19,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 function bsc_ensure_legal_page( $slug, $title, $content ) {
 	$page = get_page_by_path( $slug, OBJECT, 'page' );
 	if ( $page instanceof WP_Post ) {
+		$is_untouched_core_privacy_draft = (
+			'privacy-policy' === $slug
+			&& 'Privacy Policy' === trim( (string) $page->post_title )
+			&& in_array( $page->post_status, array( 'draft', 'auto-draft' ), true )
+		);
+
+		if ( $is_untouched_core_privacy_draft ) {
+			$updated = wp_update_post(
+				array(
+					'ID'           => (int) $page->ID,
+					'post_status'  => 'publish',
+					'post_title'   => $title,
+					'post_content' => wp_kses_post( $content ),
+				),
+				true
+			);
+			if ( ! is_wp_error( $updated ) ) {
+				update_post_meta( $page->ID, '_bsc_managed_legal_page', 'yes' );
+			}
+		}
+
 		return (int) $page->ID;
 	}
 
@@ -36,13 +61,14 @@ function bsc_ensure_legal_page( $slug, $title, $content ) {
 }
 
 /**
- * Build and select Persian privacy and terms pages once per plugin release.
- * Existing pages are retained exactly as edited by the merchant.
+ * Build and select Persian privacy and terms pages once per legal schema.
+ * Existing published pages are retained exactly as edited by the merchant.
  *
  * @return void
  */
 function bsc_ensure_legal_pages() {
-	if ( BSC_VERSION === get_option( 'bsc_legal_pages_version' ) ) {
+	$legal_schema_version = '2';
+	if ( $legal_schema_version === get_option( 'bsc_legal_pages_version' ) ) {
 		return;
 	}
 
@@ -98,7 +124,7 @@ function bsc_ensure_legal_pages() {
 	if ( $terms_id ) {
 		update_option( 'woocommerce_terms_page_id', $terms_id );
 	}
-	update_option( 'bsc_legal_pages_version', BSC_VERSION, false );
+	update_option( 'bsc_legal_pages_version', $legal_schema_version, false );
 }
 add_action( 'init', 'bsc_ensure_legal_pages', 45 );
 add_action( 'woocommerce_installed', 'bsc_ensure_legal_pages', 30 );
