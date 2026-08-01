@@ -46,13 +46,21 @@ class LiveRoundTwoRegressionTests(unittest.TestCase):
         self.assertIn("max-width: 18rem", css)
         self.assertIn(".pbs-products-section", css)
 
-    def test_gateland_missing_table_runs_its_own_migration(self) -> None:
+    def test_gateland_missing_tables_run_vendor_schema_creator(self) -> None:
         source = (PLUGIN / "includes" / "runtime-repairs.php").read_text()
-        self.assertIn("gateland_transactions", source)
+        for table in ("gateland_gateways", "gateland_transactions", "gateland_logs"):
+            self.assertIn(table, source)
         self.assertIn("SHOW TABLES LIKE", source)
-        self.assertIn("do_action( 'activate_' . $plugin, false )", source)
+        self.assertIn("\\Nabik\\Gateland\\Install::create_tables()", source)
+        self.assertIn("bsc_runtime_gateland_schema_ready", source)
         self.assertIn("bsc gateland repair", source)
         self.assertIn("bsc_gateland_schema_error", source)
+        self.assertNotIn("do_action( 'activate_' . $plugin", source)
+
+    def test_install_and_deploy_force_gateland_schema_repair(self) -> None:
+        for path in (ROOT / "tools" / "install.sh", ROOT / "tools" / "deploy.sh"):
+            source = path.read_text()
+            self.assertIn("wp bsc gateland repair", source)
 
     def test_checkout_privacy_text_has_a_persian_fallback(self) -> None:
         source = (PLUGIN / "includes" / "runtime-repairs.php").read_text()
