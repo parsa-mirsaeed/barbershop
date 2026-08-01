@@ -1,0 +1,318 @@
+/* Final WooCommerce/account regression layer. Loaded after the theme styles. */
+body.woocommerce-page,
+body.woocommerce-page button,
+body.woocommerce-page input,
+body.woocommerce-page select,
+body.woocommerce-page textarea,
+body.woocommerce-page table,
+body.woocommerce-page .select2-container,
+body.woocommerce-page .wc-block-components-formatted-money-amount,
+body.woocommerce-page .wc-block-components-button {
+  font-family: Vazirmatn, Tahoma, Arial, sans-serif !important;
+}
+
+body.woocommerce-page main,
+body.woocommerce-account main,
+body.woocommerce-cart main,
+body.woocommerce-checkout main {
+  direction: rtl;
+  text-align: right;
+  width: 100%;
+}
+
+body.woocommerce-account .wp-block-post-content,
+body.woocommerce-cart .wp-block-post-content,
+body.woocommerce-checkout .wp-block-post-content {
+  width: 100%;
+}
+
+body.woocommerce-account .woocommerce,
+body.woocommerce-cart .woocommerce,
+body.woocommerce-checkout .woocommerce {
+  box-sizing: border-box;
+  clear: both;
+  display: flow-root;
+  margin-inline: auto !important;
+  max-width: 1180px !important;
+  min-width: 0;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+  width: 100% !important;
+}
+
+/* Login/register: target WooCommerce's real #customer_login wrapper rather than
+   its outer .woocommerce container. This prevents the two columns collapsing to
+   a few characters wide. */
+body.woocommerce-account:not(.logged-in) .woocommerce {
+  display: block !important;
+}
+body.woocommerce-account #customer_login {
+  align-items: stretch;
+  display: grid !important;
+  gap: clamp(1rem, 3vw, 2rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+body.woocommerce-account #customer_login::before,
+body.woocommerce-account #customer_login::after {
+  display: none !important;
+}
+body.woocommerce-account #customer_login .u-column1,
+body.woocommerce-account #customer_login .u-column2,
+body.woocommerce-account #customer_login .col-1,
+body.woocommerce-account #customer_login .col-2 {
+  display: flex;
+  flex-direction: column;
+  float: none !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+body.woocommerce-account #customer_login h2 {
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.15);
+  border-bottom: 0;
+  border-radius: 1.35rem 1.35rem 0 0;
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  line-height: 1.5;
+  margin: 0 !important;
+  padding: 1rem 1.25rem;
+  text-align: right;
+}
+body.woocommerce-account #customer_login form.login,
+body.woocommerce-account #customer_login form.register {
+  border-radius: 0 0 1.35rem 1.35rem;
+  flex: 1;
+  margin: 0 !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  padding: clamp(1.15rem, 3vw, 2rem) !important;
+  width: 100% !important;
+}
+body.woocommerce-account #customer_login .form-row,
+body.woocommerce-account #customer_login input.input-text,
+body.woocommerce-account #customer_login button {
+  max-width: none !important;
+  width: 100% !important;
+}
+body.woocommerce-account #customer_login label,
+body.woocommerce-account #customer_login p,
+body.woocommerce-account #customer_login span {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+body.woocommerce-account #customer_login .woocommerce-form-login__rememberme {
+  width: auto !important;
+}
+body.woocommerce-account #customer_login .woocommerce-form-login__rememberme input {
+  flex: 0 0 auto;
+  width: auto !important;
+}
+
+/* Customer account and orders: remove fragile floats and guarantee readable
+   contrast for tables, notices, addresses, and action controls. */
+body.woocommerce-account.logged-in .woocommerce {
+  align-items: start;
+  display: grid !important;
+  gap: 1.25rem;
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+}
+body.woocommerce-account .woocommerce-MyAccount-navigation,
+body.woocommerce-account .woocommerce-MyAccount-content {
+  float: none !important;
+  margin: 0 !important;
+  min-width: 0;
+  width: 100% !important;
+}
+body.woocommerce-account .woocommerce-MyAccount-content {
+  overflow: hidden;
+}
+body.woocommerce-account .woocommerce-MyAccount-content table,
+body.woocommerce-account .woocommerce-order-details table,
+body.woocommerce-account .woocommerce-customer-details address,
+body.woocommerce-account .woocommerce-info,
+body.woocommerce-account .woocommerce-message {
+  background: #f8fbfd !important;
+  border-color: #d7e2eb !important;
+  color: #071326 !important;
+}
+body.woocommerce-account .woocommerce-MyAccount-content table {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  width: 100%;
+}
+body.woocommerce-account .woocommerce-MyAccount-content th,
+body.woocommerce-account .woocommerce-MyAccount-content td,
+body.woocommerce-account .woocommerce-order-details th,
+body.woocommerce-account .woocommerce-order-details td {
+  color: #071326 !important;
+  font-size: .94rem;
+  line-height: 1.8;
+  padding: .9rem !important;
+  text-align: right !important;
+  vertical-align: middle;
+}
+body.woocommerce-account .woocommerce-MyAccount-content a:not(.button),
+body.woocommerce-account .woocommerce-order-details a:not(.button) {
+  color: #087354 !important;
+  font-weight: 750;
+}
+body.woocommerce-account .woocommerce-orders-table__cell-order-actions {
+  min-width: 8rem;
+}
+body.woocommerce-account .woocommerce-orders-table__cell-order-actions .button {
+  margin: .2rem;
+  min-height: 2.6rem;
+  white-space: nowrap;
+}
+body.woocommerce-account mark.order-status,
+body.woocommerce-account .order-status {
+  background: #e1f6ef;
+  border-radius: 999px;
+  color: #075e46;
+  display: inline-flex;
+  font-weight: 800;
+  padding: .3rem .65rem;
+}
+
+/* Cart: make the primary action visually primary and expose enabled gateways. */
+body.woocommerce-cart .woocommerce-cart-form,
+body.woocommerce-cart .cart-collaterals .cart_totals {
+  min-width: 0;
+}
+body.woocommerce-cart .wc-proceed-to-checkout a.checkout-button,
+body.woocommerce-cart .wc-proceed-to-checkout a.checkout-button:hover,
+body.woocommerce-cart .wc-proceed-to-checkout a.checkout-button:focus {
+  background: #0e8f6a !important;
+  border-color: #0e8f6a !important;
+  color: #fff !important;
+  opacity: 1 !important;
+}
+body.woocommerce-cart .shop_table td,
+body.woocommerce-cart .shop_table th {
+  line-height: 1.8;
+  text-align: right;
+}
+.bsc-cart-payment-methods {
+  background: rgba(14,143,106,.12);
+  border: 1px solid rgba(39,214,170,.34);
+  border-radius: 1rem;
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+}
+.bsc-cart-payment-methods h3 {
+  color: #fff;
+  font-size: 1rem;
+  margin: 0 0 .65rem;
+}
+.bsc-cart-payment-methods ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  list-style: none;
+  margin: 0 0 .65rem;
+  padding: 0;
+}
+.bsc-cart-payment-methods li {
+  background: #fff;
+  border-radius: 999px;
+  color: #071326;
+  font-size: .84rem;
+  font-weight: 800;
+  padding: .4rem .7rem;
+}
+.bsc-cart-payment-methods p {
+  color: #c5d5e3;
+  font-size: .84rem;
+  line-height: 1.8;
+  margin: 0;
+}
+
+/* Checkout and third-party gateways. */
+body.woocommerce-checkout #payment,
+body.woocommerce-checkout #payment * {
+  direction: rtl;
+  text-align: right;
+}
+body.woocommerce-checkout #payment ul.payment_methods li {
+  clear: both;
+  line-height: 1.9;
+  padding-block: .45rem;
+}
+body.woocommerce-checkout #payment ul.payment_methods li > input {
+  float: none;
+  margin: 0 0 0 .55rem;
+  vertical-align: middle;
+}
+body.woocommerce-checkout #payment ul.payment_methods li > label {
+  color: #fff;
+  display: inline-flex;
+  flex-wrap: wrap;
+  font-weight: 800;
+  gap: .5rem;
+  max-width: calc(100% - 2rem);
+  vertical-align: middle;
+}
+body.woocommerce-checkout #payment ul.payment_methods li img {
+  float: none;
+  margin: 0;
+  max-height: 2.5rem;
+  object-fit: contain;
+  width: auto;
+}
+body.woocommerce-checkout #place_order {
+  background: #0e8f6a !important;
+  color: #fff !important;
+  font-size: 1rem !important;
+  opacity: 1 !important;
+}
+
+/* Prevent long English fallback strings or gateway diagnostics from making a
+   narrow column and keep all commerce controls at usable sizes. */
+body.woocommerce-page .woocommerce-error,
+body.woocommerce-page .woocommerce-info,
+body.woocommerce-page .woocommerce-message,
+body.woocommerce-page .payment_box,
+body.woocommerce-page .woocommerce-MyAccount-content,
+body.woocommerce-page .woocommerce-order-details {
+  overflow-wrap: anywhere;
+}
+body.woocommerce-page input.input-text,
+body.woocommerce-page select,
+body.woocommerce-page textarea,
+body.woocommerce-page button,
+body.woocommerce-page .button {
+  font-size: max(.92rem, 14px) !important;
+}
+
+@media (max-width: 900px) {
+  body.woocommerce-account #customer_login,
+  body.woocommerce-account.logged-in .woocommerce {
+    grid-template-columns: 1fr !important;
+  }
+  body.woocommerce-account .woocommerce-MyAccount-navigation ul {
+    display: flex;
+    gap: .5rem;
+    overflow-x: auto;
+    padding-bottom: .5rem;
+  }
+  body.woocommerce-account .woocommerce-MyAccount-navigation li {
+    flex: 0 0 auto;
+  }
+  body.woocommerce-account .woocommerce-MyAccount-navigation a {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 600px) {
+  body.woocommerce-account .woocommerce-MyAccount-content table,
+  body.woocommerce-account .woocommerce-order-details table {
+    font-size: .88rem;
+  }
+  body.woocommerce-account .woocommerce-MyAccount-content th,
+  body.woocommerce-account .woocommerce-MyAccount-content td {
+    padding: .7rem !important;
+  }
+}
