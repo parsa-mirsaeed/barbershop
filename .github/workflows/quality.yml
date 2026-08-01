@@ -29,7 +29,7 @@ jobs:
         run: |
           python3 -m pip install -r requirements-test.txt
           python3 -m playwright install --with-deps chromium
-      - name: Secret, policy, backend, and UI tests
+      - name: Secret, policy, backend, responsive, and UI tests
         run: |
           python3 tools/scan-secrets.py
           python3 tools/validate.py
@@ -42,7 +42,8 @@ jobs:
           node --check plugin/barbershop-core/assets/admin.js
           node --check plugin/barbershop-core/assets/frontend.js
           node --check plugin/barbershop-core/assets/qa-admin.js
-          bash -n tools/install.sh tools/deploy.sh tools/build-release.sh
+          bash -n tools/install.sh tools/deploy.sh tools/build-release.sh tools/mobile-test.sh
+          bash tools/mobile-test.sh --help >/dev/null
       - name: Docker configuration checks
         run: |
           cp .env.example .env
@@ -50,6 +51,7 @@ jobs:
           sed -i 's/replace-with-another-random-local-password/ci-root-password/' .env
           sed -i 's/replace-with-a-strong-admin-password/ci-admin-password/' .env
           docker compose config >/dev/null
+          WP_BIND_ADDRESS=0.0.0.0 docker compose config | grep -Fq '0.0.0.0'
           cp .env.production.example .env.production
           sed -i 's/shop.example.com/shop.example.test/' .env.production
           sed -i 's/replace-with-a-long-random-production-password/ci-db-password/' .env.production
@@ -85,7 +87,7 @@ jobs:
         run: docker run -d --name occupied-development-port -p 127.0.0.1:8080:80 nginx:alpine
       - name: Reset and install complete WordPress storefront
         run: ./tools/install.sh --reset
-      - name: Verify gateways, dashboard, guest storefront, customer auth, Persian UI, and runtime setup
+      - name: Verify gateways, dashboard, guest storefront, customer auth, Persian UI, responsiveness, and runtime setup
         run: |
           set -Eeuo pipefail
           ! grep -q 'replace-with-' .env
@@ -94,6 +96,7 @@ jobs:
           test "${#DB_ROOT_PASSWORD}" -ge 32
           test "${#WP_ADMIN_PASSWORD}" -ge 32
           test "$WP_PORT" = 8081
+          test "${WP_BIND_ADDRESS:-127.0.0.1}" = 127.0.0.1
           WP_URL="${WP_URL:-http://127.0.0.1:${WP_PORT}}"
           WP='docker compose run --rm wpcli --allow-root'
           docker compose exec -T wordpress php -r 'exit(extension_loaded("pdo_mysql") ? 0 : 1);'
@@ -136,6 +139,7 @@ jobs:
           grep -Fq 'bsc-category-grid' "$home_html"
           grep -Fq 'قدرت طبیعت' "$home_html"
           grep -Fq 'runtime-storefront.css' "$home_html"
+          grep -Fq '3.3.0' "$home_html"
           ! grep -Fq '[products ' "$home_html"
           ! grep -Fq '[bsc_product_categories' "$home_html"
           ! grep -Fq '[barbershop_before_after_gallery' "$home_html"
@@ -147,6 +151,9 @@ jobs:
           grep -Fq 'runtime-storefront.css' "$cart_html"
           ! grep -Fq 'Your cart is currently empty' "$cart_html"
           ! grep -Fq 'New in store' "$cart_html"
+          grep -Fq '@media (max-width: 480px)' plugin/barbershop-core/assets/runtime-storefront.css
+          grep -Fq 'body.woocommerce-checkout' plugin/barbershop-core/assets/runtime-storefront.css
+          grep -Fq 'body.woocommerce-account' plugin/barbershop-core/assets/runtime-storefront.css
           ! docker compose logs --no-color wordpress | grep -E 'PHP Fatal error|Uncaught PDOException|Call to undefined function hidden|Base table or view not found'
           rm -f "$home_html" "$account_html" "$cart_html"
       - name: Container logs
