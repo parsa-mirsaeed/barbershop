@@ -93,18 +93,42 @@ function bsc_runtime_checkout_privacy_translation( $translated, $text, $domain )
 }
 add_filter( 'gettext', 'bsc_runtime_checkout_privacy_translation', 999, 3 );
 
+/** @return string[] */
+function bsc_runtime_gateland_table_names() {
+	global $wpdb;
+	return array(
+		$wpdb->prefix . 'gateland_gateways',
+		$wpdb->prefix . 'gateland_transactions',
+		$wpdb->prefix . 'gateland_logs',
+	);
+}
+
 /** @return string */
 function bsc_runtime_gateland_table_name() {
+	$tables = bsc_runtime_gateland_table_names();
+	return $tables[1];
+}
+
+/** @return bool */
+function bsc_runtime_database_table_exists( $table ) {
 	global $wpdb;
-	return $wpdb->prefix . 'gateland_transactions';
+	$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+	return $table === $found;
 }
 
 /** @return bool */
 function bsc_runtime_gateland_table_exists() {
-	global $wpdb;
-	$table = bsc_runtime_gateland_table_name();
-	$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
-	return $table === $found;
+	return bsc_runtime_database_table_exists( bsc_runtime_gateland_table_name() );
+}
+
+/** @return bool */
+function bsc_runtime_gateland_schema_ready() {
+	foreach ( bsc_runtime_gateland_table_names() as $table ) {
+		if ( ! bsc_runtime_database_table_exists( $table ) ) {
+			return false;
+		}
+	}
+	return true;
 }
 
 /**
@@ -124,16 +148,20 @@ function bsc_runtime_gateland_plugin_basename() {
 }
 
 /**
- * Re-run Gateland's registered activation migration when an earlier activation
- * was interrupted (for example, before pdo_mysql was available).
+ * Run Gateland's real schema creator directly.
  *
- * Calling the registered activation action is safer than including the active
- * plugin a second time in the same request and preserves Gateland's own schema.
+ * Gateland's own installer writes a `.activated` marker on activation, but its
+ * base installer only consumes that marker on a small set of wp-admin screens
+ * (Dashboard, Updates, Plugins, and Add Plugins). Opening Gateland directly can
+ * therefore execute transaction queries before `wp_gateland_transactions`
+ * exists. The plugin exposes an idempotent `Install::create_tables()` method,
+ * so calling it here preserves the vendor's exact schema and repairs both old
+ * and fresh installations without replacing user data.
  *
  * @return true|WP_Error
  */
 function bsc_runtime_repair_gateland_schema() {
-	if ( bsc_runtime_gateland_table_exists() ) {
+	if ( bsc_runtime_gateland_schema_ready() ) {
 		delete_option( 'bsc_gateland_schema_error' );
 		return true;
 	}
@@ -147,23 +175,30 @@ function bsc_runtime_repair_gateland_schema() {
 	if ( ! is_plugin_active( $plugin ) ) {
 		return new WP_Error( 'bsc_gateland_inactive', 'افزونه گیت‌لند فعال نیست.' );
 	}
+	if ( ! class_exists( '\Nabik\Gateland\Install' ) || ! is_callable( array( '\Nabik\Gateland\Install', 'create_tables' ) ) ) {
+		return new WP_Error( 'bsc_gateland_installer_unavailable', 'سازنده جدول‌های گیت‌لند در دسترس نیست.' );
+	}
 
-	do_action( 'activate_' . $plugin, false );
+	try {
+		\Nabik\Gateland\Install::create_tables();
+	} catch ( Throwable $error ) {
+		return new WP_Error( 'bsc_gateland_schema_exception', $error->getMessage() );
+	}
 
-	if ( bsc_runtime_gateland_table_exists() ) {
+	if ( bsc_runtime_gateland_schema_ready() ) {
 		delete_option( 'bsc_gateland_schema_error' );
 		update_option( 'bsc_gateland_schema_repaired', BSC_VERSION, false );
 		return true;
 	}
 	return new WP_Error(
 		'bsc_gateland_schema_missing',
-		'جدول تراکنش‌های گیت‌لند پس از اجرای دوباره مهاجرت افزونه ساخته نشد.'
+		'یک یا چند جدول گیت‌لند پس از اجرای سازنده رسمی افزونه ایجاد نشد.'
 	);
 }
 
 /** Repair old installs from wp-admin or any installer/WP-CLI command. */
 function bsc_runtime_maybe_repair_gateland_schema() {
-	if ( bsc_runtime_gateland_table_exists() ) {
+	if ( bsc_runtime_gateland_schema_ready() ) {
 		return;
 	}
 	$is_cli = defined( 'WP_CLI' ) && WP_CLI;
@@ -187,7 +222,7 @@ function bsc_runtime_gateland_schema_notice() {
 		return;
 	}
 	$message = get_option( 'bsc_gateland_schema_error', '' );
-	if ( ! $message || bsc_runtime_gateland_table_exists() ) {
+	if ( ! $message || bsc_runtime_gateland_schema_ready() ) {
 		return;
 	}
 	printf(
