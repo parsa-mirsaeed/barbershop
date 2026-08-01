@@ -20,6 +20,12 @@ function bsc_enqueue_ux_refinements() {
 		array( 'barbershop-core-mobile-live-fixes' ),
 		BSC_VERSION
 	);
+	wp_enqueue_style(
+		'barbershop-core-legal',
+		BSC_URL . 'assets/legal.css',
+		array( 'barbershop-core-ux-refinements' ),
+		BSC_VERSION
+	);
 	wp_enqueue_script(
 		'barbershop-core-ux-refinements',
 		BSC_URL . 'assets/ux-refinements.js',
