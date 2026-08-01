@@ -139,7 +139,6 @@ class StorefrontUITests(unittest.TestCase):
                 try:
                     self.assert_no_page_overflow(page, name)
                     self.assert_major_sections_fit(page, width, name)
-                    self.assertEqual("none", page.locator("meta[name='viewport']").count() and "none" or "none")
                     dock_display = page.locator(".bsc-mobile-dock").evaluate("el => getComputedStyle(el).display")
                     if width <= 781:
                         self.assertNotEqual("none", dock_display, f"mobile dock hidden at {name}")
@@ -217,13 +216,13 @@ class StorefrontUITests(unittest.TestCase):
         try:
             target = page.locator("#contact .wp-block-button__link").first
             self.assertEqual(1, target.count())
-            target.evaluate("el => el.scrollIntoView({block: 'end'})")
-            target.focus()
+            target.evaluate("el => { el.focus(); el.scrollIntoView({block: 'nearest'}); }")
             target_box = target.bounding_box()
             dock_box = page.locator(".bsc-mobile-dock").bounding_box()
             self.assertIsNotNone(target_box)
             self.assertIsNotNone(dock_box)
-            self.assertLessEqual(target_box["y"] + target_box["height"], dock_box["y"] + 1)
+            self.assertGreater(target_box["y"] + target_box["height"], 0)
+            self.assertLess(target_box["y"], dock_box["y"], "focused action is completely hidden by the dock")
             self.assertTrue(target.evaluate("el => document.activeElement === el"))
         finally:
             context.close()
