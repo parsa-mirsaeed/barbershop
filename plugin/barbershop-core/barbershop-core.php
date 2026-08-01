@@ -58,5 +58,6 @@ require_once BSC_DIR . 'includes/dashboard-extras.php';
 require_once BSC_DIR . 'includes/qa-fixes.php';
 require_once BSC_DIR . 'includes/runtime-repairs.php';
 require_once BSC_DIR . 'includes/mobile-live-fixes.php';
+require_once BSC_DIR . 'includes/ux-refinements.php';
 
 register_activation_hook( __FILE__, 'bsc_activate' );
