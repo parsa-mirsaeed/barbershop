@@ -24,8 +24,81 @@ VIEWPORTS = (
 MAJOR_SECTIONS = ("#home", "#categories", "#products", "#services", "#gallery", "#articles", "#reviews", "#contact")
 
 
+def complete_section_fixture(html: str) -> str:
+    """Add compact representative markup for production sections not in the old fixture."""
+    sections: list[str] = []
+    image = "../../theme/persian-barbershop/assets/images/product-hero.svg"
+    if 'id="services"' not in html:
+        sections.append(
+            """
+            <section id="services" class="pbs-section">
+              <div class="pbs-section-heading alignwide"><div><p class="pbs-kicker">خدمات</p><h2>جزئیات کوچک، تفاوت بزرگ</h2></div><p>مدت، قیمت و توضیحات خدمات.</p></div>
+              <div class="wp-block-columns pbs-card-grid alignwide">
+                <div class="wp-block-column"><article class="pbs-card"><span class="pbs-number">01</span><h3>اصلاح مو</h3><p>توضیحات خدمت اول</p></article></div>
+                <div class="wp-block-column"><article class="pbs-card"><span class="pbs-number">02</span><h3>طراحی ریش</h3><p>توضیحات خدمت دوم</p></article></div>
+                <div class="wp-block-column"><article class="pbs-card"><span class="pbs-number">03</span><h3>مشاوره استایل</h3><p>توضیحات خدمت سوم</p></article></div>
+              </div>
+            </section>
+            """
+        )
+    if 'id="gallery"' not in html:
+        sections.append(
+            f"""
+            <section id="gallery" class="pbs-section">
+              <div class="pbs-section-heading alignwide"><div><p class="pbs-kicker">نمونه‌کارها</p><h2>قبل و بعد، با اجازه انتشار</h2></div></div>
+              <div class="wp-block-columns pbs-gallery-grid alignwide">
+                <div class="wp-block-column"><figure class="pbs-gallery-item"><img src="{image}" alt="نمونه یک"><figcaption>نمونه یک</figcaption></figure></div>
+                <div class="wp-block-column"><figure class="pbs-gallery-item"><img src="{image}" alt="نمونه دو"><figcaption>نمونه دو</figcaption></figure></div>
+                <div class="wp-block-column"><figure class="pbs-gallery-item"><img src="{image}" alt="نمونه سه"><figcaption>نمونه سه</figcaption></figure></div>
+              </div>
+            </section>
+            """
+        )
+    if 'id="articles"' not in html:
+        sections.append(
+            """
+            <section id="articles" class="pbs-section">
+              <div class="pbs-section-heading alignwide"><div><p class="pbs-kicker">مقاله‌ها</p><h2>راهنمای نگهداری و استایل</h2></div></div>
+              <ul class="wp-block-post-template is-layout-grid alignwide">
+                <li><h3>راهنمای مراقبت روزانه مو</h3><p>متن نمونه مقاله برای بررسی شکست خطوط فارسی.</p></li>
+                <li><h3>انتخاب محصول مناسب ریش</h3><p>متن نمونه مقاله برای بررسی کارت‌ها.</p></li>
+                <li><h3>نکات نگهداری ابزار</h3><p>متن نمونه مقاله برای بررسی عرض‌های مختلف.</p></li>
+              </ul>
+            </section>
+            """
+        )
+    if 'id="reviews"' not in html:
+        sections.append(
+            """
+            <section id="reviews" class="pbs-section">
+              <div class="pbs-section-heading alignwide"><div><p class="pbs-kicker">نظر مشتریان</p><h2>اعتماد، از تجربه واقعی می‌آید</h2></div></div>
+              <div class="wp-block-columns pbs-card-grid alignwide">
+                <div class="wp-block-column"><blockquote class="pbs-card pbs-review-card"><p>نظر نمونه مشتری اول</p><cite>مشتری اول</cite></blockquote></div>
+                <div class="wp-block-column"><blockquote class="pbs-card pbs-review-card"><p>نظر نمونه مشتری دوم</p><cite>مشتری دوم</cite></blockquote></div>
+                <div class="wp-block-column"><blockquote class="pbs-card pbs-review-card"><p>نظر نمونه مشتری سوم</p><cite>مشتری سوم</cite></blockquote></div>
+              </div>
+            </section>
+            """
+        )
+    if 'id="contact"' not in html:
+        sections.append(
+            f"""
+            <section id="contact" class="pbs-section">
+              <div class="pbs-section-heading alignwide"><div><p class="pbs-kicker">تماس</p><h2>برای زمان مناسب تماس بگیرید</h2></div></div>
+              <div class="wp-block-columns pbs-contact-panel alignwide">
+                <div class="wp-block-column"><div class="pbs-contact-details"><h3>ارتباط مستقیم با فروشگاه</h3><ul class="pbs-contact-list"><li>تلفن: ۰۰۰۰۰۰۰۰۰۰</li><li>ساعت پاسخ‌گویی: ۹ تا ۱۸</li><li>نشانی: نشانی نمونه</li></ul><div class="wp-block-button"><a class="wp-block-button__link" href="tel:+000000000000">تماس تلفنی</a></div></div></div>
+                <div class="wp-block-column"><figure><img src="{image}" alt="تصویر بخش تماس"></figure></div>
+              </div>
+            </section>
+            """
+        )
+    if sections:
+        html = html.replace("</main>", "".join(sections) + "</main>")
+    return html
+
+
 def rendered_fixture_html() -> str:
-    html = FIXTURE.read_text(encoding="utf-8")
+    html = complete_section_fixture(FIXTURE.read_text(encoding="utf-8"))
     assets = {
         "../../theme/persian-barbershop/style.css": ROOT / "theme" / "persian-barbershop" / "style.css",
         "../../theme/persian-barbershop/assets/css/woocommerce.css": ROOT / "theme" / "persian-barbershop" / "assets" / "css" / "woocommerce.css",
