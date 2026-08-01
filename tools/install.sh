@@ -223,7 +223,8 @@ wp theme activate persian-barbershop
 wp plugin activate barbershop-core
 wp bsc setup
 wp bsc font install
-wp plugin auto-updates enable woocommerce zarinpal-woocommerce-payment-gateway gateland wordfence >/dev/null 2>&1 || true
+wp plugin auto-updates enable woocommerce wordfence >/dev/null 2>&1 || true
+wp plugin auto-updates enable zarinpal-woocommerce-payment-gateway gateland >/dev/null 2>&1 || true
 wp rewrite flush --hard
 
 printf '\nInstallation complete: %s\nAdmin: %s/wp-admin/\nBarber dashboard: %s/wp-admin/admin.php?page=bsc-store-setup\n' "$WP_URL" "$WP_URL" "$WP_URL"
