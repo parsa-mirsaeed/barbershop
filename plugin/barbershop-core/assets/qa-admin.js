@@ -1,27 +1,36 @@
 (() => {
   'use strict';
 
-  const form = document.querySelector('.bsc-dashboard-form');
-  if (!form) return;
+  const forms = Array.from(document.querySelectorAll('.bsc-dashboard-form'));
+  if (!forms.length) return;
 
-  const markDirty = () => {
+  let isSubmitting = false;
+
+  const markDirty = (event) => {
+    const form = event.currentTarget;
     form.dataset.bscDirty = 'true';
   };
 
-  form.addEventListener('input', markDirty);
-  form.addEventListener('change', markDirty);
-
-  form.addEventListener('submit', () => {
+  forms.forEach((form) => {
     form.dataset.bscDirty = 'false';
-    const button = form.querySelector('.bsc-dashboard-save button[type="submit"]');
-    if (button) {
-      button.disabled = true;
-      button.textContent = 'در حال ذخیره…';
-    }
+    form.addEventListener('input', markDirty);
+    form.addEventListener('change', markDirty);
+
+    form.addEventListener('submit', () => {
+      isSubmitting = true;
+      form.dataset.bscDirty = 'false';
+      const button = form.querySelector('button[type="submit"]');
+      if (button) {
+        button.disabled = true;
+        button.dataset.bscOriginalText = button.textContent;
+        button.textContent = 'در حال ذخیره…';
+      }
+    }, true);
   });
 
   window.addEventListener('beforeunload', (event) => {
-    if (form.dataset.bscDirty !== 'true') return;
+    const hasDirtyForm = forms.some((form) => form.dataset.bscDirty === 'true');
+    if (isSubmitting || !hasDirtyForm) return;
     event.preventDefault();
     event.returnValue = '';
   });
