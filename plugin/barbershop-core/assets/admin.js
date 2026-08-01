@@ -6,6 +6,11 @@
     wrap.setAttribute('aria-label', text);
   };
 
+  const notifyChange = (input) => {
+    if (!input) return;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+
   document.addEventListener('click', (event) => {
     const removeButton = event.target.closest('[data-bsc-media-remove]');
     if (removeButton) {
@@ -14,7 +19,10 @@
       const input = document.getElementById(target);
       const preview = document.querySelector(`[data-bsc-preview="${target}"]`);
       const wrap = document.querySelector(`[data-bsc-preview-wrap="${target}"]`);
-      if (input) input.value = '';
+      if (input) {
+        input.value = '';
+        notifyChange(input);
+      }
       if (preview) {
         preview.src = '';
         preview.hidden = true;
@@ -43,6 +51,7 @@
         wrap.appendChild(preview);
       }
       input.value = String(attachment.id);
+      notifyChange(input);
       if (preview) {
         preview.src = attachment.sizes?.medium?.url || attachment.sizes?.thumbnail?.url || attachment.url;
         preview.hidden = false;
