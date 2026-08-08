@@ -1,0 +1,82 @@
+name: Shared Hosting Production
+
+on:
+  push:
+    branches:
+      - agent/shared-hosting-production
+  pull_request:
+    paths:
+      - 'plugin/**'
+      - 'theme/**'
+      - 'hosting/**'
+      - 'tools/build-hosting-release.sh'
+      - 'tools/install-shared-hosting.sh'
+      - 'tools/shared-hosting-audit.sh'
+      - 'tests/test_shared_hosting.py'
+      - 'tests/test_hosting_guard.php'
+      - 'tests/test_backend.php'
+      - 'docs/SHARED-HOSTING-PRODUCTION.md'
+      - 'Makefile'
+      - '.github/workflows/shared-hosting.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-hosting-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Runtime versions
+        run: |
+          php --version
+          python3 --version
+          zip -v | head -n 2
+
+      - name: Secret and repository validation
+        run: |
+          python3 tools/scan-secrets.py
+          python3 tools/validate.py
+
+      - name: Shared-hosting static tests
+        run: python3 tests/test_shared_hosting.py
+
+      - name: Backend unit tests
+        run: |
+          php tests/test_backend.php
+          php tests/test_hosting_guard.php
+
+      - name: PHP syntax
+        run: find theme plugin hosting -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Shell syntax
+        run: bash -n tools/build-hosting-release.sh tools/install-shared-hosting.sh tools/shared-hosting-audit.sh
+
+      - name: Build secure hosting release
+        run: make hosting-release
+
+      - name: Verify built artifacts and checksums
+        run: python3 tests/test_shared_hosting.py
+
+      - name: Inspect release archive
+        run: |
+          unzip -l dist/barbershop-shared-hosting-*.zip
+          ! unzip -Z1 dist/barbershop-shared-hosting-*.zip | grep -E '(^|/)(\.env|wp-config\.php|debug\.log|\.git)(/|$)'
+
+      - name: Upload tested shared-hosting bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: barbershop-shared-hosting
+          path: |
+            dist/barbershop-shared-hosting-*.zip
+            dist/shared-hosting/SHA256SUMS
+            dist/shared-hosting/manifest.json
+          if-no-files-found: error
+          retention-days: 14

@@ -45,6 +45,7 @@ if ( ! function_exists( 'hidden' ) ) {
 
 require_once BSC_DIR . 'includes/setup.php';
 require_once BSC_DIR . 'includes/security.php';
+require_once BSC_DIR . 'includes/hosting.php';
 require_once BSC_DIR . 'includes/account.php';
 require_once BSC_DIR . 'includes/legal.php';
 require_once BSC_DIR . 'includes/categories.php';
