@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Barbershop Core
  * Description: Premium store setup, dedicated barber dashboard, simplified customer accounts, Persian WooCommerce UX, editable category icons, persistent cart access, security hardening, and privacy-aware portfolio controls.
- * Version: 3.4.0
+ * Version: 3.3.1
  * Requires at least: 6.6
  * Requires PHP: 7.4
  * Author: Project Contributors
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'BSC_VERSION', '3.4.0' );
+define( 'BSC_VERSION', '3.3.1' );
 define( 'BSC_FILE', __FILE__ );
 define( 'BSC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BSC_URL', plugin_dir_url( __FILE__ ) );
