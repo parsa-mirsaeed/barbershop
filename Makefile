@@ -21,6 +21,7 @@ test:
 	python3 tools/scan-secrets.py
 	python3 tools/validate.py
 	php tests/test_backend.php
+	php tests/test_hosting_guard.php
 	python3 -m unittest discover -s tests -v
 	find theme plugin hosting -name '*.php' -print0 | xargs -0 -n1 php -l
 	node --check theme/persian-barbershop/assets/js/site.js
@@ -35,6 +36,7 @@ deploy:
 hosting-release:
 	bash tools/build-hosting-release.sh
 hosting-test:
+	php tests/test_hosting_guard.php
 	python3 tests/test_shared_hosting.py
 	bash tools/build-hosting-release.sh
 	python3 tests/test_shared_hosting.py
