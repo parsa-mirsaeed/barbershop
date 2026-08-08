@@ -9,13 +9,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/** Small wrapper so the missing-PDO path can be unit-tested without changing PHP. */
+if ( ! function_exists( 'bsc_hosting_guard_has_pdo' ) ) {
+	function bsc_hosting_guard_has_pdo() {
+		return extension_loaded( 'pdo_mysql' );
+	}
+}
+
 /**
  * Gateland uses PDO MySQL before WordPress can recover from a normal plugin
  * failure. On hosts without pdo_mysql, prevent it from entering the active
  * plugin load list so the storefront and wp-admin remain recoverable.
  */
 function bsc_hosting_guard_active_plugins( $plugins ) {
-	if ( extension_loaded( 'pdo_mysql' ) || ! is_array( $plugins ) ) {
+	if ( bsc_hosting_guard_has_pdo() || ! is_array( $plugins ) ) {
 		return $plugins;
 	}
 
@@ -37,7 +44,7 @@ add_filter( 'option_active_plugins', 'bsc_hosting_guard_active_plugins', 1 );
 
 /** Multisite equivalent of the active plugin guard. */
 function bsc_hosting_guard_sitewide_plugins( $plugins ) {
-	if ( extension_loaded( 'pdo_mysql' ) || ! is_array( $plugins ) ) {
+	if ( bsc_hosting_guard_has_pdo() || ! is_array( $plugins ) ) {
 		return $plugins;
 	}
 	foreach ( array_keys( $plugins ) as $plugin ) {
