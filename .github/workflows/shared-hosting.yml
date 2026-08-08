@@ -13,6 +13,7 @@ on:
       - 'tools/install-shared-hosting.sh'
       - 'tools/shared-hosting-audit.sh'
       - 'tests/test_shared_hosting.py'
+      - 'tests/test_hosting_guard.php'
       - 'tests/test_backend.php'
       - 'docs/SHARED-HOSTING-PRODUCTION.md'
       - 'Makefile'
@@ -48,7 +49,9 @@ jobs:
         run: python3 tests/test_shared_hosting.py
 
       - name: Backend unit tests
-        run: php tests/test_backend.php
+        run: |
+          php tests/test_backend.php
+          php tests/test_hosting_guard.php
 
       - name: PHP syntax
         run: find theme plugin hosting -name '*.php' -print0 | xargs -0 -n1 php -l
