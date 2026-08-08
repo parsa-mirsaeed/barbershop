@@ -25,6 +25,9 @@ cp hosting/mu-plugins/barbershop-hosting-guard.php "$OUT/mu-plugins/"
 cp hosting/.user.ini.recommended "$OUT/"
 cp hosting/wp-config.production.snippet.txt "$OUT/"
 cp docs/SHARED-HOSTING-PRODUCTION.md "$OUT/README-SHARED-HOSTING.md"
+cp tools/install-shared-hosting.sh "$OUT/"
+cp tools/shared-hosting-audit.sh "$OUT/"
+chmod 0755 "$OUT/install-shared-hosting.sh" "$OUT/shared-hosting-audit.sh"
 
 GIT_SHA="unknown"
 if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -48,13 +51,18 @@ manifest = {
         "critical_extensions": ["pdo_mysql", "mysqli", "curl", "mbstring", "openssl", "fileinfo"],
     },
     "third_party_plugins_bundled": False,
+    "installers": {
+        "manual": "README-SHARED-HOSTING.md",
+        "wp_cli_optional": "install-shared-hosting.sh",
+        "external_audit": "shared-hosting-audit.sh"
+    }
 }
 (out / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
 
 (
   cd "$OUT"
-  sha256sum persian-barbershop-theme.zip barbershop-core-plugin.zip mu-plugins/barbershop-hosting-guard.php .user.ini.recommended wp-config.production.snippet.txt README-SHARED-HOSTING.md manifest.json > SHA256SUMS
+  sha256sum persian-barbershop-theme.zip barbershop-core-plugin.zip mu-plugins/barbershop-hosting-guard.php .user.ini.recommended wp-config.production.snippet.txt README-SHARED-HOSTING.md install-shared-hosting.sh shared-hosting-audit.sh manifest.json > SHA256SUMS
 )
 
 # Refuse to ship obvious secrets or development artifacts.
