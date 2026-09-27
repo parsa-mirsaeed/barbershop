@@ -10,6 +10,7 @@ function is_admin() { return false; }
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/account.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/woocommerce.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/setup.php';
+require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/hosting.php';
 
 function bsc_test_assert_same( $expected, $actual, $message ) {
 	if ( $expected !== $actual ) {
@@ -32,4 +33,13 @@ $blueprint = bsc_category_blueprint();
 bsc_test_assert_same( 4, count( $blueprint ), 'Four editable primary product categories are seeded.' );
 bsc_test_assert_same( 'حالت‌دهنده ریش و مو', $blueprint[0]['name'], 'Styling category is present.' );
 bsc_test_assert_same( 'اصلاح و ابزار حرفه‌ای', $blueprint[3]['name'], 'Professional tools category is present.' );
+
+bsc_test_assert_same( 512 * 1024 * 1024, bsc_hosting_ini_bytes( '512M' ), 'Shared-host parser handles megabytes.' );
+bsc_test_assert_same( 2 * 1024 * 1024 * 1024, bsc_hosting_ini_bytes( '2G' ), 'Shared-host parser handles gigabytes.' );
+bsc_test_assert_same( -1, bsc_hosting_ini_bytes( '-1' ), 'Unlimited PHP memory is preserved.' );
+$extensions = bsc_hosting_extension_requirements();
+bsc_test_assert_same( true, $extensions['pdo_mysql']['required'], 'PDO MySQL is a critical shared-host requirement.' );
+bsc_test_assert_same( true, $extensions['curl']['required'], 'cURL is a critical shared-host requirement.' );
+bsc_test_assert_same( false, $extensions['intl']['required'], 'Intl is recommended rather than fatal.' );
+
 echo "Backend unit tests passed.\n";

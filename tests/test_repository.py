@@ -41,7 +41,9 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("شماره موبایل یا ایمیل", source)
         self.assertIn("bsc_authenticate_with_mobile", source)
         self.assertIn("bsc-registration-consent", source)
-        self.assertIn("woocommerce_registration_privacy_policy_text", source)
+        self.assertIn("woocommerce_get_privacy_policy_text", source)
+        self.assertIn("woocommerce_get_terms_and_conditions_checkbox_text", source)
+        self.assertNotIn("پارسا" + " " + "میرسعید", source)
         self.assertIn("unset( $items['edit-address'], $items['downloads'] )", source)
         self.assertIn("woocommerce_registration_generate_username', 'yes'", setup)
         self.assertIn("woocommerce_registration_generate_password', 'no'", setup)
@@ -49,6 +51,17 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("woocommerce_registration_errors", barber)
         self.assertTrue((PLUGIN / "assets" / "account.css").is_file())
         self.assertTrue((PLUGIN / "assets" / "ux-refinements.css").is_file())
+        store_pattern = (THEME / "inc" / "pattern-content" / "store.php").read_text()
+        footer = (THEME / "parts" / "footer.html").read_text()
+        self.assertNotIn("نام، زیرگروه، ترتیب و آیکون هر دسته از پنل فارسی فروشگاه", store_pattern)
+        self.assertNotIn("تمام نام‌ها، لوگوها، تصاویر و اطلاعات تماس در این نسخه نمونه", footer)
+        for key in (
+            "hero_proof_1_title", "trust_1_title", "nav_home_label", "categories_heading",
+            "products_description", "services_description", "reviews_description",
+            "contact_description", "footer_quick_heading",
+        ):
+            self.assertIn(key, barber)
+        self.assertIn("$stored[ $key ] = $value;", barber)
 
     def test_persian_legal_pages_are_created_without_overwriting_edits(self) -> None:
         legal = (PLUGIN / "includes" / "legal.php").read_text()
@@ -266,7 +279,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
             for p in ROOT.rglob("*")
             if p.is_file() and p.suffix.lower() in {".php", ".html", ".css", ".json", ".md", ".txt", ".yaml", ".yml", ".svg"}
         )
-        for term in ("MON" + "TIX", "Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi"):
+        for term in ("MON" + "TIX", "Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi", "پارسا" + " میرسعید"):
             self.assertNotIn(term.casefold(), text.casefold())
 
 

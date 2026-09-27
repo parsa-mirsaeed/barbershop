@@ -75,7 +75,7 @@ function bsc_registration_identity_fields() {
 	</div>
 	<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 		<label for="reg_full_name">نام و نام خانوادگی&nbsp;<span class="required" aria-hidden="true">*</span></label>
-		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="full_name" id="reg_full_name" autocomplete="name" value="<?php echo esc_attr( $full_name ); ?>" required aria-required="true" maxlength="120" placeholder="مثلاً پارسا میرسعید">
+		<input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="full_name" id="reg_full_name" autocomplete="name" value="<?php echo esc_attr( $full_name ); ?>" required aria-required="true" maxlength="120" placeholder="نام و نام خانوادگی">
 	</p>
 	<?php
 }
@@ -111,17 +111,33 @@ function bsc_registration_phone_field() {
 add_action( 'woocommerce_register_form', 'bsc_registration_phone_field', 20 );
 
 /**
- * Remove WooCommerce's generic English privacy paragraph; the required Persian
- * consent block above provides clearer links and an explicit acceptance action.
+ * Remove WooCommerce's generic privacy paragraph on registration and checkout.
+ *
+ * The storefront uses explicit linked consent text instead of the long generic
+ * paragraph so customers see one concise, unambiguous acceptance action.
  *
  * @param string $text Existing privacy text.
+ * @param string $type Context: registration or checkout.
  * @return string
  */
-function bsc_registration_privacy_text( $text ) {
-	unset( $text );
+function bsc_hide_generic_woocommerce_privacy_text( $text, $type ) {
+	unset( $text, $type );
 	return '';
 }
-add_filter( 'woocommerce_registration_privacy_policy_text', 'bsc_registration_privacy_text', 100 );
+add_filter( 'woocommerce_get_privacy_policy_text', 'bsc_hide_generic_woocommerce_privacy_text', 100, 2 );
+
+/**
+ * Keep checkout consent concise while preserving WooCommerce's required terms
+ * checkbox and links to both legal documents.
+ *
+ * @param string $text Existing checkbox text.
+ * @return string
+ */
+function bsc_checkout_legal_consent_text( $text ) {
+	unset( $text );
+	return 'با ثبت سفارش، [terms] و [privacy_policy] را خوانده‌ام و می‌پذیرم.';
+}
+add_filter( 'woocommerce_get_terms_and_conditions_checkbox_text', 'bsc_checkout_legal_consent_text', 100 );
 
 /**
  * Validate the simplified registration form.
@@ -186,6 +202,9 @@ function bsc_save_registration_fields( $customer_id ) {
 	update_user_meta( $customer_id, 'billing_last_name', $last_name );
 	update_user_meta( $customer_id, 'billing_phone', $phone );
 	update_user_meta( $customer_id, '_bsc_legal_consent_at', gmdate( 'c' ) );
+	if ( function_exists( 'bsc_legal_document_version' ) ) {
+		update_user_meta( $customer_id, '_bsc_legal_consent_version', bsc_legal_document_version() );
+	}
 }
 add_action( 'woocommerce_created_customer', 'bsc_save_registration_fields' );
 

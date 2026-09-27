@@ -185,6 +185,9 @@ function bsc_apply_woocommerce_defaults() {
 	update_option( 'woocommerce_cart_redirect_after_add', 'yes' );
 	update_option( 'woocommerce_checkout_highlight_required_fields', 'yes' );
 	update_option( 'woocommerce_allow_tracking', 'no' );
+	update_option( 'woocommerce_registration_privacy_policy_text', '' );
+	update_option( 'woocommerce_checkout_privacy_policy_text', '' );
+	update_option( 'woocommerce_checkout_terms_and_conditions_checkbox_text', 'با ثبت سفارش، [terms] و [privacy_policy] را خوانده‌ام و می‌پذیرم.' );
 	update_option( 'woocommerce_coming_soon', 'no' );
 	update_option( 'woocommerce_store_pages_only', 'no' );
 	update_option( 'bsc_disable_xmlrpc', get_option( 'bsc_disable_xmlrpc', 'yes' ) );
