@@ -126,7 +126,11 @@ function bsc_ensure_legal_pages() {
 <h2>رسیدگی به اختلاف</h2>
 <p>ابتدا از راه‌های تماس فروشگاه درخواست خود را همراه شماره سفارش مطرح کنید تا موضوع با گفت‌وگو و مستندات سفارش بررسی شود. حقوق قانونی مصرف‌کننده با این شرایط محدود نمی‌شود.</p>
 </div>',
-		esc_html( $site_name )
+		esc_html( $site_name ),
+		esc_html( $supplier_name ),
+		esc_html( $supplier_address ),
+		esc_html( $supplier_phone ),
+		esc_html( antispambot( $supplier_email ? $supplier_email : $admin_email ) )
 	);
 
 	$privacy_id = bsc_ensure_legal_page( 'privacy-policy', 'سیاست حریم خصوصی', $privacy );
