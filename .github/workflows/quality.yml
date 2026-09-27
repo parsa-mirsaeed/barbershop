@@ -153,7 +153,7 @@ jobs:
           grep -Fq 'mobile-live-fixes.css' "$home_html"
           grep -Fq 'ux-refinements.css' "$home_html"
           grep -Fq 'ux-refinements.js' "$home_html"
-          grep -Fq '3.3.1' "$home_html"
+          grep -Fq '3.3.2' "$home_html"
           grep -Fq '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' "$home_html"
           ! grep -Fq '[products ' "$home_html"
           ! grep -Fq '[bsc_product_categories' "$home_html"
