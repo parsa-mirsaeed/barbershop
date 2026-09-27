@@ -62,15 +62,17 @@ class LiveRoundTwoRegressionTests(unittest.TestCase):
             source = path.read_text()
             self.assertIn("wp bsc gateland repair", source)
 
-    def test_checkout_privacy_text_has_a_persian_fallback(self) -> None:
-        source = (PLUGIN / "includes" / "runtime-repairs.php").read_text()
-        self.assertIn("Your personal data will be used to process your order", source)
-        self.assertIn("اطلاعات شخصی شما برای پردازش سفارش", source)
+    def test_generic_checkout_privacy_paragraph_is_removed(self) -> None:
+        account = (PLUGIN / "includes" / "account.php").read_text()
+        runtime = (PLUGIN / "includes" / "runtime-repairs.php").read_text()
+        self.assertIn("woocommerce_get_privacy_policy_text", account)
+        self.assertNotIn("Your personal data will be used to process your order", runtime)
+        self.assertNotIn("اطلاعات شخصی شما برای پردازش سفارش", runtime)
 
     def test_runtime_repairs_are_loaded_and_cache_busted(self) -> None:
         core = (PLUGIN / "barbershop-core.php").read_text()
-        self.assertIn("Version: 3.3.1", core)
-        self.assertIn("define( 'BSC_VERSION', '3.3.1' )", core)
+        self.assertIn("Version: 3.3.2", core)
+        self.assertIn("define( 'BSC_VERSION', '3.3.2' )", core)
         self.assertIn("includes/runtime-repairs.php", core)
         self.assertIn("includes/mobile-live-fixes.php", core)
 
