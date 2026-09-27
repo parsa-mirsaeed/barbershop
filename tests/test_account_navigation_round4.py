@@ -122,7 +122,7 @@ def logged_in_account_fixture_html() -> str:
           <div class="woocommerce-MyAccount-content">
             <p>سلام کاربر</p><p>متن عمومی قدیمی ووکامرس</p>
             <section class="bsc-account-overview">
-              <div class="bsc-account-welcome"><span class="bsc-account-avatar">پ</span><div><h2>سلام پارسا</h2><p>سفارش‌ها و اطلاعات حساب خود را مدیریت کنید.</p></div><div class="bsc-account-identifiers"><span class="bsc-account-chip">test@example.test</span><span class="bsc-account-chip">09121234567</span></div></div>
+              <div class="bsc-account-welcome"><span class="bsc-account-avatar">پ</span><div><h2>سلام کاربر</h2><p>سفارش‌ها و اطلاعات حساب خود را مدیریت کنید.</p></div><div class="bsc-account-identifiers"><span class="bsc-account-chip">test@example.test</span><span class="bsc-account-chip">09121234567</span></div></div>
               <div class="bsc-account-metrics"><div class="bsc-account-metric"><strong>۳</strong><span>سفارش ثبت‌شده</span></div><div class="bsc-account-metric"><strong>۲</strong><span>روش ورود</span></div></div>
               <nav class="bsc-account-actions"><a href="#">مشاهده سفارش‌ها</a><a href="#">ویرایش اطلاعات</a><a href="#">رفتن به فروشگاه</a></nav>
             </section>
