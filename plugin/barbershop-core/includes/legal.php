@@ -78,6 +78,9 @@ function bsc_ensure_legal_pages() {
 	$supplier_address = sanitize_textarea_field( get_option( 'bsc_legal_supplier_address', '' ) );
 	$supplier_phone   = sanitize_text_field( get_option( 'bsc_legal_supplier_phone', '' ) );
 	$supplier_email   = sanitize_email( get_option( 'bsc_legal_supplier_email', $admin_email ) );
+	$supplier_name    = $supplier_name ? $supplier_name : $site_name;
+	$supplier_address = $supplier_address ? $supplier_address : 'نشانی درج‌شده در بخش تماس فروشگاه';
+	$supplier_phone   = $supplier_phone ? $supplier_phone : 'شماره درج‌شده در بخش تماس فروشگاه';
 	$privacy     = sprintf(
 		'<div class="bsc-legal-page"><p class="bsc-legal-lead">در %1$s، اصل بر جمع‌آوری حداقلی اطلاعات است؛ فقط داده‌های لازم برای ساخت و مدیریت حساب، انجام سفارش، پرداخت، ارسال، پشتیبانی و امنیت فروشگاه پردازش می‌شود.</p>
 <h2>چه اطلاعاتی دریافت می‌شود؟</h2>
@@ -103,7 +106,9 @@ function bsc_ensure_legal_pages() {
 		esc_html( antispambot( $supplier_email ? $supplier_email : $admin_email ) )
 	);
 	$terms      = sprintf(
-		'<div class="bsc-legal-page"><p class="bsc-legal-lead">استفاده از %1$s و ثبت سفارش به معنی مطالعه و پذیرش شرایط زیر است. اطلاعات محصول، قیمت، هزینه ارسال و وضعیت موجودی که پیش از پرداخت نمایش داده می‌شود، مبنای سفارش خواهد بود.</p>
+		'<div class="bsc-legal-page"><p class="bsc-legal-lead">ثبت سفارش در %1$s به معنی مطالعه و پذیرش شرایطی است که پیش از خرید در دسترس شما قرار گرفته است. این شرایط در کنار حقوق الزامی مصرف‌کننده طبق قوانین جاری جمهوری اسلامی ایران اجرا می‌شود.</p>
+<h2>هویت فروشنده و راه‌های تماس</h2>
+<ul><li><strong>نام تجاری:</strong> %1$s</li><li><strong>تأمین‌کننده قانونی:</strong> %2$s</li><li><strong>نشانی محل کسب:</strong> %3$s</li><li><strong>شماره تماس:</strong> %4$s</li><li><strong>ایمیل:</strong> %5$s</li></ul>
 <h2>حساب کاربری</h2>
 <p>کاربر مسئول درست‌بودن شماره موبایل، ایمیل و اطلاعات تحویل و همچنین حفاظت از رمز عبور خود است. ورود با شماره موبایل یا ایمیل و رمز عبور انجام می‌شود.</p>
 <h2>ثبت و پذیرش سفارش</h2>
