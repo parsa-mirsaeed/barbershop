@@ -51,6 +51,17 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("woocommerce_registration_errors", barber)
         self.assertTrue((PLUGIN / "assets" / "account.css").is_file())
         self.assertTrue((PLUGIN / "assets" / "ux-refinements.css").is_file())
+        store_pattern = (THEME / "inc" / "pattern-content" / "store.php").read_text()
+        footer = (THEME / "parts" / "footer.html").read_text()
+        self.assertNotIn("نام، زیرگروه، ترتیب و آیکون هر دسته از پنل فارسی فروشگاه", store_pattern)
+        self.assertNotIn("تمام نام‌ها، لوگوها، تصاویر و اطلاعات تماس در این نسخه نمونه", footer)
+        for key in (
+            "hero_proof_1_title", "trust_1_title", "nav_home_label", "categories_heading",
+            "products_description", "services_description", "reviews_description",
+            "contact_description", "footer_quick_heading",
+        ):
+            self.assertIn(key, barber)
+        self.assertIn("$stored[ $key ] = $value;", barber)
 
     def test_persian_legal_pages_are_created_without_overwriting_edits(self) -> None:
         legal = (PLUGIN / "includes" / "legal.php").read_text()
