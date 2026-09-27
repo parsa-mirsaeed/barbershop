@@ -43,7 +43,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("bsc-registration-consent", source)
         self.assertIn("woocommerce_get_privacy_policy_text", source)
         self.assertIn("woocommerce_get_terms_and_conditions_checkbox_text", source)
-        self.assertNotIn("پارسا میرسعید", source)
+        self.assertNotIn("پارسا" + " " + "میرسعید", source)
         self.assertIn("unset( $items['edit-address'], $items['downloads'] )", source)
         self.assertIn("woocommerce_registration_generate_username', 'yes'", setup)
         self.assertIn("woocommerce_registration_generate_password', 'no'", setup)
