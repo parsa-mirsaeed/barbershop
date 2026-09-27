@@ -41,7 +41,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("شماره موبایل یا ایمیل", source)
         self.assertIn("bsc_authenticate_with_mobile", source)
         self.assertIn("bsc-registration-consent", source)
-        self.assertIn("woocommerce_registration_privacy_policy_text", source)
+        self.assertIn("woocommerce_get_privacy_policy_text", source)\n        self.assertIn("woocommerce_get_terms_and_conditions_checkbox_text", source)\n        self.assertNotIn("پارسا میرسعید", source)
         self.assertIn("unset( $items['edit-address'], $items['downloads'] )", source)
         self.assertIn("woocommerce_registration_generate_username', 'yes'", setup)
         self.assertIn("woocommerce_registration_generate_password', 'no'", setup)
@@ -266,7 +266,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
             for p in ROOT.rglob("*")
             if p.is_file() and p.suffix.lower() in {".php", ".html", ".css", ".json", ".md", ".txt", ".yaml", ".yml", ".svg"}
         )
-        for term in ("MON" + "TIX", "Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi"):
+        for term in ("MON" + "TIX", "Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi", "پارسا" + " میرسعید"):
             self.assertNotIn(term.casefold(), text.casefold())
 
 
