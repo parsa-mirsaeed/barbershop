@@ -4,6 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/** @return string */
+function bsc_legal_document_version() {
+	return '1405-07-v1';
+}
+
 /**
  * Create one managed legal page without overwriting merchant edits.
  *
@@ -67,7 +72,7 @@ function bsc_ensure_legal_page( $slug, $title, $content ) {
  * @return void
  */
 function bsc_ensure_legal_pages() {
-	$legal_schema_version = '3';
+	$legal_schema_version = bsc_legal_document_version();
 	if ( $legal_schema_version === get_option( 'bsc_legal_pages_version' ) ) {
 		return;
 	}
