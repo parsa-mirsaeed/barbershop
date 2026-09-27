@@ -119,7 +119,7 @@ class LiveMobileRoundThreeTests(unittest.TestCase):
         self.assertIn("add_action( 'wp_head', 'bsc_mobile_live_viewport_meta', 0 )", source)
         self.assertIn("barbershop-core-runtime-storefront", source)
         self.assertIn("includes/mobile-live-fixes.php", core)
-        self.assertIn("Version: 3.3.1", core)
+        self.assertIn("Version: 3.3.2", core)
         self.assertIn("max-width: 781px", css)
         self.assertIn("max-height: 520px", css)
 
