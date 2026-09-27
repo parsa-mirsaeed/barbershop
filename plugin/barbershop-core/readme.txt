@@ -4,7 +4,7 @@ Tags: woocommerce, persian, rtl, storefront, privacy, security
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 3.0.0
+Stable tag: 3.3.3
 License: GPLv2 or later
 
 Persian WooCommerce UX, minimal customer accounts, editable category icons, store dashboard, local Vazirmatn provisioning, security hardening, and consent-aware portfolio controls.
@@ -33,6 +33,10 @@ The installer installs Wordfence separately from the official WordPress reposito
 5. Review privacy, payment, email, backup, and production security settings.
 
 == Changelog ==
+
+= 3.3.3 =
+* Public storefront copy can be edited or cleared from the barber dashboard.
+* Removes live-site implementation/sample copy from category and footer surfaces.
 
 = 3.0.0 =
 * Premium Persian admin/storefront UX and local Vazirmatn.
