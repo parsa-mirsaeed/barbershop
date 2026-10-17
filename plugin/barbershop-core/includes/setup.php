@@ -189,6 +189,9 @@ function bsc_apply_woocommerce_defaults() {
 	update_option( 'woocommerce_checkout_privacy_policy_text', '' );
 	update_option( 'woocommerce_checkout_terms_and_conditions_checkbox_text', 'با ثبت سفارش، [terms] و [privacy_policy] را خوانده‌ام و می‌پذیرم.' );
 	update_option( 'woocommerce_coming_soon', 'no' );
+	// No checkout-created accounts bypassing verified-phone registration.
+	update_option( 'woocommerce_enable_guest_checkout', 'yes' );
+	update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
 	update_option( 'woocommerce_store_pages_only', 'no' );
 	update_option( 'bsc_disable_xmlrpc', get_option( 'bsc_disable_xmlrpc', 'yes' ) );
 	if ( class_exists( 'WC_Install' ) ) {
@@ -210,9 +213,20 @@ function bsc_apply_woocommerce_defaults() {
 }
 
 function bsc_maybe_apply_setup() {
-	if ( class_exists( 'WooCommerce' ) && BSC_VERSION !== get_option( 'bsc_setup_version' ) ) {
-		bsc_apply_woocommerce_defaults();
+	if ( ! class_exists( 'WooCommerce' ) || BSC_VERSION === get_option( 'bsc_setup_version' ) ) {
+		return;
 	}
+	$installed_version = get_option( 'bsc_setup_version', '' );
+	if ( $installed_version ) {
+		// Upgrade existing shops without resetting categories, merchant content,
+		// language, cart behavior or other established WooCommerce settings.
+		// Registration through checkout must never bypass verified-phone OTP.
+		update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
+		update_option( 'woocommerce_enable_guest_checkout', 'yes' );
+		update_option( 'bsc_setup_version', BSC_VERSION, false );
+		return;
+	}
+	bsc_apply_woocommerce_defaults();
 }
 add_action( 'init', 'bsc_maybe_apply_setup', 40 );
 

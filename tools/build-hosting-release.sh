@@ -25,6 +25,7 @@ cp hosting/mu-plugins/barbershop-hosting-guard.php "$OUT/mu-plugins/"
 cp hosting/.user.ini.recommended "$OUT/"
 cp hosting/wp-config.production.snippet.txt "$OUT/"
 cp docs/SHARED-HOSTING-PRODUCTION.md "$OUT/README-SHARED-HOSTING.md"
+cp docs/STOREFRONT-3.4-UPGRADE.md "$OUT/README-UPGRADE-3.4.md"
 cp tools/install-shared-hosting.sh "$OUT/"
 cp tools/shared-hosting-audit.sh "$OUT/"
 chmod 0755 "$OUT/install-shared-hosting.sh" "$OUT/shared-hosting-audit.sh"
@@ -62,7 +63,7 @@ PY
 
 (
   cd "$OUT"
-  sha256sum persian-barbershop-theme.zip barbershop-core-plugin.zip mu-plugins/barbershop-hosting-guard.php .user.ini.recommended wp-config.production.snippet.txt README-SHARED-HOSTING.md install-shared-hosting.sh shared-hosting-audit.sh manifest.json > SHA256SUMS
+  sha256sum persian-barbershop-theme.zip barbershop-core-plugin.zip mu-plugins/barbershop-hosting-guard.php .user.ini.recommended wp-config.production.snippet.txt README-SHARED-HOSTING.md README-UPGRADE-3.4.md install-shared-hosting.sh shared-hosting-audit.sh manifest.json > SHA256SUMS
 )
 
 # Refuse to ship obvious secrets or development artifacts.
