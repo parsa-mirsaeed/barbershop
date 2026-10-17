@@ -1,0 +1,24 @@
+/* Product search, passwordless phone entry and stable WooCommerce mobile media. */
+.pbs-header-inner .bsc-product-search{flex:1 1 14rem;max-width:23rem;min-width:0}
+.bsc-product-search{display:flex;align-items:stretch;gap:.45rem;direction:rtl}
+.bsc-product-search input[type=search]{min-width:0;flex:1 1 auto;width:100%;min-height:44px;padding:.6rem .85rem;border:1px solid #64748b;border-radius:.7rem;background:#fff;color:#142334;font:inherit}
+.bsc-product-search button,.bsc-otp button{min-height:44px;padding:.55rem 1rem;border:0;border-radius:.7rem;background:#0e8f6a;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.bsc-product-search :focus-visible,.bsc-otp :focus-visible{outline:3px solid #4ee2c4;outline-offset:2px}
+.bsc-product-search-title{margin-block:1.5rem;font-size:clamp(1.45rem,3vw,2rem)}
+.bsc-product-search-pagination ul{display:flex;gap:.7rem;list-style:none;justify-content:center;flex-wrap:wrap}
+.bsc-product-search-pagination a,.bsc-product-search-pagination span{display:inline-block;padding:.65rem .9rem;border:1px solid #7a8d9e;border-radius:.5rem}
+.bsc-otp{max-width:34rem;margin:2rem auto 5rem;padding:clamp(1.25rem,4vw,2.25rem);border:1px solid #4b6175;border-radius:1.4rem;background:#11283a;color:#fff;line-height:1.9}
+.bsc-otp h2{margin-top:0;color:#fff;font-size:clamp(1.4rem,3vw,2rem)}
+.bsc-otp p{color:#d2e2ed}
+.bsc-otp form{display:grid;gap:1rem;margin-block:1.5rem 0}
+.bsc-otp label{font-weight:600}
+.bsc-otp input:not([type=checkbox]){box-sizing:border-box;width:100%;min-height:48px;padding:.65rem 1rem;border:1px solid #91a4b7;border-radius:.65rem;background:#fff;color:#071b2c;font:inherit;font-size:16px}
+.bsc-otp-consent{display:flex;gap:.6rem;align-items:flex-start;font-size:.9rem}
+.bsc-otp-consent input{margin-top:.5rem;min-width:18px;min-height:18px}
+.bsc-otp-message{padding:.7rem 1rem;border:1px solid #86b8ab;border-radius:.65rem}
+.bsc-otp a{color:#8defca}
+.woocommerce div.product div.images .woocommerce-product-gallery__image img{display:block;width:100%!important;max-width:100%;height:auto!important;object-fit:contain}
+.woocommerce div.product .woocommerce-product-gallery .flex-viewport{max-width:100%;overflow:hidden}
+.woocommerce div.product .woocommerce-product-gallery__wrapper{max-width:100%;min-width:0}
+.woocommerce div.product .woocommerce-product-gallery .flex-control-thumbs img{width:100%;height:auto;object-fit:cover;aspect-ratio:1;cursor:pointer}
+@media(max-width:920px){.pbs-header-inner{flex-wrap:wrap!important}.pbs-header-inner .bsc-product-search{order:4;flex-basis:100%;max-width:none}.bsc-product-search button{padding-inline:.75rem}}
