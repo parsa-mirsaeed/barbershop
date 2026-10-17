@@ -220,7 +220,7 @@ function bsc_otp_verify_handler() {
             'user_login' => bsc_otp_customer_login( $phone ),
             'user_pass' => wp_generate_password( 40, true, true ),
             'user_email' => '',
-            'display_name' => 'مشتری مونتیکس',
+            'display_name' => 'مشتری',
             'role' => 'customer',
         ) );
         if ( is_wp_error( $id ) ) { bsc_otp_redirect( 'unavailable' ); }
