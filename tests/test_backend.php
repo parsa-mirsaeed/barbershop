@@ -12,7 +12,8 @@ require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/woocommerce.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/setup.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/hosting.php';
 function wp_salt( $scheme = '' ) { return 'test-only-wordpress-salt-' . $scheme; }
-function get_option( $key, $default = false ) { return $default; }
+function get_option( $key, $default = false ) { global $bsc_test_options; return isset( $bsc_test_options[ $key ] ) ? $bsc_test_options[ $key ] : $default; }
+function is_front_page() { return true; }
 function has_filter( $key ) { return false; }
 function apply_filters( $key, $value ) { return $value; }
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/otp-auth.php';
@@ -55,4 +56,11 @@ bsc_test_assert_same( false, false !== strpos( bsc_otp_customer_login( '09121234
 bsc_test_assert_same( true, bsc_visibility_enabled( 'gallery' ), 'Gallery is visible by default.' );
 bsc_test_assert_same( true, bsc_visibility_enabled( 'product_reviews' ), 'Product reviews are visible by default.' );
 bsc_test_assert_same( false, bsc_otp_sms_ready(), 'OTP fails closed without SMS provider credentials.' );
+$bsc_test_options['bsc_show_section_gallery'] = 'no';
+bsc_test_assert_same( false, bsc_visibility_enabled( 'gallery' ), 'Merchant can disable before/after gallery.' );
+bsc_test_assert_same( '', bsc_visibility_render_block( 'before/after', array( 'attrs' => array( 'anchor' => 'gallery' ) ) ), 'Hidden gallery block renders no markup.' );
+bsc_test_assert_same( 'keep products', bsc_visibility_render_block( 'keep products', array( 'attrs' => array( 'anchor' => 'products' ) ) ), 'Other sections remain visible.' );
+$bsc_test_options['bsc_show_product_reviews'] = 'no';
+bsc_test_assert_same( false, bsc_visibility_enabled( 'product_reviews' ), 'Merchant can hide product comments.' );
+bsc_test_assert_same( false, isset( bsc_visibility_product_tabs( array( 'reviews' => array( 'title' => 'Reviews' ) ) )['reviews'] ), 'Hidden review tab is removed.' );
 echo "Backend unit tests passed.\\n";
