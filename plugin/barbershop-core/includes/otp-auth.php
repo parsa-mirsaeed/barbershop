@@ -93,6 +93,15 @@ function bsc_otp_customer_login( $phone ) {
  * Only WooCommerce customers may authenticate with SMS. Never OTP-log in
  * WordPress admins, editors or other privileged accounts.
  */
+function bsc_otp_is_customer_account( $user ) {
+    // Never grant OTP authentication to multi-role staff or privileged accounts.
+    return $user instanceof WP_User
+        && array_values( (array) $user->roles ) === array( 'customer' )
+        && ! user_can( $user, 'manage_options' )
+        && ! user_can( $user, 'manage_woocommerce' )
+        && ! user_can( $user, 'edit_others_posts' );
+}
+
 function bsc_otp_customer_for_phone( $phone ) {
     // Only a separately SMS-verified identity may access existing order history.
     // WooCommerce billing_phone is shipping/contact data and can be edited in checkout.
@@ -109,7 +118,7 @@ function bsc_otp_customer_for_phone( $phone ) {
     }
     if ( count( $matches ) > 1 ) { return new WP_Error( 'ambiguous_phone' ); }
     if ( $matches ) {
-        return in_array( 'customer', (array) $matches[0]->roles, true )
+        return bsc_otp_is_customer_account( $matches[0] )
             ? $matches[0] : new WP_Error( 'not_customer' );
     }
     // Legacy password accounts must link their phone while authenticated.
@@ -128,7 +137,7 @@ function bsc_otp_send_handler() {
     $phone = isset( $_POST['phone'] ) ? bsc_otp_valid_mobile( sanitize_text_field( wp_unslash( $_POST['phone'] ) ) ) : '';
     if ( ! $phone || empty( $_POST['bsc_legal_consent'] ) ) { bsc_otp_redirect( 'invalid' ); }
     $link_id = get_current_user_id();
-    if ( $link_id && ! in_array( 'customer', (array) wp_get_current_user()->roles, true ) ) {
+    if ( $link_id && ! bsc_otp_is_customer_account( wp_get_current_user() ) ) {
         bsc_otp_redirect( 'unavailable' );
     }
 
@@ -194,7 +203,7 @@ function bsc_otp_verify_handler() {
     if ( ! empty( $challenge['link_id'] ) ) {
         $link_id = (int) $challenge['link_id'];
         if ( get_current_user_id() !== $link_id ||
-             ! in_array( 'customer', (array) wp_get_current_user()->roles, true ) ||
+             ! bsc_otp_is_customer_account( wp_get_current_user() ) ||
              ( $user && ( is_wp_error( $user ) ? 'legacy_phone' !== $user->get_error_code() : (int) $user->ID !== $link_id ) ) ) {
             bsc_otp_redirect( 'unavailable' );
         }
@@ -224,7 +233,7 @@ function bsc_otp_verify_handler() {
         }
         $user = get_user_by( 'id', $id );
     }
-    if ( ! $user || ! in_array( 'customer', (array) $user->roles, true ) ) {
+    if ( ! $user || ! bsc_otp_is_customer_account( $user ) ) {
         bsc_otp_redirect( 'unavailable' );
     }
     wp_set_current_user( $user->ID );
@@ -309,7 +318,7 @@ function bsc_otp_form() {
 /** Existing customers may explicitly bind their password account to a verified mobile. */
 function bsc_otp_legacy_link_form() {
     $user = wp_get_current_user();
-    if ( ! $user || ! in_array( 'customer', (array) $user->roles, true )
+    if ( ! $user || ! bsc_otp_is_customer_account( $user )
         || get_user_meta( $user->ID, '_bsc_verified_phone', true ) ) { return; }
     $phone = bsc_otp_valid_mobile( get_user_meta( $user->ID, 'billing_phone', true ) );
     if ( ! $phone ) { return; }
