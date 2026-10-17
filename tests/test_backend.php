@@ -6,6 +6,17 @@ define( 'BSC_VERSION', 'test' );
 function add_action() {}
 function add_filter() {}
 function is_admin() { return false; }
+class WP_User {
+    public $roles;
+    public $caps;
+    public function __construct( $roles, $caps = array() ) {
+        $this->roles = $roles;
+        $this->caps = $caps;
+    }
+}
+function user_can( $user, $capability ) {
+    return ! empty( $user->caps[ $capability ] );
+}
 
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/account.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/woocommerce.php';
@@ -56,6 +67,9 @@ bsc_test_assert_same( false, false !== strpos( bsc_otp_customer_login( '09121234
 bsc_test_assert_same( true, bsc_visibility_enabled( 'gallery' ), 'Gallery is visible by default.' );
 bsc_test_assert_same( true, bsc_visibility_enabled( 'product_reviews' ), 'Product reviews are visible by default.' );
 bsc_test_assert_same( false, bsc_otp_sms_ready(), 'OTP fails closed without SMS provider credentials.' );
+bsc_test_assert_same( true, bsc_otp_is_customer_account( new WP_User( array( 'customer' ) ) ), 'Customer-only account is eligible for OTP.' );
+bsc_test_assert_same( false, bsc_otp_is_customer_account( new WP_User( array( 'customer', 'administrator' ) ) ), 'Multi-role administrator must not receive customer OTP sign-in.' );
+bsc_test_assert_same( false, bsc_otp_is_customer_account( new WP_User( array( 'customer' ), array( 'manage_woocommerce' => true ) ) ), 'Privileged customer capabilities must not receive OTP sign-in.' );
 $bsc_test_options['bsc_show_section_gallery'] = 'no';
 bsc_test_assert_same( false, bsc_visibility_enabled( 'gallery' ), 'Merchant can disable before/after gallery.' );
 bsc_test_assert_same( '', bsc_visibility_render_block( 'before/after', array( 'attrs' => array( 'anchor' => 'gallery' ) ) ), 'Hidden gallery block renders no markup.' );
