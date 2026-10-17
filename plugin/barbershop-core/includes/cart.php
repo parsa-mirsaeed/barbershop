@@ -44,6 +44,9 @@ function bsc_account_destination() {
 	if ( function_exists( 'bsc_is_store_staff' ) && bsc_is_store_staff() ) {
 		return admin_url( 'admin.php?page=bsc-store-setup' );
 	}
+	if ( ! is_user_logged_in() && function_exists( 'bsc_faraz_login_url' ) ) {
+		return bsc_faraz_login_url();
+	}
 	return function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : wp_login_url();
 }
 

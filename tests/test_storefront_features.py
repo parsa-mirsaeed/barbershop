@@ -27,16 +27,18 @@ class StorefrontFeaturesContract(unittest.TestCase):
         self.assertIn("woocommerce_product_tabs", source)
         self.assertIn("comments_open", source)
 
-    def test_otp_failure_secure_by_default(self):
-        source = (PLUGIN / "includes" / "otp-auth.php").read_text(encoding="utf-8")
-        for item in ("is_ssl()", "hash_hmac", "random_bytes( 32 )", "wp_hash_password",
-                     "wp_check_password", "random_int", "delete_transient",
-                     "bsc_otp_phone_key", "bsc_otp_session_key",
-                     "'httponly' => true", "'samesite' => 'Lax'",
-                     "_bsc_verified_phone", "'customer'", "woocommerce_registration_errors"):
+    def test_farazsms_single_owner_and_failure_secure(self):
+        source = (PLUGIN / "includes" / "farazsms-bridge.php").read_text(encoding="utf-8")
+        plugin = (PLUGIN / "barbershop-core.php").read_text(encoding="utf-8")
+        for item in ("bsc_faraz_ready", "FARAZSMS_MONTIX_SECURITY_PATCH",
+                     "is_ssl()", "check_admin_referer", "get_transient",
+                     "farazsms_montix_phone_claimable", "farazsms_login_form",
+                     "admin_post_bsc_faraz_link_verify", "woocommerce_registration_errors",
+                     "woocommerce_enable_signup_and_login_from_checkout"):
             self.assertIn(item, source)
-        self.assertNotIn("update_user_meta( $id, 'billing_email'", source)
-        self.assertNotIn("user_email' => $phone", source)
+        self.assertIn("includes/farazsms-bridge.php", plugin)
+        self.assertNotIn("includes/otp-auth.php", plugin)
+        self.assertFalse((PLUGIN / "includes" / "otp-auth.php").exists())
 
 
 class ProductGalleryMobileBrowserTest(unittest.TestCase):
