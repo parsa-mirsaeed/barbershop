@@ -378,7 +378,7 @@ function bsc_render_account_overview() {
 				<p>سفارش‌های خود را ببینید؛ اطلاعات تحویل و پرداخت فقط هنگام خرید ثبت می‌شود.</p>
 			</div>
 			<div class="bsc-account-identifiers">
-				<?php if ( $user->user_email ) : ?><span class="bsc-account-chip"><?php echo esc_html( $user->user_email ); ?></span><?php endif; ?>
+
 				<?php if ( $phone ) : ?><span class="bsc-account-chip"><?php echo esc_html( $phone ); ?></span><?php endif; ?>
 			</div>
 		</div>
