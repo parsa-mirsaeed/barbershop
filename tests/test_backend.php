@@ -27,7 +27,6 @@ function get_option( $key, $default = false ) { global $bsc_test_options; return
 function is_front_page() { return true; }
 function has_filter( $key ) { return false; }
 function apply_filters( $key, $value ) { return $value; }
-require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/otp-auth.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/visibility.php';
 
 function bsc_test_assert_same( $expected, $actual, $message ) {
@@ -60,16 +59,8 @@ bsc_test_assert_same( true, $extensions['pdo_mysql']['required'], 'PDO MySQL is 
 bsc_test_assert_same( true, $extensions['curl']['required'], 'cURL is a critical shared-host requirement.' );
 bsc_test_assert_same( false, $extensions['intl']['required'], 'Intl is recommended rather than fatal.' );
 
-bsc_test_assert_same( '09121234567', bsc_otp_valid_mobile( '+989121234567' ), 'OTP supports +98 Iranian phone.' );
-bsc_test_assert_same( '', bsc_otp_valid_mobile( '123456' ), 'OTP rejects invalid phone numbers.' );
-bsc_test_assert_same( true, 0 === strpos( bsc_otp_customer_login( '09121234567' ), 'bsc_u_' ), 'Opaque login prefix avoids exposing the phone.' );
-bsc_test_assert_same( false, false !== strpos( bsc_otp_customer_login( '09121234567' ), '09121234567' ), 'Opaque logins contain no phone numbers.' );
 bsc_test_assert_same( true, bsc_visibility_enabled( 'gallery' ), 'Gallery is visible by default.' );
 bsc_test_assert_same( true, bsc_visibility_enabled( 'product_reviews' ), 'Product reviews are visible by default.' );
-bsc_test_assert_same( false, bsc_otp_sms_ready(), 'OTP fails closed without SMS provider credentials.' );
-bsc_test_assert_same( true, bsc_otp_is_customer_account( new WP_User( array( 'customer' ) ) ), 'Customer-only account is eligible for OTP.' );
-bsc_test_assert_same( false, bsc_otp_is_customer_account( new WP_User( array( 'customer', 'administrator' ) ) ), 'Multi-role administrator must not receive customer OTP sign-in.' );
-bsc_test_assert_same( false, bsc_otp_is_customer_account( new WP_User( array( 'customer' ), array( 'manage_woocommerce' => true ) ) ), 'Privileged customer capabilities must not receive OTP sign-in.' );
 $bsc_test_options['bsc_show_section_gallery'] = 'no';
 bsc_test_assert_same( false, bsc_visibility_enabled( 'gallery' ), 'Merchant can disable before/after gallery.' );
 bsc_test_assert_same( '', bsc_visibility_render_block( 'before/after', array( 'attrs' => array( 'anchor' => 'gallery' ) ) ), 'Hidden gallery block renders no markup.' );

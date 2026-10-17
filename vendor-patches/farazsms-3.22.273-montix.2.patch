@@ -1,0 +1,459 @@
+diff -ruN a/faraz-sms/faraz-sms.php b/faraz-sms/faraz-sms.php
+--- a/faraz-sms/faraz-sms.php	2026-10-17 15:06:55.563004262 +0000
++++ b/faraz-sms/faraz-sms.php	2026-10-17 16:01:03.253250125 +0000
+@@ -3,7 +3,7 @@
+ Plugin Name: فراز اس ام اس
+ Plugin URI: https://farazsms.com/
+ Description: با استفاده از افزونه فراز اس ام اس می توانید به صورت حرفه ای سایت خود را به یک ابزار قدرتمند پیامکی برای اطلاع رسانی و بازاریابی مجهز کنید
+-Version: 3.22.273
++Version: 3.22.273-montix.2
+ Author: FarazSMS
+ Author URI: https://farazsms.com/Text Domain: farazsms
+ Domain Path: /languages
+@@ -21,8 +21,10 @@
+ }
+ 
+ // نسخه فعلی افزونه برای مقایسه با نسخه سایت فراز اس ام اس
++define( 'FARAZSMS_MONTIX_SECURITY_PATCH', '2026-10-17.2' );
++
+ if ( ! defined( 'FARAZSMS_PLUGIN_VERSION' ) ) {
+-	define( 'FARAZSMS_PLUGIN_VERSION', '3.22.273' );
++	define( 'FARAZSMS_PLUGIN_VERSION', '3.22.273-montix.2' );
+ }
+ // آمار Matomoِ فراز — روی همه‌ی نصب‌ها فعال (مدیرِ هر سایت می‌تواند از تنظیمات خاموش کند).
+ // https اجباری است تا رویدادهای سمتِ سرور هم کار کنند (نه فقط ردیابِ JS).
+diff -ruN a/faraz-sms/inc/farazsms-account-dedupe.php b/faraz-sms/inc/farazsms-account-dedupe.php
+--- a/faraz-sms/inc/farazsms-account-dedupe.php	2026-10-17 15:06:55.548102231 +0000
++++ b/faraz-sms/inc/farazsms-account-dedupe.php	2026-10-17 15:58:02.961635655 +0000
+@@ -627,3 +627,49 @@
+ 	</div>
+ 	<?php
+ }
++
++
++/**
++ * Montix security overlay: only SMS-verified identities authenticate by OTP.
++ * Do NOT infer ownership from billing_phone, editable mobile_number or user_login.
++ * Previous Montix OTP accounts are trusted via their verified-only meta key.
++ */
++function farazsms_montix_is_customer( $user ) {
++    return $user instanceof \WP_User
++        && array_values( (array) $user->roles ) === array( 'customer' )
++        && ! user_can( $user, 'manage_options' )
++        && ! user_can( $user, 'edit_users' )
++        && ! user_can( $user, 'manage_woocommerce' );
++}
++
++function farazsms_montix_verified_customer_by_mobile( $raw_mobile ) {
++    $phone = farazsms_dedupe_normalize_mobile( $raw_mobile );
++    if ( ! $phone ) { return null; }
++    $users = array();
++    foreach ( array( '_farazsms_verified_phone', '_bsc_verified_phone' ) as $key ) {
++        foreach ( get_users( array(
++            'meta_key' => $key, 'meta_value' => farazsms_dedupe_mobile_variants( $phone ),
++            'meta_compare' => 'IN', 'number' => 3,
++        ) ) as $user ) {
++            $users[ (int) $user->ID ] = $user;
++        }
++    }
++    if ( count( $users ) !== 1 ) { return null; }
++    $user = reset( $users );
++    return farazsms_montix_is_customer( $user ) ? $user : null;
++}
++
++/** Deny enrollment if another account has claimed or received this phone. */
++function farazsms_montix_phone_claimable( $phone, $user_id ) {
++    $phone = farazsms_dedupe_normalize_mobile( $phone );
++    if ( ! $phone ) { return false; }
++    foreach ( array( '_farazsms_verified_phone', '_bsc_verified_phone' ) as $key ) {
++        $matches = get_users( array( 'meta_key' => $key,
++            'meta_value' => farazsms_dedupe_mobile_variants( $phone ),
++            'meta_compare' => 'IN', 'fields' => 'ID', 'number' => 3 ) );
++        foreach ( $matches as $id ) {
++            if ( (int) $id !== (int) $user_id ) { return false; }
++        }
++    }
++    return ! farazsms_find_user_ids_by_mobile( $phone, $user_id );
++}
+diff -ruN a/faraz-sms/inc/farazsms-self-update.php b/faraz-sms/inc/farazsms-self-update.php
+--- a/faraz-sms/inc/farazsms-self-update.php	2026-10-03 15:03:15.000000000 +0000
++++ b/faraz-sms/inc/farazsms-self-update.php	2026-10-17 17:08:54.067555195 +0000
+@@ -493,6 +493,9 @@
+ }
+ 
+ function farazsms_self_update_inject( $transient ) {
++    // The modified authentication plugin must never advertise an unsigned upstream
++    // package which would silently remove the reviewed security fixes.
++    if ( defined( 'FARAZSMS_MONTIX_SECURITY_PATCH' ) ) { return $transient; }
+ 	if ( empty( $transient ) || ! is_object( $transient ) ) {
+ 		return $transient;
+ 	}
+@@ -596,7 +599,36 @@
+ // ============================================================================
+ 
+ add_filter( 'auto_update_plugin', 'farazsms_self_update_auto_decision', 10, 2 );
++
++// Pinned fork: ignore all upstream auto-update decisions, including other filters.
++function farazsms_montix_pinned_auto_update( $update, $item ) {
++    return is_object( $item ) && isset( $item->plugin )
++        && $item->plugin === 'faraz-sms/faraz-sms.php' ? false : $update;
++}
++add_filter( 'auto_update_plugin', 'farazsms_montix_pinned_auto_update', PHP_INT_MAX, 2 );
++
++// Block WordPress plugin update operations, including a manually clicked update
++// button, until an operator explicitly authorizes a reviewed replacement.
++// WordPress 'install/overwrite via ZIP' may use a different path: the Montix
++// plugin's exact-marker check still fails closed in that case.
++function farazsms_montix_pinned_upgrade( $response, $extra ) {
++    if ( defined( 'MONTIX_ALLOW_REVIEWED_FARAZSMS_UPGRADE' ) && MONTIX_ALLOW_REVIEWED_FARAZSMS_UPGRADE ) {
++        return $response;
++    }
++    $target = is_array( $extra ) && isset( $extra['plugin'] ) ? $extra['plugin'] : '';
++    if ( $target === 'faraz-sms/faraz-sms.php' ) {
++        return new \WP_Error( 'montix_faraz_upgrade_locked',
++            'Montix patched FarazSMS is pinned. Back up and review the new version before authorizing replacement.' );
++    }
++    return $response;
++}
++add_filter( 'upgrader_pre_install', 'farazsms_montix_pinned_upgrade', PHP_INT_MAX, 2 );
++
+ function farazsms_self_update_auto_decision( $update, $item ) {
++    if ( defined( 'FARAZSMS_MONTIX_SECURITY_PATCH' ) && is_object( $item )
++        && isset( $item->plugin ) && $item->plugin === 'faraz-sms/faraz-sms.php' ) {
++        return false;
++    }
+ 	$basename = defined( 'FARAZSMS_PLUGIN_BASENAME' ) ? FARAZSMS_PLUGIN_BASENAME : 'faraz-sms/faraz-sms.php';
+ 	if ( ! is_object( $item ) || empty( $item->plugin ) || $item->plugin !== $basename ) {
+ 		return $update;
+diff -ruN a/faraz-sms/modules/farazsms-login/includes/class-helper.php b/faraz-sms/modules/farazsms-login/includes/class-helper.php
+--- a/faraz-sms/modules/farazsms-login/includes/class-helper.php	2026-10-17 15:06:55.574912983 +0000
++++ b/faraz-sms/modules/farazsms-login/includes/class-helper.php	2026-10-17 16:01:03.253563899 +0000
+@@ -878,7 +878,10 @@
+     public function login_in_wordpress_with_out_password($username, $back_url) {
+         $back_url = trim((string) urldecode($back_url));
+         $user = get_user_by('login', $username);
+-        if ($user) {
++        if ($user && \farazsms_montix_is_customer( $user )
++            && ( $owner = \farazsms_montix_verified_customer_by_mobile( get_user_meta( $user->ID, '_farazsms_verified_phone', true )
++                ?: get_user_meta( $user->ID, '_bsc_verified_phone', true ) ) )
++                && (int) $owner->ID === (int) $user->ID && is_ssl() ) {
+             wp_set_current_user($user->ID);
+             // v3.22.144: بدونِ پارامترِ سوم، تا وردپرس خودش امن‌بودنِ نشست را تشخیص دهد و روی
+             // سایتِ HTTPS کوکیِ امنِ احراز هم ساخته شود (وگرنه wp-admin با reauth=1 پس می‌زند).
+diff -ruN a/faraz-sms/modules/farazsms-login/includes/class-main.php b/faraz-sms/modules/farazsms-login/includes/class-main.php
+--- a/faraz-sms/modules/farazsms-login/includes/class-main.php	2026-10-17 15:06:55.573825074 +0000
++++ b/faraz-sms/modules/farazsms-login/includes/class-main.php	2026-10-17 16:07:57.430723111 +0000
+@@ -205,7 +205,7 @@
+                 }
+ 
+                 // v3.22.244: همان تصمیمِ واحدِ هسته — «مالکِ این شماره کیست؟»
+-                $existing_user = \farazsms_resolve_user_by_mobile($identifier);
++                $existing_user = \farazsms_montix_verified_customer_by_mobile($identifier);
+ 
+                 // ⚠️ ابهام را **پیش از** ارسالِ پیامک بگیر.
+                 //
+@@ -228,7 +228,11 @@
+                 // از قبل همین منطقِ درست را دارد.) rate-limit بالاتر (check_rate_limit) از سوءاستفاده
+                 // جلوگیری می‌کند و نتیجه‌ی واقعیِ ارسال در «🩺 تشخیص ارسال» لاگ می‌شود.
+                 $this->otp->delete_user_verification_data($identifier);
+-                $this->otp->send_verification_code($identifier, $verification_code);
++                if ( ! $this->otp->send_verification_code($identifier, $verification_code) ) {
++                    farazsms_login_otp_guard_refund($identifier);
++                    echo "<div class='farazsms-error-text'>" . esc_html__( 'OTP storage is unavailable.', 'farazsms' ) . "</div>";
++                    return;
++                }
+                 $this->send_sms->send($identifier, $verification_code);
+ 
+                 // v3.22.36 (F2): store-first حفظ شد (کدِ رسیده زیرِ timeout هم کار می‌کند)، اما اگر
+@@ -294,7 +298,7 @@
+         $error_login = "<div class='farazsms-error-text'>" . __('Incorrect password.', 'farazsms') . "</div>";
+ 
+         if ($identifier_type === 'mobile') {
+-            $existing_user = \farazsms_resolve_user_by_mobile($identifier);
++            $existing_user = \farazsms_montix_verified_customer_by_mobile($identifier);
+             $username      = $existing_user ? $existing_user->user_login : '';
+ 
+             if($verification_code) {
+@@ -413,7 +417,9 @@
+         // نشانه‌ی ورود را می‌بیند، نه پیامِ «ثبت‌نام انجام شد» که دروغ است.
+         $success_login = "<div class='btn-loading success-login'><div><div></div><div></div><div></div><div></div></div></div>";
+         if ($identifier_type === 'mobile') {
+-            $mobile_number = $username = $identifier;
++            $mobile_number = $identifier;
++            // Opaque WordPress username: avoid exposing a verified phone in author slugs.
++            $username = 'faraz_u_' . substr( hash_hmac( 'sha256', $mobile_number, wp_salt( 'auth' ) ), 0, 32 );
+             $verification_result = $this->otp->verify_verification_code($identifier, $verification_code);
+             if ($verification_result) {
+                 // ⚠️ v3.22.244 — ریشه‌ی تیکتِ «بعد از ورود شناخته نمی‌شوم».
+@@ -426,7 +432,7 @@
+                 //
+                 // کد برای همین شماره تأیید شده، پس اگر صاحبِ یکتایی دارد همان باید
+                 // وارد شود؛ حسابِ دوم هرگز.
+-                $owner = \farazsms_resolve_user_by_mobile($mobile_number);
++                $owner = \farazsms_montix_verified_customer_by_mobile($mobile_number);
+                 if ($owner) {
+                     if ($this->login_in_wordpress_with_out_password($owner->user_login, $back_url)) {
+                         echo $success_login;
+@@ -443,8 +449,15 @@
+                     return;
+                 }
+ 
+-                $password = wp_generate_password();
+-                $user_id = wp_create_user($username, $password, '');
++                if ( ! get_role( 'customer' ) || ! is_ssl() ) {
++                    echo "<div class='farazsms-error-text'>" . esc_html__( 'Secure customer registration is unavailable.', 'farazsms' ) . "</div>";
++                    return;
++                }
++                $password = wp_generate_password( 32, true, true );
++                $user_id = wp_insert_user( array(
++                    'user_login' => $username, 'user_pass' => $password,
++                    'user_email' => '', 'role' => 'customer',
++                ) );
+ 
+                 if (is_wp_error($user_id)) {
+                     echo "<div class='farazsms-error-text'>" . __('Registration failed. Please try again.', 'farazsms') . "</div>";
+@@ -462,6 +475,7 @@
+                 $default_display = (string) apply_filters( 'farazsms_login_default_display_name', $default_display, $mobile_number );
+                 $display = trim((string) $full_name) !== '' ? $full_name : $default_display;
+                 update_user_meta($user_id, 'first_name', $full_name);
++                update_user_meta($user_id, '_farazsms_verified_phone', $mobile_number);
+                 update_user_meta($user_id, 'mobile_number', $mobile_number);
+                 update_user_meta($user_id, 'nickname', $display);
+                 wp_update_user(array('ID' => $user_id, 'display_name' => $display));
+@@ -491,10 +505,18 @@
+             echo "<div class='farazsms-error-text'>" . esc_html($guard['message']) . "</div>";
+             return;
+         }
++        // Password recovery is available only for an SMS-verified customer identity.
++        if ( ! is_ssl() || ! \farazsms_montix_verified_customer_by_mobile( $identifier ) ) {
++            echo "<div class='farazsms-error-text'>" . esc_html__( 'Please use your existing password or contact support to verify your account phone.', 'farazsms' ) . "</div>";
++            return;
++        }
+         $verification_code = $this->send_sms->code();
+-        $this->send_sms->send($identifier, $verification_code);
+         $this->otp->delete_user_verification_data($identifier);
+-        $this->otp->send_verification_code($identifier, $verification_code);
++        if ( ! $this->otp->send_verification_code($identifier, $verification_code) ) {
++            echo "<div class='farazsms-error-text'>" . esc_html__( 'OTP storage is unavailable.', 'farazsms' ) . "</div>";
++            return;
++        }
++        $this->send_sms->send($identifier, $verification_code);
+ 
+         // refund روی خطای قطعی (نه timeout).
+         $sr = isset($this->send_sms->last_send_result) ? (string) $this->send_sms->last_send_result : 'success';
+@@ -515,7 +537,7 @@
+             $verification_result = $this->otp->verify_verification_code($identifier, $verification_code);
+             if ($verification_result) {
+                 // v3.21.25 امنیتی (C1): پرچمِ «OTP تأییدشده» برای مرحله‌ی تغییرِ رمز.
+-                set_transient('farazsms_pwreset_ok_' . md5($identifier), '1', 15 * MINUTE_IN_SECONDS);
++                $this->issue_password_reset_ticket( $identifier );
+                 $this->form_settings->Mobile_Reset_Password($identifier, $identifier_type, $back_url);
+             } else {
+                 $this->form_settings->Mobile_Forget_Password($identifier, $identifier_type, $back_url);
+@@ -532,8 +554,56 @@
+      * @param string $identifier
+      * @return bool
+      */
++    protected function password_reset_ticket_key() {
++        $token = isset( $_COOKIE['montix_faraz_reset'] ) ? (string) wp_unslash( $_COOKIE['montix_faraz_reset'] ) : '';
++        if ( ! preg_match( '/^[a-f0-9]{64}$/D', $token ) ) { return ''; }
++        return 'montix_fr_' . hash_hmac( 'sha256', $token, wp_salt( 'auth' ) );
++    }
++
++    protected function issue_password_reset_ticket( $identifier ) {
++        $user = \farazsms_montix_verified_customer_by_mobile( $identifier );
++        if ( ! $user || ! is_ssl() ) { return false; }
++        $token = bin2hex( random_bytes( 32 ) );
++        $key = 'montix_fr_' . hash_hmac( 'sha256', $token, wp_salt( 'auth' ) );
++        set_transient( $key, array( 'phone' => \farazsms_dedupe_normalize_mobile( $identifier ), 'user_id' => (int) $user->ID ), 10 * MINUTE_IN_SECONDS );
++        setcookie( 'montix_faraz_reset', $token, array(
++            'expires' => time() + 600, 'path' => '/', 'secure' => true,
++            'httponly' => true, 'samesite' => 'Lax',
++        ) );
++        // Same-request verification is needed when rendering the next form.
++        $_COOKIE['montix_faraz_reset'] = $token;
++        return true;
++    }
++
+     protected function password_reset_is_authorized($identifier) {
+-        return $identifier !== '' && get_transient('farazsms_pwreset_ok_' . md5($identifier)) === '1';
++        if ( ! is_ssl() ) { return false; }
++        $key = $this->password_reset_ticket_key();
++        if ( ! $key ) { return false; }
++        $ticket = get_transient( $key );
++        $user = \farazsms_montix_verified_customer_by_mobile( $identifier );
++        return $user && is_array( $ticket )
++            && isset( $ticket['user_id'], $ticket['phone'] )
++            && (int) $ticket['user_id'] === (int) $user->ID
++            && hash_equals( $ticket['phone'], \farazsms_dedupe_normalize_mobile( $identifier ) );
++    }
++
++    protected function consume_password_reset_ticket() {
++        $key = $this->password_reset_ticket_key();
++        if ( ! $key ) { return false; }
++        // add_option has an atomic unique-name constraint even with parallel PHP workers.
++        // Never rely solely on transient deletion for one-time consumption.
++        $claimed_key = 'montix_fr_used_' . substr( $key, 10 );
++        if ( ! add_option( $claimed_key, time(), '', 'no' ) ) { return false; }
++        if ( function_exists( 'wp_schedule_single_event' ) ) {
++            wp_schedule_single_event( time() + 3600, 'montix_faraz_reset_claim_cleanup', array( $claimed_key ) );
++        }
++        delete_transient( $key );
++        setcookie( 'montix_faraz_reset', '', array(
++            'expires' => time() - 3600, 'path' => '/', 'secure' => true,
++            'httponly' => true, 'samesite' => 'Lax',
++        ) );
++        unset( $_COOKIE['montix_faraz_reset'] );
++        return true;
+     }
+ 
+     /**
+@@ -557,7 +627,7 @@
+             return;
+         }
+ 
+-        $user = \farazsms_resolve_user_by_mobile($identifier);
++        $user = \farazsms_montix_verified_customer_by_mobile($identifier);
+         if (!$user) {
+             // ⚠️ v3.22.244: نسخه‌ی ajax این‌جا خاموش بود — رمز عوض نمی‌شد و کاربر هم
+             // نمی‌فهمید چرا. سکوت در جایی که کاربر انتظارِ عمل دارد، خودش یک نقص است.
+@@ -566,8 +636,11 @@
+             return;
+         }
+ 
++        if ( ! $this->password_reset_is_authorized( $identifier ) || ! $this->consume_password_reset_ticket() ) {
++            echo "<div class='farazsms-error-text'>" . esc_html__( 'Verification expired. Please request a new code.', 'farazsms' ) . "</div>";
++            return;
++        }
+         wp_set_password($new_password, $user->ID);
+-        delete_transient('farazsms_pwreset_ok_' . md5($identifier)); // تک‌مصرف
+ 
+         // ⚠️ v3.22.248 — نمونه‌ی چهارمِ «موفقیتِ دروغین»، که در همان فازِ رفعِ سه
+         // نمونه‌ی دیگر جا مانده بود. اگر افزونه‌ی دیگری ورود را رد کند، رمز عوض
+@@ -789,7 +862,7 @@
+         $verification_result = $this->otp->verify_verification_code($identifier, $verification_code);
+         if ($verification_result) {
+             // v3.21.25 امنیتی (C1): پرچمِ کوتاه‌عمرِ «OTP تأییدشده» تا فقط بعد از تأییدِ کد، تغییرِ رمز مجاز شود.
+-            set_transient('farazsms_pwreset_ok_' . md5($identifier), '1', 15 * MINUTE_IN_SECONDS);
++            $this->issue_password_reset_ticket( $identifier );
+             $this->form_settings->Mobile_Reset_Password($identifier, $identifier_type, $back_url);
+         } else {
+             $this->form_settings->Mobile_Forget_Password($identifier, $identifier_type, $back_url);
+@@ -1549,3 +1622,8 @@
+ 	add_action( 'init', __NAMESPACE__ . '\\farazsms_login_register_shortcodes', 1 );
+ 	add_action( 'init', __NAMESPACE__ . '\\farazsms_login_maybe_boot_frontend', 2 );
+ }
++
++// Remove spent reset-token claim locks after their replay window.
++add_action( 'montix_faraz_reset_claim_cleanup', function( $key ) {
++    if ( preg_match( '/^montix_fr_used_[a-f0-9]{64}$/D', (string) $key ) ) { delete_option( $key ); }
++} );
+diff -ruN a/faraz-sms/modules/farazsms-login/includes/class-otp.php b/faraz-sms/modules/farazsms-login/includes/class-otp.php
+--- a/faraz-sms/modules/farazsms-login/includes/class-otp.php	2026-10-17 15:06:55.574281452 +0000
++++ b/faraz-sms/modules/farazsms-login/includes/class-otp.php	2026-10-17 16:24:42.391072843 +0000
+@@ -32,19 +32,30 @@
+         }
+         global $wpdb;
+         $table_name = $wpdb->prefix . 'farazsms_verification';
++        $charset_collate = $wpdb->get_charset_collate();
++        $sql = "CREATE TABLE $table_name (
++            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
++            verification VARCHAR(100) NOT NULL,
++            code VARCHAR(100) NOT NULL,
++            expire_date DATETIME NULL,
++            PRIMARY KEY  (id),
++            UNIQUE KEY verification (verification)
++        ) $charset_collate;";
+         if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) !== $table_name ) {
+-            $charset_collate = $wpdb->get_charset_collate();
+-            $sql = "CREATE TABLE $table_name (
+-                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+-                verification VARCHAR(100) NOT NULL,
+-                code VARCHAR(10) NOT NULL,
+-                expire_date DATETIME NULL,
+-                PRIMARY KEY  (id),
+-                UNIQUE KEY verification (verification)
+-            ) $charset_collate;";
+             require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+             dbDelta( $sql );
+         }
++        // One-time migration: upgrade code column and invalidate prior plaintext codes.
++        // Never accept an old plaintext OTP after the hash-only verifier is enabled.
++        if ( get_option( 'montix_faraz_otp_hmac_v1', '' ) !== '1' ) {
++            require_once ABSPATH . 'wp-admin/includes/upgrade.php';
++            dbDelta( $sql );
++            $column = $wpdb->get_row( "SHOW COLUMNS FROM $table_name LIKE 'code'" );
++            if ( $column && preg_match( '/varchar\((\d+)\)/i', (string) $column->Type, $m ) && (int) $m[1] >= 64 ) {
++                $wpdb->query( "DELETE FROM $table_name" );
++                update_option( 'montix_faraz_otp_hmac_v1', '1', false );
++            }
++        }
+         self::$table_ensured = true;
+     }
+ 
+@@ -52,6 +63,7 @@
+         global $wpdb;
+         $this->ensure_table_exists();
+         $table_name = $wpdb->prefix . 'farazsms_verification';
++        if ( get_option( 'montix_faraz_otp_hmac_v1', '' ) !== '1' ) { return false; }
+         // اعتبارِ کد: ۵ دقیقه (قبلاً ۲ دقیقه بود که با تأخیرِ تحویلِ پیامک گاهی منقضی می‌شد
+         // و کدِ درست «اشتباه» اعلام می‌گشت).
+         $expire_time = 5;
+@@ -60,11 +72,11 @@
+         // v3.21.41: replace به‌جای insert — اتمیک روی UNIQUE(verification). حتی اگر ردیفِ
+         // قبلیِ این شماره (به هر دلیل) حذف نشده باشد، کدِ جدید جایگزین می‌شود و خطای کلیدِ
+         // تکراری باعثِ ماندنِ کدِ قدیمی (و «کد اشتباه») نمی‌شود.
+-        $wpdb->replace(
++        $stored = $wpdb->replace(
+             $table_name,
+             array(
+                 'verification'  => $verification,
+-                'code'          => $verification_code,
++                'code'          => hash_hmac( 'sha256', (string) $this->normalize_digits( $verification_code ), wp_salt( 'auth' ) . '|' . $verification ),
+                 'expire_date'   => $expire_date,
+             ),
+             array('%s', '%s', '%s')
+@@ -74,7 +86,9 @@
+         // اشتباه می‌زد و بعد «ارسالِ مجدد» می‌کرد، کدِ تازه هم به‌خاطرِ قفلِ ۱۰دقیقه‌ای همان
+         // شماره باطل می‌شد و «کد اشتباه» می‌گرفت. ارسالِ مجدد خودش با نرخِ ۳بار/۵دقیقه محدود
+         // است، پس این reset brute-force را باز نمی‌کند (نهایتاً ۱۵ تلاش/۵دقیقه؛ کدِ ۶رقمی امن).
++        if ( false === $stored ) { return false; }
+         delete_transient( 'farazsms_otp_try_' . md5( (string) $verification ) );
++        return true;
+     }
+     
+ 
+@@ -97,12 +111,18 @@
+ 
+         if ($result) {
+             // trim برای حذف فاصله‌ی احتمالی + نرمال‌سازی ارقام فارسی/عربی در هر دو طرف.
+-            $expected_code     = trim((string) $this->normalize_digits($result->code));
++            $expected_code     = (string) $result->code;
+             $verification_code = trim((string) $this->normalize_digits($verification_code));
++            $candidate = hash_hmac( 'sha256', $verification_code, wp_salt( 'auth' ) . '|' . $verification );
+             $expire_date       = strtotime($result->expire_date);
+-            if ($verification_code !== '' && $verification_code === $expected_code && $expire_date > time()) {
++            if ($verification_code !== '' && strlen( $expected_code ) === 64
++                && hash_equals( $expected_code, $candidate ) && $expire_date > time()) {
+                 // v3.21.25 امنیتی — تک‌مصرف: کدِ مطابقت‌یافته بلافاصله حذف می‌شود تا replay ممکن نباشد.
+-                $wpdb->delete( $table_name, array( 'id' => (int) $result->id ), array( '%d' ) );
++                // Only the worker that actually deletes this verification row may proceed.
++                // A competing request which read the same row must fail on delete( ) == 0.
++                if ( 1 !== (int) $wpdb->delete( $table_name, array( 'id' => (int) $result->id ), array( '%d' ) ) ) {
++                    return false;
++                }
+                 delete_transient( $attempt_key );
+                 return true;
+             }
+diff -ruN a/faraz-sms/modules/farazsms-login/includes/functions.php b/faraz-sms/modules/farazsms-login/includes/functions.php
+--- a/faraz-sms/modules/farazsms-login/includes/functions.php	2026-10-17 15:06:55.573209407 +0000
++++ b/faraz-sms/modules/farazsms-login/includes/functions.php	2026-10-17 15:58:02.961947216 +0000
+@@ -61,7 +61,7 @@
+ if (!function_exists('Farazsms_Login_Otp_Length')) {
+ 	function Farazsms_Login_Otp_Length() {
+ 		$n = (int) Farazsms_Get_Setting('sms', 'code_length');
+-		if ($n < 4 || $n > 10) {
++		if ($n < 6 || $n > 10) {
+ 			$n = 6;
+ 		}
+ 		return $n;

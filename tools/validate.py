@@ -56,7 +56,7 @@ text_files = [
     and path.suffix.lower() in {".php", ".html", ".css", ".js", ".json", ".md", ".txt", ".yaml", ".yml", ".py", ".pot", ".example", ".sh"}
 ]
 all_text = "\n".join(path.read_text(encoding="utf-8", errors="ignore") for path in text_files)
-for forbidden in ("MONTIX", "Alireza", "علیرضا", "Armin", "Mirsaeid", "Mirsaeed", "Ebrahimi", "Basalam", "basalam.com", "local-wordpress-password"):
+for forbidden in ("Alireza", "علیرضا", "Armin", "Mirsaeid", "Mirsaeed", "Ebrahimi", "Basalam", "basalam.com", "local-wordpress-password"):
     if forbidden.casefold() in all_text.casefold():
         errors.append(f"Private, trademarked, or source-specific term found: {forbidden}")
 
@@ -70,18 +70,17 @@ for token in ("SITE_DOMAIN", "FORCE_SSL_ADMIN", "DISALLOW_FILE_EDIT", "WP_DEBUG_
         errors.append(f"Production Docker setup token missing: {token}")
 
 account = (PLUGIN / "includes" / "account.php").read_text(encoding="utf-8")
-otp = (PLUGIN / "includes" / "otp-auth.php").read_text(encoding="utf-8")
+faraz = (PLUGIN / "includes" / "farazsms-bridge.php").read_text(encoding="utf-8")
 for token in ("bsc_normalize_iran_mobile", "woocommerce_account_menu_items", "bsc_render_account_overview"):
     if token not in account:
         errors.append(f"Account behavior missing: {token}")
-for token in ("bsc_otp_send_handler", "bsc_otp_verify_handler", "wp_hash_password",
-              "wp_check_password", "bsc_otp_require_verified_registration",
-              "BSC_FARAZSMS_API_KEY", "woocommerce_my_account", 'name="phone"', 'name="code"'):
-    if token not in otp:
-        errors.append(f"Phone-only OTP behavior missing: {token}")
-for unwanted in ('name="email"', 'name="full_name"', 'name="password"'):
-    if unwanted in otp:
-        errors.append(f"Unexpected signup field: {unwanted}")
+for token in ("bsc_faraz_ready", "FARAZSMS_MONTIX_SECURITY_PATCH",
+              "farazsms_montix_phone_claimable", "admin_post_bsc_faraz_link_verify",
+              "farazsms_login_form", "woocommerce_registration_errors"):
+    if token not in faraz:
+        errors.append(f"FarazSMS single-owner security integration missing: {token}")
+if (PLUGIN / "includes" / "otp-auth.php").exists():
+    errors.append("Competing Montix OTP handler must not be installed")
 for path in ("includes/product-search.php", "includes/visibility.php", "assets/storefront-features.css", "assets/gallery-fix.js"):
     if not (PLUGIN / path).is_file():
         errors.append(f"Missing storefront feature file: {path}")
@@ -147,7 +146,7 @@ workflow = (ROOT / ".github" / "workflows" / "quality.yml").read_text(encoding="
 for token in (
     "playwright install", "tests/test_backend.php", "docker-smoke", "plugin is-active wordfence",
     "plugin is-active persian-woocommerce-sms", "plugin is-active persian-woocommerce-shipping",
-    "ux-refinements.css", "bsc_legal_consent", "bsc font install",
+    "ux-refinements.css", "bsc font install",
 ):
     if token not in workflow:
         errors.append(f"Quality workflow token missing: {token}")

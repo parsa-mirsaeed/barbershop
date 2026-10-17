@@ -178,7 +178,7 @@ function bsc_apply_woocommerce_defaults() {
 	update_option( 'default_role', 'customer' );
 	update_option( 'WPLANG', 'fa_IR' );
 	update_option( 'fresh_site', 0 );
-	update_option( 'woocommerce_enable_myaccount_registration', 'yes' );
+	update_option( 'woocommerce_enable_myaccount_registration', 'no' );
 	update_option( 'woocommerce_registration_generate_username', 'yes' );
 	update_option( 'woocommerce_registration_generate_password', 'no' );
 	update_option( 'woocommerce_enable_checkout_login_reminder', 'yes' );

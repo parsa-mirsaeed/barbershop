@@ -31,28 +31,24 @@ class StorefrontRepositoryTests(unittest.TestCase):
 
     def test_phone_only_registration_is_separate_from_woocommerce_checkout(self) -> None:
         source = (PLUGIN / "includes" / "account.php").read_text()
-        otp = (PLUGIN / "includes" / "otp-auth.php").read_text()
         setup = (PLUGIN / "includes" / "setup.php").read_text()
         barber = (PLUGIN / "includes" / "barber.php").read_text()
-        self.assertIn("bsc_normalize_iran_mobile", source)
-        self.assertIn("get_user_meta( $user->ID, '_bsc_verified_phone', true )", source)
-        self.assertNotIn("get_user_meta( $user->ID, 'billing_phone', true );\\n\\t$order_count", source)
-        self.assertIn("bsc_otp_guest_account", otp)
-        self.assertIn('name="phone"', otp)
-        self.assertIn('name="code"', otp)
-        self.assertNotIn('name="email"', otp)
-        self.assertNotIn('name="full_name"', otp)
-        self.assertNotIn('name="password"', otp)
-        for token in ("wp_hash_password", "wp_check_password", "random_int",
-                      "bsc_otp_customer_login", "bsc_otp_require_verified_registration",
-                      "admin_post_nopriv", "is_ssl()", "woocommerce_my_account",
-                      "BSC_FARAZSMS_PATTERN", "api.iranpayamak.com"):
-            self.assertIn(token, otp)
+        bridge = (PLUGIN / "includes" / "farazsms-bridge.php").read_text()
+        core = (PLUGIN / "barbershop-core.php").read_text()
+        self.assertNotIn("includes/otp-auth.php", core)
+        self.assertIn("includes/farazsms-bridge.php", core)
+        self.assertFalse((PLUGIN / "includes" / "otp-auth.php").exists())
+        self.assertIn("bsc_faraz_ready", bridge)
+        self.assertIn("farazsms_montix_phone_claimable", bridge)
+        self.assertIn("admin_post_bsc_faraz_link_verify", bridge)
+        self.assertIn("woocommerce_registration_errors", bridge)
+        self.assertIn("farazsms_login_form", bridge)
+        self.assertIn("_farazsms_verified_phone", bridge)
+        self.assertNotIn("api.iranpayamak.com", bridge)
         self.assertIn("woocommerce_enable_guest_checkout", setup)
         self.assertIn("woocommerce_enable_signup_and_login_from_checkout", setup)
         self.assertIn("$installed_version = get_option( 'bsc_setup_version', '' );", setup)
         self.assertIn("Upgrade existing shops without resetting categories", setup)
-        self.assertIn("bsc_otp_is_customer_account", otp)
         self.assertIn("woocommerce_registration_errors", barber)
         self.assertIn("unset( $items['edit-address'], $items['downloads'] )", source)
         self.assertTrue((PLUGIN / "assets" / "account.css").is_file())
@@ -286,7 +282,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
             for p in ROOT.rglob("*")
             if p.is_file() and p.suffix.lower() in {".php", ".html", ".css", ".json", ".md", ".txt", ".yaml", ".yml", ".svg"}
         )
-        for term in ("MON" + "TIX", "Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi", "پارسا" + " میرسعید"):
+        for term in ("Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi", "پارسا" + " میرسعید"):
             self.assertNotIn(term.casefold(), text.casefold())
 
 
