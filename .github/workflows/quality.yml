@@ -147,6 +147,8 @@ jobs:
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/cart/" > "$cart_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/privacy-policy/" > "$privacy_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/terms-and-conditions/" > "$terms_html"
+          # Trace only the public HTML assertions; installation credentials are not traced.
+          set -x
           # Explain any rendered-page contract mismatch instead of failing silently on grep.
           for expectation in 'bsc-category-grid' 'قدرت طبیعت' 'runtime-storefront.css' 'mobile-live-fixes.css' 'ux-refinements.css' 'ux-refinements.js' '3.4.0' 'bsc-product-search-input'; do
             if ! grep -Fq "$expectation" "$home_html"; then echo "::error::Home HTML missing: $expectation"; fi
