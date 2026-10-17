@@ -29,26 +29,46 @@ class StorefrontRepositoryTests(unittest.TestCase):
         self.assertIn("wp bsc font install", installer)
         self.assertNotIn("fonts.googleapis.com", "\n".join(p.read_text(errors="ignore") for base in (THEME, PLUGIN) for p in base.rglob("*") if p.is_file()))
 
-    def test_registration_is_short_explicit_and_uses_mobile_or_email(self) -> None:
+    def test_phone_only_registration_is_separate_from_woocommerce_checkout(self) -> None:
         source = (PLUGIN / "includes" / "account.php").read_text()
-        barber = (PLUGIN / "includes" / "barber.php").read_text()
+        otp = (PLUGIN / "includes" / "otp-auth.php").read_text()
         setup = (PLUGIN / "includes" / "setup.php").read_text()
-        self.assertIn('name="full_name"', source)
-        self.assertIn("نام و نام خانوادگی", source)
-        self.assertNotIn('name="first_name"', source)
-        self.assertNotIn('name="last_name"', source)
-        self.assertNotIn('name="website"', source)
-        self.assertIn("شماره موبایل یا ایمیل", source)
-        self.assertIn("bsc_authenticate_with_mobile", source)
-        self.assertIn("bsc-registration-consent", source)
-        self.assertIn("woocommerce_registration_privacy_policy_text", source)
-        self.assertIn("unset( $items['edit-address'], $items['downloads'] )", source)
-        self.assertIn("woocommerce_registration_generate_username', 'yes'", setup)
-        self.assertIn("woocommerce_registration_generate_password', 'no'", setup)
-        self.assertIn("حداقل ۱۲ نویسه", barber)
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
+        self.assertIn("bsc_normalize_iran_mobile", source)
+        self.assertIn("get_user_meta( $user->ID, '_bsc_verified_phone', true )", source)
+        self.assertNotIn("get_user_meta( $user->ID, 'billing_phone', true );\\n\\t$order_count", source)
+        self.assertIn("bsc_otp_guest_account", otp)
+        self.assertIn('name="phone"', otp)
+        self.assertIn('name="code"', otp)
+        self.assertNotIn('name="email"', otp)
+        self.assertNotIn('name="full_name"', otp)
+        self.assertNotIn('name="password"', otp)
+        for token in ("wp_hash_password", "wp_check_password", "random_int",
+                      "bsc_otp_customer_login", "bsc_otp_require_verified_registration",
+                      "admin_post_nopriv", "is_ssl()", "woocommerce_my_account",
+                      "BSC_FARAZSMS_PATTERN", "api.iranpayamak.com"):
+            self.assertIn(token, otp)
+        self.assertIn("woocommerce_enable_guest_checkout", setup)
+        self.assertIn("woocommerce_enable_signup_and_login_from_checkout", setup)
+        self.assertIn("$installed_version = get_option( 'bsc_setup_version', '' );", setup)
+        self.assertIn("Upgrade existing shops without resetting categories", setup)
+        self.assertIn("bsc_otp_is_customer_account", otp)
         self.assertIn("woocommerce_registration_errors", barber)
+        self.assertIn("unset( $items['edit-address'], $items['downloads'] )", source)
         self.assertTrue((PLUGIN / "assets" / "account.css").is_file())
-        self.assertTrue((PLUGIN / "assets" / "ux-refinements.css").is_file())
+        self.assertTrue((PLUGIN / "assets" / "storefront-features.css").is_file())
+        self.assertTrue((PLUGIN / "assets" / "gallery-fix.js").is_file())
+        store_pattern = (THEME / "inc" / "pattern-content" / "store.php").read_text()
+        footer = (THEME / "parts" / "footer.html").read_text()
+        self.assertNotIn("نام، زیرگروه، ترتیب و آیکون هر دسته از پنل فارسی فروشگاه", store_pattern)
+        self.assertNotIn("تمام نام‌ها، لوگوها، تصاویر و اطلاعات تماس در این نسخه نمونه", footer)
+        for key in (
+            "hero_proof_1_title", "trust_1_title", "nav_home_label", "categories_heading",
+            "products_description", "services_description", "reviews_description",
+            "contact_description", "footer_quick_heading",
+        ):
+            self.assertIn(key, barber)
+        self.assertIn("$stored[ $key ] = $value;", barber)
 
     def test_persian_legal_pages_are_created_without_overwriting_edits(self) -> None:
         legal = (PLUGIN / "includes" / "legal.php").read_text()
@@ -266,7 +286,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
             for p in ROOT.rglob("*")
             if p.is_file() and p.suffix.lower() in {".php", ".html", ".css", ".json", ".md", ".txt", ".yaml", ".yml", ".svg"}
         )
-        for term in ("MON" + "TIX", "Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi"):
+        for term in ("MON" + "TIX", "Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi", "پارسا" + " میرسعید"):
             self.assertNotIn(term.casefold(), text.casefold())
 
 

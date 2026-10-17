@@ -1,0 +1,14 @@
+/* Add above the "That's all, stop editing" line in wp-config.php. */
+define( 'WP_ENVIRONMENT_TYPE', 'production' );
+define( 'FORCE_SSL_ADMIN', true );
+define( 'DISALLOW_FILE_EDIT', true );
+define( 'WP_DEBUG', false );
+define( 'WP_DEBUG_DISPLAY', false );
+@ini_set( 'display_errors', '0' );
+
+/* Enable this ONLY after a real cPanel/DirectAdmin cron calls wp-cron.php. */
+/* define( 'DISABLE_WP_CRON', true ); */
+
+/* Do NOT set DISALLOW_FILE_MODS=true unless you intentionally manage every
+ * plugin/theme/core update outside WordPress; shared-host maintenance needs
+ * authenticated update capability. */

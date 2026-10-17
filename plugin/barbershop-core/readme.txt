@@ -4,7 +4,7 @@ Tags: woocommerce, persian, rtl, storefront, privacy, security
 Requires at least: 6.6
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 3.0.0
+Stable tag: 3.4.0
 License: GPLv2 or later
 
 Persian WooCommerce UX, minimal customer accounts, editable category icons, store dashboard, local Vazirmatn provisioning, security hardening, and consent-aware portfolio controls.
@@ -13,7 +13,9 @@ Persian WooCommerce UX, minimal customer accounts, editable category icons, stor
 
 Barbershop Core adds:
 
-* first name, last name, email, and optional phone registration without profile address fields;
+* phone-only OTP customer registration, FarazSMS pattern API/transport adapter, and WooCommerce-only checkout details;
+* product-only search and merchant show/hide toggles for homepage sections and product reviews;
+* full-size mobile product-gallery navigation with a WooCommerce FlexSlider fallback;
 * persistent desktop cart and mobile store dock;
 * editable product category icons and seeded Persian product taxonomy;
 * Persian labels and redesigned WooCommerce customer flows;
@@ -33,6 +35,15 @@ The installer installs Wordfence separately from the official WordPress reposito
 5. Review privacy, payment, email, backup, and production security settings.
 
 == Changelog ==
+
+= 3.4.0 =
+* Phone-only customer OTP, FarazSMS pattern transport, product search, section visibility settings, and mobile image gallery repair.
+* No SMS credentials are bundled. Checkout continues to use WooCommerce-owned purchase fields.
+
+
+= 3.4.0 =
+* Public storefront copy can be edited or cleared from the barber dashboard.
+* Removes live-site implementation/sample copy from category and footer surfaces.
 
 = 3.0.0 =
 * Premium Persian admin/storefront UX and local Vazirmatn.

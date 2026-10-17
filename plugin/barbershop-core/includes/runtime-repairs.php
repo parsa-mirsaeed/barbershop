@@ -77,22 +77,6 @@ function bsc_runtime_enqueue_admin_repairs( $hook ) {
 }
 add_action( 'admin_enqueue_scripts', 'bsc_runtime_enqueue_admin_repairs', 200 );
 
-/**
- * Translate checkout privacy text that can remain English when language packs
- * are incomplete or a gateway prints the source string late.
- */
-function bsc_runtime_checkout_privacy_translation( $translated, $text, $domain ) {
-	if ( 'woocommerce' !== $domain ) {
-		return $translated;
-	}
-	$map = array(
-		'Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our privacy policy.' => 'اطلاعات شخصی شما برای پردازش سفارش، پشتیبانی از تجربه خرید در این وب‌سایت و اهداف توضیح‌داده‌شده در سیاست حفظ حریم خصوصی استفاده می‌شود.',
-		'Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our %s.' => 'اطلاعات شخصی شما برای پردازش سفارش، پشتیبانی از تجربه خرید در این وب‌سایت و اهداف توضیح‌داده‌شده در %s استفاده می‌شود.',
-	);
-	return isset( $map[ $text ] ) ? $map[ $text ] : $translated;
-}
-add_filter( 'gettext', 'bsc_runtime_checkout_privacy_translation', 999, 3 );
-
 /** @return string[] */
 function bsc_runtime_gateland_table_names() {
 	global $wpdb;

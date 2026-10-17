@@ -15,6 +15,12 @@ function bsc_general_settings( $settings, $section ) {
 		array( 'title' => 'ایمیل دریافت سفارش', 'desc' => 'اعلان سفارش جدید به این ایمیل ارسال می‌شود.', 'id' => 'bsc_order_email', 'type' => 'email', 'default' => get_option( 'admin_email' ), 'desc_tip' => true ),
 		array( 'title' => 'غیرفعال‌کردن XML-RPC', 'desc' => 'برای فروشگاهی که به XML-RPC نیاز ندارد پیشنهاد می‌شود. در صورت استفاده از اپلیکیشن یا سرویس وابسته، این گزینه را خاموش کنید.', 'id' => 'bsc_disable_xmlrpc', 'type' => 'checkbox', 'default' => 'yes' ),
 		array( 'type' => 'sectionend', 'id' => 'bsc_settings' ),
+		array( 'title' => 'اطلاعات قانونی فروشنده', 'type' => 'title', 'id' => 'bsc_legal_identity', 'desc' => 'برای فروش از راه دور، هویت واقعی تأمین‌کننده و راه تماس باید پیش از خرید در دسترس مشتری باشد. نام تجاری به‌تنهایی جایگزین هویت قانونی فروشنده نیست.' ),
+		array( 'title' => 'نام قانونی تأمین‌کننده', 'desc' => 'نام شخص یا بنگاه مسئول فروش که در مدارک و شناسنامه نماد اعتماد درج می‌شود.', 'id' => 'bsc_legal_supplier_name', 'type' => 'text', 'default' => '', 'desc_tip' => true ),
+		array( 'title' => 'نشانی قانونی / محل کسب', 'desc' => 'نشانی واقعی قابل استفاده برای تماس و شکایت احتمالی.', 'id' => 'bsc_legal_supplier_address', 'type' => 'textarea', 'default' => '', 'desc_tip' => true ),
+		array( 'title' => 'شماره تماس پشتیبانی', 'desc' => 'شماره‌ای که مشتری بتواند درباره سفارش یا شکایت با فروشگاه تماس بگیرد.', 'id' => 'bsc_legal_supplier_phone', 'type' => 'text', 'default' => '', 'desc_tip' => true ),
+		array( 'title' => 'ایمیل پشتیبانی', 'desc' => 'ایمیل معتبر برای درخواست‌های سفارش و حریم خصوصی.', 'id' => 'bsc_legal_supplier_email', 'type' => 'email', 'default' => get_option( 'admin_email' ), 'desc_tip' => true ),
+		array( 'type' => 'sectionend', 'id' => 'bsc_legal_identity' ),
 	);
 }
 add_filter( 'woocommerce_get_settings_general', 'bsc_general_settings', 10, 2 );

@@ -147,25 +147,35 @@ jobs:
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/cart/" > "$cart_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/privacy-policy/" > "$privacy_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/terms-and-conditions/" > "$terms_html"
+          # Trace only the public HTML assertions; installation credentials are not traced.
+          # Explain any rendered-page contract mismatch instead of failing silently on grep.
+          for expectation in 'bsc-category-grid' 'قدرت طبیعت' 'runtime-storefront.css' 'mobile-live-fixes.css' 'ux-refinements.css' 'ux-refinements.js' '3.4.0' 'bsc-product-search-input'; do
+            if ! grep -Fq "$expectation" "$home_html"; then echo "::error::Home HTML missing: $expectation"; fi
+          done
+          for expectation in 'name="phone"' 'name="bsc_legal_consent"' 'ورود و ثبت‌نام با شماره موبایل' 'storefront-features.css' 'ux-refinements.css'; do
+            if ! grep -Fq "$expectation" "$account_html"; then echo "::error::Account HTML missing: $expectation"; fi
+          done
           grep -Fq 'bsc-category-grid' "$home_html"
           grep -Fq 'قدرت طبیعت' "$home_html"
           grep -Fq 'runtime-storefront.css' "$home_html"
           grep -Fq 'mobile-live-fixes.css' "$home_html"
           grep -Fq 'ux-refinements.css' "$home_html"
           grep -Fq 'ux-refinements.js' "$home_html"
-          grep -Fq '3.3.1' "$home_html"
+          grep -Fq 'bsc-product-search-input' "$home_html"
+          grep -Fq '3.4.0' "$home_html"
           grep -Fq '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' "$home_html"
           ! grep -Fq '[products ' "$home_html"
           ! grep -Fq '[bsc_product_categories' "$home_html"
           ! grep -Fq '[barbershop_before_after_gallery' "$home_html"
           ! grep -Fqi 'Pardon our dust' "$home_html"
           ! grep -Fqi 'Coming soon' "$home_html"
-          grep -Fq 'name="full_name"' "$account_html"
-          grep -Fq 'name="billing_phone"' "$account_html"
-          grep -Fq 'name="password"' "$account_html"
-          grep -Fq 'bsc_legal_consent' "$account_html"
-          grep -Fq 'شماره موبایل یا ایمیل' "$account_html"
-          grep -Fq 'ساخت حساب' "$account_html"
+          grep -Fq 'name="phone"' "$account_html"
+          grep -Fq 'name="bsc_legal_consent"' "$account_html"
+          grep -Fq 'ورود و ثبت‌نام با شماره موبایل' "$account_html"
+          ! grep -Fq 'name="full_name"' "$account_html"
+          ! grep -Fq 'name="email"' "$account_html"
+          ! grep -Fq 'name="password"' "$account_html"
+          grep -Fq 'storefront-features.css' "$account_html"
           grep -Fq 'ux-refinements.css' "$account_html"
           ! grep -Fq 'name="website"' "$account_html"
           ! grep -Fq 'Your personal data will be used' "$account_html"
@@ -177,7 +187,7 @@ jobs:
           grep -Fq 'چه اطلاعاتی دریافت می‌شود؟' "$privacy_html"
           grep -Fq 'اشتراک‌گذاری محدود اطلاعات' "$privacy_html"
           grep -Fq 'ثبت و پذیرش سفارش' "$terms_html"
-          grep -Fq 'لغو، انصراف و مرجوعی' "$terms_html"
+          grep -Fq 'حق انصراف و مرجوعی' "$terms_html"
           grep -Fq 'legal.css' "$privacy_html"
           grep -Fq '@media (max-width: 480px)' plugin/barbershop-core/assets/runtime-storefront.css
           grep -Fq 'body.woocommerce-checkout' plugin/barbershop-core/assets/runtime-storefront.css

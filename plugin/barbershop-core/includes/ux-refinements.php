@@ -32,6 +32,21 @@ function bsc_enqueue_ux_refinements() {
 		array( 'barbershop-core-legal' ),
 		BSC_VERSION
 	);
+	wp_enqueue_style(
+		'barbershop-core-storefront-features',
+		BSC_URL . 'assets/storefront-features.css',
+		array( 'barbershop-core-touch-targets' ),
+		BSC_VERSION
+	);
+	if ( function_exists( 'is_product' ) && is_product() ) {
+		wp_enqueue_script(
+			'barbershop-core-gallery-fix',
+			BSC_URL . 'assets/gallery-fix.js',
+			array( 'jquery', 'wc-single-product' ),
+			BSC_VERSION,
+			true
+		);
+	}
 	wp_enqueue_script(
 		'barbershop-core-ux-refinements',
 		BSC_URL . 'assets/ux-refinements.js',

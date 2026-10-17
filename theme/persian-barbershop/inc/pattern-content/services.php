@@ -3,8 +3,8 @@
 <div id="services" class="wp-block-group alignfull pbs-section has-navy-soft-background-color has-background" style="padding-top:var(--wp--preset--spacing--80);padding-bottom:var(--wp--preset--spacing--80)">
   <!-- wp:group {"align":"wide","className":"pbs-section-heading","layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between"}} -->
   <div class="wp-block-group alignwide pbs-section-heading">
-    <!-- wp:group --><div class="wp-block-group"><!-- wp:paragraph {"className":"pbs-kicker"} --><p class="pbs-kicker">خدمات</p><!-- /wp:paragraph --><!-- wp:heading {"fontSize":"heading-2"} --><h2 class="wp-block-heading has-heading-2-font-size">جزئیات کوچک، تفاوت بزرگ</h2><!-- /wp:heading --></div><!-- /wp:group -->
-    <!-- wp:paragraph {"textColor":"muted"} --><p class="has-muted-color has-text-color">مدت، قیمت و توضیحات دقیق هر خدمت را از داشبورد آرایشگر مدیریت کنید.</p><!-- /wp:paragraph -->
+    <!-- wp:group --><div class="wp-block-group"><!-- wp:paragraph {"className":"pbs-kicker"} --><p class="pbs-kicker">[برچسب خدمات]</p><!-- /wp:paragraph --><!-- wp:heading {"fontSize":"heading-2"} --><h2 class="wp-block-heading has-heading-2-font-size">جزئیات کوچک، تفاوت بزرگ</h2><!-- /wp:heading --></div><!-- /wp:group -->
+    <!-- wp:paragraph {"textColor":"muted"} --><p class="has-muted-color has-text-color">[توضیح بخش خدمات]</p><!-- /wp:paragraph -->
   </div><!-- /wp:group -->
   <!-- wp:columns {"align":"wide","className":"pbs-card-grid"} -->
   <div class="wp-block-columns alignwide pbs-card-grid">

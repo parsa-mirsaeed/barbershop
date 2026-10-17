@@ -14,12 +14,13 @@ ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugin" / "barbershop-core"
 LIVE_CSS = PLUGIN / "assets" / "mobile-live-fixes.css"
 UX_CSS = PLUGIN / "assets" / "ux-refinements.css"
+FEATURE_CSS = PLUGIN / "assets" / "storefront-features.css"
 UX_JS = PLUGIN / "assets" / "ux-refinements.js"
 
 
 def refined_fixture_html() -> str:
     html = rendered_fixture_html()
-    styles = LIVE_CSS.read_text(encoding="utf-8") + "\n" + UX_CSS.read_text(encoding="utf-8")
+    styles = LIVE_CSS.read_text(encoding="utf-8") + "\n" + UX_CSS.read_text(encoding="utf-8") + "\n" + FEATURE_CSS.read_text(encoding="utf-8")
     script = UX_JS.read_text(encoding="utf-8")
     return html.replace("</head>", f"<style>{styles}</style></head>").replace("</body>", f"<script>{script}</script></body>")
 
@@ -70,30 +71,16 @@ def logged_out_account_fixture_html() -> str:
       <div class="wp-block-post-content">
         <h1 class="wp-block-post-title">حساب کاربری</h1>
         <div class="woocommerce">
-          <div id="customer_login" class="u-columns col2-set">
-            <div class="u-column1 col-1">
-              <h2>ورود</h2>
-              <form class="woocommerce-form woocommerce-form-login login">
-                <p class="form-row form-row-wide"><label>شماره موبایل یا ایمیل</label><input class="input-text" name="username" type="text"></p>
-                <p class="form-row form-row-wide"><label>رمز عبور</label><input class="input-text" type="password"></p>
-                <p class="form-row"><button class="button woocommerce-form-login__submit" type="button">ورود</button></p>
-                <p class="woocommerce-LostPassword"><a href="#">رمز عبور را فراموش کرده‌اید؟</a></p>
-              </form>
-            </div>
-            <div class="u-column2 col-2">
-              <h2>ساخت حساب</h2>
-              <form class="woocommerce-form woocommerce-form-register register">
-                <div class="bsc-register-intro"><strong>ساخت حساب در کمتر از یک دقیقه</strong><span>فقط اطلاعات لازم دریافت می‌شود.</span></div>
-                <p class="form-row form-row-wide"><label>نام و نام خانوادگی</label><input class="input-text" name="full_name" type="text"></p>
-                <p class="form-row form-row-wide"><label>نشانی ایمیل</label><input class="input-text" name="email" type="email"></p>
-                <p class="form-row form-row-wide"><label>رمز عبور</label><input class="input-text" name="password" type="password"></p>
-                <p class="form-row form-row-wide"><label>شماره موبایل</label><input class="input-text" name="billing_phone" type="tel"></p>
-                <p class="bsc-register-note">برای ورود از شماره موبایل یا ایمیل همراه رمز عبور استفاده کنید.</p>
-                <p class="bsc-registration-consent"><input id="consent" type="checkbox"><label for="consent">شرایط استفاده و سیاست حریم خصوصی را می‌پذیرم.</label></p>
-                <p class="form-row"><button class="button woocommerce-form-register__submit" type="button">ساخت حساب</button></p>
-              </form>
-            </div>
-          </div>
+          <section class="bsc-otp" dir="rtl">
+            <h2>ورود و ثبت‌نام با شماره موبایل</h2>
+            <p>مشخصات تحویل فقط هنگام خرید ثبت می‌شود.</p>
+            <form>
+              <label for="bsc_otp_phone">شماره موبایل</label>
+              <input id="bsc_otp_phone" name="phone" type="tel" required>
+              <label class="bsc-otp-consent"><input type="checkbox" name="bsc_legal_consent" required> شرایط استفاده</label>
+              <button type="button">ارسال کد تأیید</button>
+            </form>
+          </section>
         </div>
       </div>
     </main>
@@ -122,9 +109,9 @@ def logged_in_account_fixture_html() -> str:
           <div class="woocommerce-MyAccount-content">
             <p>سلام کاربر</p><p>متن عمومی قدیمی ووکامرس</p>
             <section class="bsc-account-overview">
-              <div class="bsc-account-welcome"><span class="bsc-account-avatar">پ</span><div><h2>سلام پارسا</h2><p>سفارش‌ها و اطلاعات حساب خود را مدیریت کنید.</p></div><div class="bsc-account-identifiers"><span class="bsc-account-chip">test@example.test</span><span class="bsc-account-chip">09121234567</span></div></div>
+              <div class="bsc-account-welcome"><span class="bsc-account-avatar">پ</span><div><h2>سلام کاربر</h2><p>سفارش‌ها و اطلاعات حساب خود را مدیریت کنید.</p></div><div class="bsc-account-identifiers"><span class="bsc-account-chip">test@example.test</span><span class="bsc-account-chip">09121234567</span></div></div>
               <div class="bsc-account-metrics"><div class="bsc-account-metric"><strong>۳</strong><span>سفارش ثبت‌شده</span></div><div class="bsc-account-metric"><strong>۲</strong><span>روش ورود</span></div></div>
-              <nav class="bsc-account-actions"><a href="#">مشاهده سفارش‌ها</a><a href="#">ویرایش اطلاعات</a><a href="#">رفتن به فروشگاه</a></nav>
+              <nav class="bsc-account-actions"><a href="#">مشاهده سفارش‌ها</a><a href="#">رفتن به فروشگاه</a></nav>
             </section>
           </div>
         </div>
@@ -190,24 +177,21 @@ class AccountAndNavigationRoundFourTests(unittest.TestCase):
         finally:
             context.close()
 
-    def test_registration_is_two_balanced_cards_on_desktop_and_one_column_on_phone(self) -> None:
-        for width, height, expected_columns in ((1200, 900, 2), (412, 915, 1)):
+    def test_phone_only_registration_is_responsive(self) -> None:
+        for width, height in ((1200, 900), (412, 915)):
             with self.subTest(width=width):
                 page, context = self.open_page(logged_out_account_fixture_html(), width, height)
                 try:
                     self.assert_no_overflow(page, width)
-                    tracks = page.locator("#customer_login").evaluate("el => getComputedStyle(el).gridTemplateColumns")
-                    columns = len([track for track in tracks.split(" ") if track and track != "none"])
-                    self.assertEqual(expected_columns, columns)
-                    self.assertEqual(1, page.locator('form.register input[name="full_name"]').count())
-                    self.assertEqual(0, page.locator('form.register input[name="website"]').count())
-                    self.assertEqual(1, page.locator(".bsc-registration-consent").count())
-                    for selector in ("#customer_login", "form.login", "form.register", "form input", "form button"):
-                        for index in range(page.locator(selector).count()):
-                            box = page.locator(selector).nth(index).bounding_box()
-                            self.assertIsNotNone(box, selector)
-                            self.assertGreaterEqual(box["x"], -1, (selector, box))
-                            self.assertLessEqual(box["x"] + box["width"], width + 1, (selector, box))
+                    self.assertEqual(1, page.locator('form input[name="phone"]').count())
+                    self.assertEqual(1, page.locator('form input[name="bsc_legal_consent"]').count())
+                    for forbidden in ('full_name', 'email', 'password'):
+                        self.assertEqual(0, page.locator(f'form input[name="{forbidden}"]').count())
+                    box = page.locator('.bsc-otp').bounding_box()
+                    self.assertIsNotNone(box)
+                    self.assertGreaterEqual(box["x"], -1)
+                    self.assertLessEqual(box["x"] + box["width"], width + 1)
+                    self.assertGreaterEqual(page.locator('.bsc-otp button').bounding_box()["height"], 44)
                 finally:
                     context.close()
 
@@ -233,7 +217,7 @@ class AccountAndNavigationRoundFourTests(unittest.TestCase):
             )
             self.assertGreater(nav_box["x"], content_box["x"])
             self.assertEqual("none", page.locator(".woocommerce-MyAccount-content > p:first-of-type").evaluate("el => getComputedStyle(el).display"))
-            self.assertEqual(3, page.locator(".bsc-account-actions > a").count())
+            self.assertEqual(2, page.locator(".bsc-account-actions > a").count())
         finally:
             context.close()
 

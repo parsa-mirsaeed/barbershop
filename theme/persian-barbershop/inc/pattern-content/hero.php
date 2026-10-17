@@ -21,7 +21,7 @@
         <!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="#categories">انتخاب دسته‌بندی</a></div><!-- /wp:button -->
         <!-- wp:button {"className":"is-style-outline"} --><div class="wp-block-button is-style-outline"><a class="wp-block-button__link wp-element-button" href="/shop/">مشاهده فروشگاه</a></div><!-- /wp:button -->
       </div><!-- /wp:buttons -->
-      <!-- wp:html --><ul class="pbs-hero-proof" aria-label="مزیت‌های فروشگاه"><li><strong>خرید آسان</strong><span>سبد خرید همیشه در دسترس</span></li><li><strong>حساب کوتاه</strong><span>فقط اطلاعات ضروری</span></li><li><strong>مدیریت ساده</strong><span>ویرایش بدون کدنویسی</span></li></ul><!-- /wp:html -->
+      <!-- wp:html --><ul class="pbs-hero-proof" aria-label="مزیت‌های فروشگاه"><li><strong>[مزیت اول عنوان]</strong><span>[مزیت اول توضیح]</span></li><li><strong>[مزیت دوم عنوان]</strong><span>[مزیت دوم توضیح]</span></li><li><strong>[مزیت سوم عنوان]</strong><span>[مزیت سوم توضیح]</span></li></ul><!-- /wp:html -->
     </div><!-- /wp:column -->
     <!-- wp:column {"verticalAlignment":"center","width":"45%"} -->
     <div class="wp-block-column is-vertically-aligned-center pbs-hero-media" style="flex-basis:45%">
@@ -31,5 +31,5 @@
       <!-- wp:html --><div class="pbs-hero-orbit pbs-hero-orbit--one" aria-hidden="true"></div><div class="pbs-hero-orbit pbs-hero-orbit--two" aria-hidden="true"></div><!-- /wp:html -->
     </div><!-- /wp:column -->
   </div><!-- /wp:columns -->
-  <!-- wp:html --><div class="pbs-trust-strip alignwide" aria-label="ویژگی‌های تجربه خرید"><div class="pbs-trust-item"><span class="pbs-trust-icon" aria-hidden="true">✓</span><div><strong>اطلاعات شفاف محصول</strong><small>قیمت، موجودی و دسته‌بندی روشن</small></div></div><div class="pbs-trust-item"><span class="pbs-trust-icon" aria-hidden="true">↗</span><div><strong>پرداخت از درگاه رسمی</strong><small>اطلاعات کارت در سایت ذخیره نمی‌شود</small></div></div><div class="pbs-trust-item"><span class="pbs-trust-icon" aria-hidden="true">✦</span><div><strong>ظاهر قابل شخصی‌سازی</strong><small>لوگو، رنگ و محتوا قابل ویرایش</small></div></div></div><!-- /wp:html -->
+  <!-- wp:html --><div class="pbs-trust-strip alignwide" aria-label="ویژگی‌های تجربه خرید"><div class="pbs-trust-item"><span class="pbs-trust-icon" aria-hidden="true">✓</span><div><strong>[اعتماد اول عنوان]</strong><small>[اعتماد اول توضیح]</small></div></div><div class="pbs-trust-item"><span class="pbs-trust-icon" aria-hidden="true">↗</span><div><strong>[اعتماد دوم عنوان]</strong><small>[اعتماد دوم توضیح]</small></div></div><div class="pbs-trust-item"><span class="pbs-trust-icon" aria-hidden="true">✦</span><div><strong>[اعتماد سوم عنوان]</strong><small>[اعتماد سوم توضیح]</small></div></div></div><!-- /wp:html -->
 </div><!-- /wp:group -->
