@@ -17,7 +17,7 @@
 .bsc-otp-consent input{margin-top:.5rem;min-width:18px;min-height:18px}
 .bsc-otp-message{padding:.7rem 1rem;border:1px solid #86b8ab;border-radius:.65rem}
 .bsc-otp a{color:#8defca}
-.woocommerce div.product div.images .woocommerce-product-gallery__image img{display:block;width:100%!important;max-width:100%;height:auto!important;object-fit:contain}
+.woocommerce div.product .woocommerce-product-gallery__image img{display:block;width:100%!important;max-width:100%;height:auto!important;object-fit:contain}
 .woocommerce div.product .woocommerce-product-gallery .flex-viewport{max-width:100%;overflow:hidden}
 .woocommerce div.product .woocommerce-product-gallery__wrapper{max-width:100%;min-width:0}
 .woocommerce div.product .woocommerce-product-gallery .flex-control-thumbs img{width:100%;height:auto;object-fit:cover;aspect-ratio:1;cursor:pointer}
