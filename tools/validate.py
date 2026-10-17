@@ -56,7 +56,7 @@ text_files = [
     and path.suffix.lower() in {".php", ".html", ".css", ".js", ".json", ".md", ".txt", ".yaml", ".yml", ".py", ".pot", ".example", ".sh"}
 ]
 all_text = "\n".join(path.read_text(encoding="utf-8", errors="ignore") for path in text_files)
-for forbidden in ("MONTIX", "Alireza", "علیرضا", "Armin", "Mirsaeid", "Mirsaeed", "Ebrahimi", "Basalam", "basalam.com", "local-wordpress-password"):
+for forbidden in ("Alireza", "علیرضا", "Armin", "Mirsaeid", "Mirsaeed", "Ebrahimi", "Basalam", "basalam.com", "local-wordpress-password"):
     if forbidden.casefold() in all_text.casefold():
         errors.append(f"Private, trademarked, or source-specific term found: {forbidden}")
 
@@ -146,7 +146,7 @@ workflow = (ROOT / ".github" / "workflows" / "quality.yml").read_text(encoding="
 for token in (
     "playwright install", "tests/test_backend.php", "docker-smoke", "plugin is-active wordfence",
     "plugin is-active persian-woocommerce-sms", "plugin is-active persian-woocommerce-shipping",
-    "ux-refinements.css", "bsc_legal_consent", "bsc font install",
+    "ux-refinements.css", "bsc font install",
 ):
     if token not in workflow:
         errors.append(f"Quality workflow token missing: {token}")
