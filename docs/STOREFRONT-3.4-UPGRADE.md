@@ -1,12 +1,15 @@
 # Barbershop 3.4.0 — shared-hosting upgrade guide
 
-This release updates **Barbershop Core** and the **Persian Barbershop** theme; it does **not** ship or overwrite WooCommerce, the existing FarazSMS plugin, payment/shipping plugins, uploads, customers, orders, or database options.
+This release updates **Barbershop Core** and the **Persian Barbershop** theme; it does **not** ship or overwrite WooCommerce, the existing FarazSMS plugin, payment/shipping plugins, uploads, customers, orders, or customer/order data. Existing installations retain their catalog and merchant settings except for the two checkout options noted below.
 
 ## Changes
 - Accessible product search in the header. Search results show WooCommerce product cards and pagination; other posts are not included in product search.
 - Phone-only customer signup/login: 11-digit Iranian mobile, SMS verification code, and legal checkbox. No email, name, shipping address, or password at signup. Purchase name/address/receipt contact information remains WooCommerce checkout data.
 - Homepage section switches (including before/after, reviews/testimonials, articles, and services) in **WooCommerce → Settings → General → تنظیمات آرایشگاه**. Product review visibility is independently configurable. Hidden sections retain their data.
 - WooCommerce gallery thumbnails select corresponding full-size product images on mobile, using existing FlexSlider when available.
+
+## Existing-shop checkout option migration
+On the first upgrade to 3.4.0, Barbershop Core **enables guest checkout** and **disables WooCommerce account creation from checkout**. This prevents unverified new accounts and allows orders even if SMS service is temporarily unavailable. It does not remove order fields, existing users, products or merchant-created content. The operator can review these options in WooCommerce → Settings → Accounts & Privacy.
 
 ## Security and compatibility
 - OTP requires HTTPS. Codes are generated with random_int, salted WP password hashes, 5-minute lifetime, 5 guesses maximum, 60-second resend cooldown, per-phone daily limit and per-IP limits. A challenge is stored in a transient and tied to an HttpOnly, Secure, SameSite=Lax cookie.
