@@ -300,7 +300,7 @@ diff -ruN a/faraz-sms/modules/farazsms-login/includes/class-main.php b/faraz-sms
 +} );
 diff -ruN a/faraz-sms/modules/farazsms-login/includes/class-otp.php b/faraz-sms/modules/farazsms-login/includes/class-otp.php
 --- a/faraz-sms/modules/farazsms-login/includes/class-otp.php	2026-10-17 15:06:55.574281452 +0000
-+++ b/faraz-sms/modules/farazsms-login/includes/class-otp.php	2026-10-17 16:04:51.244031359 +0000
++++ b/faraz-sms/modules/farazsms-login/includes/class-otp.php	2026-10-17 16:24:42.391072843 +0000
 @@ -32,19 +32,30 @@
          }
          global $wpdb;
@@ -373,7 +373,7 @@ diff -ruN a/faraz-sms/modules/farazsms-login/includes/class-otp.php b/faraz-sms/
      }
      
  
-@@ -97,10 +111,12 @@
+@@ -97,12 +111,18 @@
  
          if ($result) {
              // trim برای حذف فاصله‌ی احتمالی + نرمال‌سازی ارقام فارسی/عربی در هر دو طرف.
@@ -386,8 +386,15 @@ diff -ruN a/faraz-sms/modules/farazsms-login/includes/class-otp.php b/faraz-sms/
 +            if ($verification_code !== '' && strlen( $expected_code ) === 64
 +                && hash_equals( $expected_code, $candidate ) && $expire_date > time()) {
                  // v3.21.25 امنیتی — تک‌مصرف: کدِ مطابقت‌یافته بلافاصله حذف می‌شود تا replay ممکن نباشد.
-                 $wpdb->delete( $table_name, array( 'id' => (int) $result->id ), array( '%d' ) );
+-                $wpdb->delete( $table_name, array( 'id' => (int) $result->id ), array( '%d' ) );
++                // Only the worker that actually deletes this verification row may proceed.
++                // A competing request which read the same row must fail on delete( ) == 0.
++                if ( 1 !== (int) $wpdb->delete( $table_name, array( 'id' => (int) $result->id ), array( '%d' ) ) ) {
++                    return false;
++                }
                  delete_transient( $attempt_key );
+                 return true;
+             }
 diff -ruN a/faraz-sms/modules/farazsms-login/includes/functions.php b/faraz-sms/modules/farazsms-login/includes/functions.php
 --- a/faraz-sms/modules/farazsms-login/includes/functions.php	2026-10-17 15:06:55.573209407 +0000
 +++ b/faraz-sms/modules/farazsms-login/includes/functions.php	2026-10-17 15:58:02.961947216 +0000
