@@ -94,8 +94,10 @@ function bsc_otp_customer_login( $phone ) {
  * WordPress admins, editors or other privileged accounts.
  */
 function bsc_otp_customer_for_phone( $phone ) {
+    // Only a separately SMS-verified identity may access existing order history.
+    // WooCommerce billing_phone is shipping/contact data and can be edited in checkout.
     $matches = get_users( array(
-        'meta_key' => 'billing_phone', 'meta_value' => $phone, 'number' => 3,
+        'meta_key' => '_bsc_verified_phone', 'meta_value' => $phone, 'number' => 3,
     ) );
     $opaque = get_user_by( 'login', bsc_otp_customer_login( $phone ) );
     if ( $opaque ) {
@@ -106,11 +108,16 @@ function bsc_otp_customer_for_phone( $phone ) {
         if ( ! $found ) { $matches[] = $opaque; }
     }
     if ( count( $matches ) > 1 ) { return new WP_Error( 'ambiguous_phone' ); }
-    if ( ! $matches ) { return null; }
-    if ( ! in_array( 'customer', (array) $matches[0]->roles, true ) ) {
-        return new WP_Error( 'not_customer' );
+    if ( $matches ) {
+        return in_array( 'customer', (array) $matches[0]->roles, true )
+            ? $matches[0] : new WP_Error( 'not_customer' );
     }
-    return $matches[0];
+    // Legacy password accounts must link their phone while authenticated.
+    // Never assume an arbitrary billing/shipping phone verified its owner's identity.
+    $legacy = get_users( array(
+        'meta_key' => 'billing_phone', 'meta_value' => $phone, 'number' => 2,
+    ) );
+    return $legacy ? new WP_Error( 'legacy_phone' ) : null;
 }
 
 function bsc_otp_send_handler() {
@@ -131,9 +138,6 @@ function bsc_otp_send_handler() {
         bsc_otp_redirect( 'rate' );
     }
 
-    $existing = bsc_otp_customer_for_phone( $phone );
-    if ( is_wp_error( $existing ) ) { bsc_otp_redirect( 'unavailable' ); }
-
     set_transient( $ip_key, (int) get_transient( $ip_key ) + 1, HOUR_IN_SECONDS );
     set_transient( $phone_key, (int) get_transient( $phone_key ) + 1, DAY_IN_SECONDS );
     set_transient( bsc_otp_phone_key( $phone, 'cooldown' ), 1, MINUTE_IN_SECONDS );
@@ -142,15 +146,21 @@ function bsc_otp_send_handler() {
     if ( ! bsc_otp_send_sms( $phone, $code ) ) { bsc_otp_redirect( 'unavailable' ); }
 
     $token = bin2hex( random_bytes( 32 ) );
+    $link_id = get_current_user_id();
+    if ( $link_id && ! in_array( 'customer', (array) wp_get_current_user()->roles, true ) ) {
+        bsc_otp_redirect( 'unavailable' );
+    }
     $challenge = array(
         'phone' => $phone, 'hash' => wp_hash_password( $code ),
         'attempts' => 0, 'expires' => time() + 300, 'consent' => true,
+        'link_id' => $link_id,
     );
     set_transient( bsc_otp_session_key( $token ), $challenge, 300 );
     bsc_otp_cookie( $token, time() + 300 );
     bsc_otp_redirect( 'sent' );
 }
 add_action( 'admin_post_nopriv_bsc_otp_send', 'bsc_otp_send_handler' );
+add_action( 'admin_post_bsc_otp_send', 'bsc_otp_send_handler' );
 
 function bsc_otp_verify_handler() {
     check_admin_referer( 'bsc_otp_verify' );
@@ -176,7 +186,20 @@ function bsc_otp_verify_handler() {
     bsc_otp_cookie( '', time() - 3600 );
     $phone = $challenge['phone'];
     $user = bsc_otp_customer_for_phone( $phone );
-    if ( is_wp_error( $user ) ) { bsc_otp_redirect( 'unavailable' ); }
+    if ( ! empty( $challenge['link_id'] ) ) {
+        $link_id = (int) $challenge['link_id'];
+        if ( get_current_user_id() !== $link_id ||
+             ! in_array( 'customer', (array) wp_get_current_user()->roles, true ) ||
+             ( $user && ( is_wp_error( $user ) ? 'legacy_phone' !== $user->get_error_code() : (int) $user->ID !== $link_id ) ) ) {
+            bsc_otp_redirect( 'unavailable' );
+        }
+        update_user_meta( $link_id, '_bsc_verified_phone', $phone );
+        update_user_meta( $link_id, '_bsc_phone_verified_at', gmdate( 'c' ) );
+        bsc_otp_redirect( 'success' );
+    }
+    if ( is_wp_error( $user ) ) {
+        bsc_otp_redirect( 'legacy_phone' === $user->get_error_code() ? 'legacy' : 'unavailable' );
+    }
     if ( null === $user ) {
         if ( ! get_role( 'customer' ) ) { bsc_otp_redirect( 'unavailable' ); }
         $id = wp_insert_user( array(
@@ -188,6 +211,7 @@ function bsc_otp_verify_handler() {
         ) );
         if ( is_wp_error( $id ) ) { bsc_otp_redirect( 'unavailable' ); }
         update_user_meta( $id, 'billing_phone', $phone );
+        update_user_meta( $id, '_bsc_verified_phone', $phone );
         update_user_meta( $id, '_bsc_phone_verified_at', gmdate( 'c' ) );
         update_user_meta( $id, '_bsc_legal_consent_at', gmdate( 'c' ) );
         if ( function_exists( 'bsc_legal_document_version' ) ) {
@@ -204,6 +228,7 @@ function bsc_otp_verify_handler() {
     bsc_otp_redirect( 'success' );
 }
 add_action( 'admin_post_nopriv_bsc_otp_verify', 'bsc_otp_verify_handler' );
+add_action( 'admin_post_bsc_otp_verify', 'bsc_otp_verify_handler' );
 
 function bsc_otp_form() {
     $challenge = bsc_otp_challenge();
@@ -214,6 +239,7 @@ function bsc_otp_form() {
         'rate' => 'درخواست‌های زیادی ثبت شده است. لطفاً بعداً تلاش کنید.',
         'invalid' => 'شماره موبایل معتبر و تأیید قوانین الزامی است.',
         'unavailable' => 'ارسال یا ورود پیامکی در دسترس نیست. لطفاً بعداً تلاش کنید.',
+        'legacy' => 'این شماره مربوط به حساب قدیمی است. یک‌بار با رمز عبور قبلی وارد شوید و شماره را از صفحه حساب تأیید کنید.',
     );
     $state = isset( $_GET['bsc_otp'] ) ? sanitize_key( wp_unslash( $_GET['bsc_otp'] ) ) : '';
     ob_start(); ?>
@@ -246,6 +272,27 @@ function bsc_otp_form() {
     </section>
     <?php return ob_get_clean();
 }
+
+
+/** Existing customers may explicitly bind their password account to a verified mobile. */
+function bsc_otp_legacy_link_form() {
+    $user = wp_get_current_user();
+    if ( ! $user || ! in_array( 'customer', (array) $user->roles, true )
+        || get_user_meta( $user->ID, '_bsc_verified_phone', true ) ) { return; }
+    $phone = bsc_otp_valid_mobile( get_user_meta( $user->ID, 'billing_phone', true ) );
+    if ( ! $phone ) { return; }
+    if ( bsc_otp_challenge() ) {
+        echo bsc_otp_form(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by renderer.
+        return;
+    }
+    echo '<section class="bsc-otp" dir="rtl"><h2>تأیید موبایل حساب قدیمی</h2><p>برای ورود بعدی با پیامک، شماره ثبت‌شده در حساب قبلی را تأیید کنید.</p>';
+    echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+    echo '<input type="hidden" name="action" value="bsc_otp_send"><input type="hidden" name="phone" value="' . esc_attr( $phone ) . '">';
+    wp_nonce_field( 'bsc_otp_send' );
+    echo '<label><input type="checkbox" name="bsc_legal_consent" value="yes" required> شرایط استفاده و حریم خصوصی را می‌پذیرم.</label>';
+    echo '<button type="submit">ارسال کد برای تأیید موبایل</button></form></section>';
+}
+add_action( 'woocommerce_account_dashboard', 'bsc_otp_legacy_link_form', 20 );
 
 /**
  * Prevent WooCommerce's legacy direct registration handler from creating
