@@ -4,8 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 /** A stock/unpatched vendor plugin must never own the Montix public login page. */
 function bsc_faraz_ready() {
-    return defined( 'FARAZSMS_MONTIX_SECURITY_PATCH' )
-        && FARAZSMS_MONTIX_SECURITY_PATCH === '2026-10-17.1'
+    return is_ssl() && defined( 'FARAZSMS_MONTIX_SECURITY_PATCH' )
+        && FARAZSMS_MONTIX_SECURITY_PATCH === '2026-10-17.2'
         // Only the reviewed bundled login code may handle OTP, not a standalone unpatched login plugin.
         && defined( 'FARAZSMS_LOGIN_BUNDLED' ) && FARAZSMS_LOGIN_BUNDLED
         && defined( 'FARAZSMS_LOGIN_FRONTEND_ENABLED' ) && FARAZSMS_LOGIN_FRONTEND_ENABLED
@@ -61,13 +61,15 @@ add_filter( 'pre_do_shortcode_tag', function( $result, $tag ) {
     return $result;
 }, 5, 2 );
 
-// Do not allow silent automatic replacement of the reviewed/secured vendor version.
-add_filter( 'auto_update_plugin', function( $update, $item ) {
-    return isset( $item->plugin ) && 'faraz-sms/faraz-sms.php' === $item->plugin ? false : $update;
-}, 10, 2 );
+// Last-write protection even when a vendor update filter registers after us.
+// Vendor fork also enforces this independently when Barbershop Core is disabled.
+function bsc_faraz_auto_update_guard( $update, $item ) {
+    return is_object( $item ) && isset( $item->plugin ) && 'faraz-sms/faraz-sms.php' === $item->plugin ? false : $update;
+}
+add_filter( 'auto_update_plugin', 'bsc_faraz_auto_update_guard', PHP_INT_MAX, 2 );
 add_action( 'admin_notices', function() {
     if ( ! current_user_can( 'manage_options' ) || bsc_faraz_ready() ) { return; }
-    echo '<div class="notice notice-error"><p>مونتیکس: نسخه امن FarazSMS 3.22.273-montix.1 یا ماژول ورود داخلی آن فعال نیست. ورود پیامکی برای جلوگیری از خطر تصاحب حساب مسدود است.</p></div>';
+    echo '<div class="notice notice-error"><p>مونتیکس: نسخه امن FarazSMS 3.22.273-montix.2 یا ماژول ورود داخلی آن فعال نیست. ورود پیامکی برای جلوگیری از خطر تصاحب حساب مسدود است.</p></div>';
 } );
 
 /** Create the canonical login page once on admin traffic, preserving any existing page. */

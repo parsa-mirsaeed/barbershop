@@ -6,7 +6,7 @@ diff -ruN a/faraz-sms/faraz-sms.php b/faraz-sms/faraz-sms.php
  Plugin URI: https://farazsms.com/
  Description: با استفاده از افزونه فراز اس ام اس می توانید به صورت حرفه ای سایت خود را به یک ابزار قدرتمند پیامکی برای اطلاع رسانی و بازاریابی مجهز کنید
 -Version: 3.22.273
-+Version: 3.22.273-montix.1
++Version: 3.22.273-montix.2
  Author: FarazSMS
  Author URI: https://farazsms.com/Text Domain: farazsms
  Domain Path: /languages
@@ -14,11 +14,11 @@ diff -ruN a/faraz-sms/faraz-sms.php b/faraz-sms/faraz-sms.php
  }
  
  // نسخه فعلی افزونه برای مقایسه با نسخه سایت فراز اس ام اس
-+define( 'FARAZSMS_MONTIX_SECURITY_PATCH', '2026-10-17.1' );
++define( 'FARAZSMS_MONTIX_SECURITY_PATCH', '2026-10-17.2' );
 +
  if ( ! defined( 'FARAZSMS_PLUGIN_VERSION' ) ) {
 -	define( 'FARAZSMS_PLUGIN_VERSION', '3.22.273' );
-+	define( 'FARAZSMS_PLUGIN_VERSION', '3.22.273-montix.1' );
++	define( 'FARAZSMS_PLUGIN_VERSION', '3.22.273-montix.2' );
  }
  // آمار Matomoِ فراز — روی همه‌ی نصب‌ها فعال (مدیرِ هر سایت می‌تواند از تنظیمات خاموش کند).
  // https اجباری است تا رویدادهای سمتِ سرور هم کار کنند (نه فقط ردیابِ JS).
@@ -75,6 +75,56 @@ diff -ruN a/faraz-sms/inc/farazsms-account-dedupe.php b/faraz-sms/inc/farazsms-a
 +    }
 +    return ! farazsms_find_user_ids_by_mobile( $phone, $user_id );
 +}
+diff -ruN a/faraz-sms/inc/farazsms-self-update.php b/faraz-sms/inc/farazsms-self-update.php
+--- a/faraz-sms/inc/farazsms-self-update.php	2026-10-03 15:03:15.000000000 +0000
++++ b/faraz-sms/inc/farazsms-self-update.php	2026-10-17 17:08:54.067555195 +0000
+@@ -493,6 +493,9 @@
+ }
+ 
+ function farazsms_self_update_inject( $transient ) {
++    // The modified authentication plugin must never advertise an unsigned upstream
++    // package which would silently remove the reviewed security fixes.
++    if ( defined( 'FARAZSMS_MONTIX_SECURITY_PATCH' ) ) { return $transient; }
+ 	if ( empty( $transient ) || ! is_object( $transient ) ) {
+ 		return $transient;
+ 	}
+@@ -596,7 +599,36 @@
+ // ============================================================================
+ 
+ add_filter( 'auto_update_plugin', 'farazsms_self_update_auto_decision', 10, 2 );
++
++// Pinned fork: ignore all upstream auto-update decisions, including other filters.
++function farazsms_montix_pinned_auto_update( $update, $item ) {
++    return is_object( $item ) && isset( $item->plugin )
++        && $item->plugin === 'faraz-sms/faraz-sms.php' ? false : $update;
++}
++add_filter( 'auto_update_plugin', 'farazsms_montix_pinned_auto_update', PHP_INT_MAX, 2 );
++
++// Block WordPress plugin update operations, including a manually clicked update
++// button, until an operator explicitly authorizes a reviewed replacement.
++// WordPress 'install/overwrite via ZIP' may use a different path: the Montix
++// plugin's exact-marker check still fails closed in that case.
++function farazsms_montix_pinned_upgrade( $response, $extra ) {
++    if ( defined( 'MONTIX_ALLOW_REVIEWED_FARAZSMS_UPGRADE' ) && MONTIX_ALLOW_REVIEWED_FARAZSMS_UPGRADE ) {
++        return $response;
++    }
++    $target = is_array( $extra ) && isset( $extra['plugin'] ) ? $extra['plugin'] : '';
++    if ( $target === 'faraz-sms/faraz-sms.php' ) {
++        return new \WP_Error( 'montix_faraz_upgrade_locked',
++            'Montix patched FarazSMS is pinned. Back up and review the new version before authorizing replacement.' );
++    }
++    return $response;
++}
++add_filter( 'upgrader_pre_install', 'farazsms_montix_pinned_upgrade', PHP_INT_MAX, 2 );
++
+ function farazsms_self_update_auto_decision( $update, $item ) {
++    if ( defined( 'FARAZSMS_MONTIX_SECURITY_PATCH' ) && is_object( $item )
++        && isset( $item->plugin ) && $item->plugin === 'faraz-sms/faraz-sms.php' ) {
++        return false;
++    }
+ 	$basename = defined( 'FARAZSMS_PLUGIN_BASENAME' ) ? FARAZSMS_PLUGIN_BASENAME : 'faraz-sms/faraz-sms.php';
+ 	if ( ! is_object( $item ) || empty( $item->plugin ) || $item->plugin !== $basename ) {
+ 		return $update;
 diff -ruN a/faraz-sms/modules/farazsms-login/includes/class-helper.php b/faraz-sms/modules/farazsms-login/includes/class-helper.php
 --- a/faraz-sms/modules/farazsms-login/includes/class-helper.php	2026-10-17 15:06:55.574912983 +0000
 +++ b/faraz-sms/modules/farazsms-login/includes/class-helper.php	2026-10-17 16:01:03.253563899 +0000

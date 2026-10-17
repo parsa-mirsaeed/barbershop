@@ -14,7 +14,7 @@ if [[ "$ACTUAL" != "$EXPECTED" ]]; then
   exit 1
 fi
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PATCH_FILE="$HERE/../vendor-patches/farazsms-3.22.273-montix.1.patch"
+PATCH_FILE="$HERE/../vendor-patches/farazsms-3.22.273-montix.2.patch"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 unzip -q "$ORIGINAL" -d "$TMP"
