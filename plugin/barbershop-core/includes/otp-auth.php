@@ -145,6 +145,11 @@ function bsc_otp_send_handler() {
     $code = (string) random_int( 100000, 999999 );
     if ( ! bsc_otp_send_sms( $phone, $code ) ) { bsc_otp_redirect( 'unavailable' ); }
 
+    // Supersede the previous challenge when resending successfully.
+    $prior = isset( $_COOKIE['bsc_otp_session'] ) ? (string) wp_unslash( $_COOKIE['bsc_otp_session'] ) : '';
+    if ( preg_match( '/^[a-f0-9]{64}$/', $prior ) ) {
+        delete_transient( bsc_otp_session_key( $prior ) );
+    }
     $token = bin2hex( random_bytes( 32 ) );
     $link_id = get_current_user_id();
     if ( $link_id && ! in_array( 'customer', (array) wp_get_current_user()->roles, true ) ) {
@@ -230,6 +235,18 @@ function bsc_otp_verify_handler() {
 add_action( 'admin_post_nopriv_bsc_otp_verify', 'bsc_otp_verify_handler' );
 add_action( 'admin_post_bsc_otp_verify', 'bsc_otp_verify_handler' );
 
+function bsc_otp_cancel_handler() {
+    check_admin_referer( 'bsc_otp_cancel' );
+    $token = isset( $_COOKIE['bsc_otp_session'] ) ? (string) wp_unslash( $_COOKIE['bsc_otp_session'] ) : '';
+    if ( preg_match( '/^[a-f0-9]{64}$/', $token ) ) {
+        delete_transient( bsc_otp_session_key( $token ) );
+    }
+    bsc_otp_cookie( '', time() - 3600 );
+    bsc_otp_redirect( 'cancelled' );
+}
+add_action( 'admin_post_nopriv_bsc_otp_cancel', 'bsc_otp_cancel_handler' );
+add_action( 'admin_post_bsc_otp_cancel', 'bsc_otp_cancel_handler' );
+
 function bsc_otp_form() {
     $challenge = bsc_otp_challenge();
     $messages = array(
@@ -240,6 +257,7 @@ function bsc_otp_form() {
         'invalid' => 'شماره موبایل معتبر و تأیید قوانین الزامی است.',
         'unavailable' => 'ارسال یا ورود پیامکی در دسترس نیست. لطفاً بعداً تلاش کنید.',
         'legacy' => 'این شماره مربوط به حساب قدیمی است. یک‌بار با رمز عبور قبلی وارد شوید و شماره را از صفحه حساب تأیید کنید.',
+        'cancelled' => 'می‌توانید یک شماره دیگر وارد کنید.',
     );
     $state = isset( $_GET['bsc_otp'] ) ? sanitize_key( wp_unslash( $_GET['bsc_otp'] ) ) : '';
     ob_start(); ?>
@@ -257,7 +275,18 @@ function bsc_otp_form() {
                 <input type="hidden" name="action" value="bsc_otp_verify">
                 <?php wp_nonce_field( 'bsc_otp_verify' ); ?>
                 <button type="submit">تأیید و ورود</button>
-                <a href="<?php echo esc_url( remove_query_arg( 'bsc_otp' ) ); ?>">تغییر شماره (پس از انقضای کد)</a>
+            </form>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="bsc_otp_send">
+                <input type="hidden" name="phone" value="<?php echo esc_attr( $challenge['phone'] ); ?>">
+                <input type="hidden" name="bsc_legal_consent" value="yes">
+                <?php wp_nonce_field( 'bsc_otp_send' ); ?>
+                <button type="submit">ارسال دوباره کد (پس از ۶۰ ثانیه)</button>
+            </form>
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+                <input type="hidden" name="action" value="bsc_otp_cancel">
+                <?php wp_nonce_field( 'bsc_otp_cancel' ); ?>
+                <button type="submit">تغییر شماره موبایل</button>
             </form>
         <?php else : ?>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
@@ -267,6 +296,9 @@ function bsc_otp_form() {
                 <?php wp_nonce_field( 'bsc_otp_send' ); ?>
                 <label class="bsc-otp-consent"><input type="checkbox" name="bsc_legal_consent" value="yes" required> شرایط استفاده و سیاست حریم خصوصی سایت را می‌پذیرم.</label>
                 <button type="submit">ارسال کد تأیید</button>
+                <?php if ( 'legacy' === $state ) : ?>
+                    <a href="<?php echo esc_url( wp_login_url( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'myaccount' ) : home_url( '/' ) ) ); ?>">ورود با رمز حساب قبلی برای تأیید موبایل</a>
+                <?php endif; ?>
             </form>
         <?php endif; ?>
     </section>
