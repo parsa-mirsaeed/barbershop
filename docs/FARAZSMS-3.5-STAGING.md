@@ -1,13 +1,13 @@
 # Montix 3.5 — use full FarazSMS for customer authentication + all other SMS features
 
-**Status: staging candidate, not approved for live production.** Prepared from the exact user-supplied `faraz-sms-3.22.273.zip`. No access to production WordPress, database, FarazSMS API credentials, real handsets, or payment callback was used. This is a scoped security patch; it does not constitute a comprehensive audit of every third-party FarazSMS module. Keep the staging site behind a password, and involve FarazSMS maintainers before long-term deployment.
+**Status: security-tested staging candidate, NOT production approved.** Prepared from the exact user-supplied `faraz-sms-3.22.273.zip`. No access to production WordPress, database, FarazSMS API credentials, real handsets, or payment callback was used. This is a scoped security patch; it does not constitute a comprehensive audit of every third-party FarazSMS module. Keep the staging site behind a password, and involve FarazSMS maintainers before long-term deployment.
 
 ## ZIPs
 
-* `faraz-sms-secured-montix.1.zip` — **full FarazSMS plugin** (all supplied modules) with authentication hardening, `3.22.273-montix.1`.
-* `barbershop-core-3.5.0.zip` — Montix storefront plugin: **removes its custom OTP hooks entirely** and integrates FarazSMS. Retains search, sections, gallery, cart, WooCommerce, etc.
+* `faraz-sms-secured-montix.2.zip` — **full FarazSMS plugin** (all supplied modules) with authentication hardening, `3.22.273-montix.2`.
+* `barbershop-core-3.5.1.zip` — Montix storefront plugin: **removes its custom OTP hooks entirely** and integrates FarazSMS. Retains search, sections, gallery, cart, WooCommerce, etc.
 * `persian-barbershop-theme.zip` — the *unchanged* theme from merged Montix 3.4 release.
-* `farazsms-3.22.273-montix.1.patch` — auditable vendor source patch; rebuilding via `build-farazsms-secured.sh` in the bundle (`tools/build-farazsms-secured.sh` in GitHub) requires the original input ZIP with exact SHA-256 `bad42bdb6497411f2fde7e9525efd43af112c5c5e171faf5c098d99203b03b9d`.
+* `farazsms-3.22.273-montix.2.patch` — auditable vendor source patch; rebuilding via `build-farazsms-secured.sh` in the bundle (`tools/build-farazsms-secured.sh` in GitHub) requires the original input ZIP with exact SHA-256 `bad42bdb6497411f2fde7e9525efd43af112c5c5e171faf5c098d99203b03b9d`.
 
 ## Login and registration
 
@@ -33,8 +33,8 @@
 ## Recommended staging procedure (do not skip)
 
 1. Back up **database + wp-content + existing plugin ZIPs + settings**, record active version and PHP/WooCommerce versions. Use HTTPS with WordPress `is_ssl()===true`. Clone the store to staging (preserving order IDs and accounts).
-2. Enable maintenance on staging, upload `faraz-sms-secured-montix.1.zip` to replace only existing `faraz-sms` plugin, then replace `barbershop-core` with `barbershop-core-3.5.0.zip`. Keep WooCommerce/payment/shipping plugins and theme installed. **Deactivate any separate/standalone `farazsms-login` plugin: the reviewed bundled module must be the only SMS login handler.** Do not delete FarazSMS WordPress options, wallet tables, order tables or history.
-3. Confirm `Plugins` shows **FarazSMS 3.22.273-montix.1** and **Barbershop Core 3.5.0**. In FarazSMS settings, first **enable its bundled login module** (not any standalone login plugin), then revisit wp-admin to provision `/login-register/` (or edit existing page). In FarazSMS login settings enable SMS login, approve pattern, verify `code_length` generates **at least 6**, set merchant's API key and sender. Disable or audit automatic plugin upgrades and configure SMS rate limits.
+2. Enable maintenance on staging, upload `faraz-sms-secured-montix.2.zip` to replace only existing `faraz-sms` plugin, then replace `barbershop-core` with `barbershop-core-3.5.1.zip`. Keep WooCommerce/payment/shipping plugins and theme installed. **Deactivate any separate/standalone `farazsms-login` plugin: the reviewed bundled module must be the only SMS login handler.** Do not delete FarazSMS WordPress options, wallet tables, order tables or history.
+3. Confirm `Plugins` shows **FarazSMS 3.22.273-montix.2** and **Barbershop Core 3.5.1**. In FarazSMS settings, first **enable its bundled login module** (not any standalone login plugin), then revisit wp-admin to provision `/login-register/` (or edit existing page). In FarazSMS login settings enable SMS login, approve pattern, verify `code_length` generates **at least 6**, set merchant's API key and sender. Disable or audit automatic plugin upgrades and configure SMS rate limits.
 4. Test **at least**: new customer OTP signup, failed/expired/replayed OTP, second browser, SMS timeout and definitive failure, existing `_bsc_verified_phone`, customer with *only* `billing_phone` (must require password + linking), admin and shop-manager phone (must not log in via OTP), password-reset cross-browser attempts, legacy account linking, shortcode, mobile 375/412px, lost network, checkout/guest checkout, shipping, and actual payment callback. Verify SMS arrives on a real Iranian handset, not just provider HTTP acceptance.
 5. Inspect WordPress PHP logs, FarazSMS send diagnostics, account role, verification metadata, and WooCommerce order ownership. Only consider production deployment after all tests pass. Clear LiteSpeed/CDN cache and exclude login, my-account, checkout and other personalized pages from page caching.
 
@@ -50,3 +50,18 @@ On failure keep login in maintenance and restore **both** previous plugin direct
 * Isolated PHP regression `tests/security-otp.php`: schema expansion, HMAC storage, correct/incorrect/expired codes, replay rejection, plaintext rejection.
 * No live WordPress integration environment, FarazSMS API credentials, live handset, or checkout/payment integration was accessible. Dynamic stub tests **do not replace** WordPress staging end-to-end verification, and no claim is made that the entire third-party plugin was penetration-tested.
 
+
+## Additional Montix 3.5.1 security release gates
+
+Mandatory local release command: ./tools/run-farazsms-security-tests.sh /path/to/faraz-sms-3.22.273.zip
+The command verifies the exact source SHA-256, applies the 7-file vendor patch, lints PHP, and runs four PHP suites against actual reconstructed vendor code: identity, one-time OTP, browser-bound reset, vendor updater.
+CI only checks release policy and generic storefront; the full FarazSMS ZIP is NOT included in GitHub and is NOT exercised by GitHub CI. Green CI is not proof of vendor runtime safety.
+
+Read-only staging audit (after the first OTP triggers schema migration): wp eval-file tools/audit-farazsms-staging.php
+Verify HTTPS is_ssl() using a real browser request; WP-CLI does not emulate real TLS or reverse proxy configuration.
+
+FarazSMS' own updater is now patched, and a second last-priority Montix filter prohibits automatic replacement. Recognized WordPress upgrade actions require reviewed authorization (MONTIX_ALLOW_REVIEWED_FARAZSMS_UPGRADE). Manual ZIP upload and server-level file changes can bypass updater hooks; the bridge then fails closed if the security marker mismatches.
+
+ALL HANDS-ON ACCEPTANCE TESTS ARE PENDING: real Iranian SMS on multiple phones; rate limits/failures/timeouts; OTP replay and parallel requests; password reset browser isolation; new and legacy customer identity; duplicate phones; admin/shop manager exclusion; login form and mobile UX; WooCommerce cart, guest checkout, shipping, refunds/payment callbacks; other FarazSMS features and notifications; HTTPS/cache safety; update and rollback rehearsal.
+
+No security suite or patch removes maintenance/legal responsibility. Engage the FarazSMS vendor for upstream fixes and independent integration/security review before production.
