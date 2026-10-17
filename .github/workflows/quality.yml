@@ -147,6 +147,13 @@ jobs:
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/cart/" > "$cart_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/privacy-policy/" > "$privacy_html"
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/terms-and-conditions/" > "$terms_html"
+          # Explain any rendered-page contract mismatch instead of failing silently on grep.
+          for expectation in 'bsc-category-grid' 'قدرت طبیعت' 'runtime-storefront.css' 'mobile-live-fixes.css' 'ux-refinements.css' 'ux-refinements.js' '3.4.0' 'bsc-product-search-input'; do
+            if ! grep -Fq "$expectation" "$home_html"; then echo "::error::Home HTML missing: $expectation"; fi
+          done
+          for expectation in 'name="phone"' 'name="bsc_legal_consent"' 'ورود و ثبت‌نام با شماره موبایل' 'storefront-features.css' 'ux-refinements.css'; do
+            if ! grep -Fq "$expectation" "$account_html"; then echo "::error::Account HTML missing: $expectation"; fi
+          done
           grep -Fq 'bsc-category-grid' "$home_html"
           grep -Fq 'قدرت طبیعت' "$home_html"
           grep -Fq 'runtime-storefront.css' "$home_html"
