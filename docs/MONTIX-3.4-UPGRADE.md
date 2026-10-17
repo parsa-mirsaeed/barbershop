@@ -1,4 +1,4 @@
-# Montix 3.4.0 — shared-hosting upgrade guide
+# Barbershop 3.4.0 — shared-hosting upgrade guide
 
 This release updates **Barbershop Core** and the **Persian Barbershop** theme; it does **not** ship or overwrite WooCommerce, the existing FarazSMS plugin, payment/shipping plugins, uploads, customers, orders, or database options.
 
