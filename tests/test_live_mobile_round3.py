@@ -13,11 +13,12 @@ from test_ui import rendered_fixture_html
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugin" / "barbershop-core"
 LIVE_CSS = PLUGIN / "assets" / "mobile-live-fixes.css"
+FEATURE_CSS = PLUGIN / "assets" / "storefront-features.css"
 
 
 def live_fixture_html() -> str:
     html = rendered_fixture_html()
-    css = LIVE_CSS.read_text(encoding="utf-8")
+    css = LIVE_CSS.read_text(encoding="utf-8") + "\n" + FEATURE_CSS.read_text(encoding="utf-8")
     footer = """
     <footer class="wp-block-group alignfull pbs-footer">
       <div class="wp-block-columns alignwide">
@@ -42,27 +43,14 @@ def account_fixture_html() -> str:
       <div class="wp-block-post-content">
         <div class="woocommerce">
           <h1>حساب کاربری</h1>
-          <div id="customer_login" class="u-columns col2-set">
-            <div class="u-column1 col-1">
-              <h2>ورود</h2>
-              <form class="woocommerce-form woocommerce-form-login login">
-                <p class="form-row form-row-wide"><label>نام کاربری یا نشانی ایمیل</label><input class="input-text" type="email"></p>
-                <p class="form-row form-row-wide"><label>رمز عبور</label><input class="input-text" type="password"></p>
-                <p class="form-row"><button class="button" type="button">ورود</button></p>
-              </form>
-            </div>
-            <div class="u-column2 col-2">
-              <h2>ساخت حساب</h2>
-              <form class="woocommerce-form woocommerce-form-register register">
-                <p class="bsc-register-note">اطلاعات لازم برای ورود و پیگیری سفارش دریافت می‌شود.</p>
-                <p class="form-row form-row-wide"><label>نام</label><input class="input-text" type="text"></p>
-                <p class="form-row form-row-wide"><label>نام خانوادگی</label><input class="input-text" type="text"></p>
-                <p class="form-row form-row-wide"><label>نشانی ایمیل</label><input class="input-text" type="email"></p>
-                <p class="form-row form-row-wide"><label>رمز عبور</label><input class="input-text" type="password"></p>
-                <p class="form-row"><button class="button" type="button">ساخت حساب</button></p>
-              </form>
-            </div>
-          </div>
+          <section class="bsc-otp" dir="rtl">
+            <h2>ورود و ثبت‌نام با شماره موبایل</h2>
+            <form>
+              <label>شماره موبایل</label><input name="phone" type="tel">
+              <label><input name="bsc_legal_consent" type="checkbox"> قوانین</label>
+              <button type="button">ارسال کد تأیید</button>
+            </form>
+          </section>
         </div>
       </div>
     </main>
@@ -119,7 +107,7 @@ class LiveMobileRoundThreeTests(unittest.TestCase):
         self.assertIn("add_action( 'wp_head', 'bsc_mobile_live_viewport_meta', 0 )", source)
         self.assertIn("barbershop-core-runtime-storefront", source)
         self.assertIn("includes/mobile-live-fixes.php", core)
-        self.assertIn("Version: 3.3.3", core)
+        self.assertIn("Version: 3.4.0", core)
         self.assertIn("max-width: 781px", css)
         self.assertIn("max-height: 520px", css)
 
@@ -156,27 +144,18 @@ class LiveMobileRoundThreeTests(unittest.TestCase):
         finally:
             context.close()
 
-    def test_account_login_and_registration_fit_one_column_at_412(self) -> None:
+    def test_phone_only_account_fits_at_412(self) -> None:
         page, context = self.open_page(account_fixture_html(), 412, 915)
         try:
             self.assert_no_horizontal_overflow(page, 412)
-            tracks = page.locator("#customer_login").evaluate("el => getComputedStyle(el).gridTemplateColumns")
-            self.assertEqual(1, len([track for track in tracks.split(" ") if track and track != "none"]))
-
-            for selector in ("#customer_login", "form.login", "form.register", "form.login input", "form.register input"):
-                for index in range(page.locator(selector).count()):
-                    box = page.locator(selector).nth(index).bounding_box()
-                    self.assertIsNotNone(box, selector)
-                    self.assertGreaterEqual(box["x"], -1, (selector, box))
-                    self.assertLessEqual(box["x"] + box["width"], 413, (selector, box))
-
-            final_button = page.locator("form.register button")
-            final_button.scroll_into_view_if_needed()
-            button_box = final_button.bounding_box()
-            dock_box = page.locator(".bsc-mobile-dock").bounding_box()
-            self.assertIsNotNone(button_box)
-            self.assertIsNotNone(dock_box)
-            self.assertLess(button_box["y"], dock_box["y"])
+            self.assertEqual(1, page.locator('form input[name="phone"]').count())
+            self.assertEqual(0, page.locator('form input[name="password"]').count())
+            for selector in (".bsc-otp", ".bsc-otp form", ".bsc-otp input", ".bsc-otp button"):
+                for i in range(page.locator(selector).count()):
+                    box = page.locator(selector).nth(i).bounding_box()
+                    self.assertIsNotNone(box)
+                    self.assertGreaterEqual(box["x"], -1)
+                    self.assertLessEqual(box["x"] + box["width"], 413)
         finally:
             context.close()
 
