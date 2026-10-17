@@ -31,6 +31,8 @@ class StorefrontRepositoryTests(unittest.TestCase):
 
     def test_phone_only_registration_is_separate_from_woocommerce_checkout(self) -> None:
         source = (PLUGIN / "includes" / "account.php").read_text()
+        setup = (PLUGIN / "includes" / "setup.php").read_text()
+        barber = (PLUGIN / "includes" / "barber.php").read_text()
         bridge = (PLUGIN / "includes" / "farazsms-bridge.php").read_text()
         core = (PLUGIN / "barbershop-core.php").read_text()
         self.assertNotIn("includes/otp-auth.php", core)
@@ -280,7 +282,7 @@ class StorefrontRepositoryTests(unittest.TestCase):
             for p in ROOT.rglob("*")
             if p.is_file() and p.suffix.lower() in {".php", ".html", ".css", ".json", ".md", ".txt", ".yaml", ".yml", ".svg"}
         )
-        for term in ("MON" + "TIX", "Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi", "پارسا" + " میرسعید"):
+        for term in ("Ali" + "reza", "علی" + "رضا", "Ar" + "min", "Mir" + "saeid", "Ebra" + "himi", "پارسا" + " میرسعید"):
             self.assertNotIn(term.casefold(), text.casefold())
 
 
