@@ -22,3 +22,7 @@
 .woocommerce div.product .woocommerce-product-gallery__wrapper{max-width:100%;min-width:0}
 .woocommerce div.product .woocommerce-product-gallery .flex-control-thumbs img{width:100%;height:auto;object-fit:cover;aspect-ratio:1;cursor:pointer}
 @media(max-width:920px){.pbs-header-inner{flex-wrap:wrap!important}.pbs-header-inner .bsc-product-search{order:4;flex-basis:100%;max-width:none}.bsc-product-search button{padding-inline:.75rem}}
+
+/* Single verified-phone form replaces WooCommerce's previous two-column auth cards. */
+body.woocommerce-account:not(.logged-in) .woocommerce{display:block!important}
+body.woocommerce-account:not(.logged-in) .woocommerce>.bsc-otp{max-width:34rem;margin-inline:auto}
