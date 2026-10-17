@@ -127,6 +127,10 @@ function bsc_otp_send_handler() {
     }
     $phone = isset( $_POST['phone'] ) ? bsc_otp_valid_mobile( sanitize_text_field( wp_unslash( $_POST['phone'] ) ) ) : '';
     if ( ! $phone || empty( $_POST['bsc_legal_consent'] ) ) { bsc_otp_redirect( 'invalid' ); }
+    $link_id = get_current_user_id();
+    if ( $link_id && ! in_array( 'customer', (array) wp_get_current_user()->roles, true ) ) {
+        bsc_otp_redirect( 'unavailable' );
+    }
 
     // Server-derived network identity: do not trust spoofable forwarding headers.
     $ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
@@ -151,10 +155,6 @@ function bsc_otp_send_handler() {
         delete_transient( bsc_otp_session_key( $prior ) );
     }
     $token = bin2hex( random_bytes( 32 ) );
-    $link_id = get_current_user_id();
-    if ( $link_id && ! in_array( 'customer', (array) wp_get_current_user()->roles, true ) ) {
-        bsc_otp_redirect( 'unavailable' );
-    }
     $challenge = array(
         'phone' => $phone, 'hash' => wp_hash_password( $code ),
         'attempts' => 0, 'expires' => time() + 300, 'consent' => true,
