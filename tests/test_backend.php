@@ -11,6 +11,12 @@ require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/account.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/woocommerce.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/setup.php';
 require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/hosting.php';
+function wp_salt( $scheme = '' ) { return 'test-only-wordpress-salt-' . $scheme; }
+function get_option( $key, $default = false ) { return $default; }
+function has_filter( $key ) { return false; }
+function apply_filters( $key, $value ) { return $value; }
+require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/otp-auth.php';
+require dirname( __DIR__ ) . '/plugin/barbershop-core/includes/visibility.php';
 
 function bsc_test_assert_same( $expected, $actual, $message ) {
 	if ( $expected !== $actual ) {
@@ -42,4 +48,11 @@ bsc_test_assert_same( true, $extensions['pdo_mysql']['required'], 'PDO MySQL is 
 bsc_test_assert_same( true, $extensions['curl']['required'], 'cURL is a critical shared-host requirement.' );
 bsc_test_assert_same( false, $extensions['intl']['required'], 'Intl is recommended rather than fatal.' );
 
-echo "Backend unit tests passed.\n";
+bsc_test_assert_same( '09121234567', bsc_otp_valid_mobile( '+989121234567' ), 'OTP supports +98 Iranian phone.' );
+bsc_test_assert_same( '', bsc_otp_valid_mobile( '123456' ), 'OTP rejects invalid phone numbers.' );
+bsc_test_assert_same( true, 0 === strpos( bsc_otp_customer_login( '09121234567' ), 'bsc_u_' ), 'Opaque login prefix avoids exposing the phone.' );
+bsc_test_assert_same( false, false !== strpos( bsc_otp_customer_login( '09121234567' ), '09121234567' ), 'Opaque logins contain no phone numbers.' );
+bsc_test_assert_same( true, bsc_visibility_enabled( 'gallery' ), 'Gallery is visible by default.' );
+bsc_test_assert_same( true, bsc_visibility_enabled( 'product_reviews' ), 'Product reviews are visible by default.' );
+bsc_test_assert_same( false, bsc_otp_sms_ready(), 'OTP fails closed without SMS provider credentials.' );
+echo "Backend unit tests passed.\\n";
