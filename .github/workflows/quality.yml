@@ -33,6 +33,7 @@ jobs:
         run: |
           python3 tools/scan-secrets.py
           python3 tools/validate.py
+          python3 -m unittest discover -s tests -p test_farazsms_release_policy.py -v
           php tests/test_backend.php
           python3 -m unittest discover -s tests -v
       - name: Syntax checks
@@ -149,7 +150,7 @@ jobs:
           curl -fsSL --retry 12 --retry-delay 3 "$WP_URL/terms-and-conditions/" > "$terms_html"
           # Trace only the public HTML assertions; installation credentials are not traced.
           # Explain any rendered-page contract mismatch instead of failing silently on grep.
-          for expectation in 'bsc-category-grid' 'قدرت طبیعت' 'runtime-storefront.css' 'mobile-live-fixes.css' 'ux-refinements.css' 'ux-refinements.js' '3.5.0' 'bsc-product-search-input'; do
+          for expectation in 'bsc-category-grid' 'قدرت طبیعت' 'runtime-storefront.css' 'mobile-live-fixes.css' 'ux-refinements.css' 'ux-refinements.js' '3.5.1' 'bsc-product-search-input'; do
             if ! grep -Fq "$expectation" "$home_html"; then echo "::error::Home HTML missing: $expectation"; fi
           done
           for expectation in 'ورود پیامکی موقتاً در دسترس نیست' 'storefront-features.css' 'ux-refinements.css'; do
@@ -162,7 +163,7 @@ jobs:
           grep -Fq 'ux-refinements.css' "$home_html"
           grep -Fq 'ux-refinements.js' "$home_html"
           grep -Fq 'bsc-product-search-input' "$home_html"
-          grep -Fq '3.5.0' "$home_html"
+          grep -Fq '3.5.1' "$home_html"
           grep -Fq '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' "$home_html"
           ! grep -Fq '[products ' "$home_html"
           ! grep -Fq '[bsc_product_categories' "$home_html"
