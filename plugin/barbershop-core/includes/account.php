@@ -268,7 +268,7 @@ add_filter( 'gettext', 'bsc_translate_account_identity_text', 120, 3 );
  */
 function bsc_account_menu_items( $items ) {
 	unset( $items['edit-address'], $items['downloads'] );
-	$order = array( 'dashboard', 'orders', 'edit-account', 'customer-logout' );
+	$order = array( 'dashboard', 'orders', 'customer-logout' );
 	$short = array();
 	foreach ( $order as $key ) {
 		if ( isset( $items[ $key ] ) ) {
@@ -375,20 +375,19 @@ function bsc_render_account_overview() {
 			<span class="bsc-account-avatar" aria-hidden="true"><?php echo esc_html( $initial ); ?></span>
 			<div>
 				<h2><?php echo esc_html( sprintf( 'سلام %s', $name ) ); ?></h2>
-				<p>سفارش‌ها، اطلاعات تماس و رمز عبور خود را سریع و امن مدیریت کنید.</p>
+				<p>سفارش‌های خود را ببینید؛ اطلاعات تحویل و پرداخت فقط هنگام خرید ثبت می‌شود.</p>
 			</div>
 			<div class="bsc-account-identifiers">
-				<span class="bsc-account-chip"><?php echo esc_html( $user->user_email ); ?></span>
+				<?php if ( $user->user_email ) : ?><span class="bsc-account-chip"><?php echo esc_html( $user->user_email ); ?></span><?php endif; ?>
 				<?php if ( $phone ) : ?><span class="bsc-account-chip"><?php echo esc_html( $phone ); ?></span><?php endif; ?>
 			</div>
 		</div>
 		<div class="bsc-account-metrics">
 			<div class="bsc-account-metric"><strong><?php echo esc_html( number_format_i18n( $order_count ) ); ?></strong><span>سفارش ثبت‌شده</span></div>
-			<div class="bsc-account-metric"><strong>۲</strong><span>روش ورود: موبایل یا ایمیل</span></div>
+			<div class="bsc-account-metric"><strong>✓</strong><span>حساب مشتری</span></div>
 		</div>
 		<nav class="bsc-account-actions" aria-label="دسترسی سریع حساب">
 			<a href="<?php echo esc_url( wc_get_account_endpoint_url( 'orders' ) ); ?>">مشاهده سفارش‌ها</a>
-			<a href="<?php echo esc_url( wc_get_account_endpoint_url( 'edit-account' ) ); ?>">ویرایش اطلاعات</a>
 			<a href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>">رفتن به فروشگاه</a>
 		</nav>
 	</section>
