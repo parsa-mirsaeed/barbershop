@@ -35,6 +35,8 @@ class StorefrontRepositoryTests(unittest.TestCase):
         setup = (PLUGIN / "includes" / "setup.php").read_text()
         barber = (PLUGIN / "includes" / "barber.php").read_text()
         self.assertIn("bsc_normalize_iran_mobile", source)
+        self.assertIn("get_user_meta( $user->ID, '_bsc_verified_phone', true )", source)
+        self.assertNotIn("get_user_meta( $user->ID, 'billing_phone', true );\\n\\t$order_count", source)
         self.assertIn("bsc_otp_guest_account", otp)
         self.assertIn('name="phone"', otp)
         self.assertIn('name="code"', otp)
