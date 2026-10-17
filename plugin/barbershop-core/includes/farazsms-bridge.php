@@ -6,6 +6,9 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function bsc_faraz_ready() {
     return defined( 'FARAZSMS_MONTIX_SECURITY_PATCH' )
         && FARAZSMS_MONTIX_SECURITY_PATCH === '2026-10-17.1'
+        // Only the reviewed bundled login code may handle OTP, not a standalone unpatched login plugin.
+        && defined( 'FARAZSMS_LOGIN_BUNDLED' ) && FARAZSMS_LOGIN_BUNDLED
+        && defined( 'FARAZSMS_LOGIN_FRONTEND_ENABLED' ) && FARAZSMS_LOGIN_FRONTEND_ENABLED
         && function_exists( 'farazsms_montix_verified_customer_by_mobile' )
         && class_exists( '\FarazSMS\OTP' )
         && class_exists( '\FarazSMS\Send_SMS' );
@@ -64,7 +67,7 @@ add_filter( 'auto_update_plugin', function( $update, $item ) {
 }, 10, 2 );
 add_action( 'admin_notices', function() {
     if ( ! current_user_can( 'manage_options' ) || bsc_faraz_ready() ) { return; }
-    echo '<div class="notice notice-error"><p>مونتیکس: نسخه امن FarazSMS 3.22.273-montix.1 نصب/فعال نیست. ورود پیامکی برای جلوگیری از خطر تصاحب حساب مسدود است.</p></div>';
+    echo '<div class="notice notice-error"><p>مونتیکس: نسخه امن FarazSMS 3.22.273-montix.1 یا ماژول ورود داخلی آن فعال نیست. ورود پیامکی برای جلوگیری از خطر تصاحب حساب مسدود است.</p></div>';
 } );
 
 /** Create the canonical login page once on admin traffic, preserving any existing page. */
