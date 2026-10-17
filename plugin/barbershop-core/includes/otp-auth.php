@@ -247,6 +247,19 @@ function bsc_otp_form() {
     <?php return ob_get_clean();
 }
 
+/**
+ * Prevent WooCommerce's legacy direct registration handler from creating
+ * unverified accounts even when someone manually POSTs its old form.
+ * Staff-created users and REST administration are not affected.
+ */
+function bsc_otp_require_verified_registration( $errors ) {
+    if ( ! is_admin() && ! ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+        $errors->add( 'bsc_otp_only', 'برای ساخت حساب، از کد تأیید پیامکی استفاده کنید.' );
+    }
+    return $errors;
+}
+add_filter( 'woocommerce_registration_errors', 'bsc_otp_require_verified_registration', 999 );
+
 /** Replace WooCommerce's old guest signup/login UI, leaving customer endpoints intact. */
 function bsc_otp_guest_account( $return, $tag ) {
     if ( 'woocommerce_my_account' === $tag && ! is_user_logged_in() && ! is_admin() ) {
