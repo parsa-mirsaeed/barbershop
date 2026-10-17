@@ -189,6 +189,9 @@ function bsc_apply_woocommerce_defaults() {
 	update_option( 'woocommerce_checkout_privacy_policy_text', '' );
 	update_option( 'woocommerce_checkout_terms_and_conditions_checkbox_text', 'با ثبت سفارش، [terms] و [privacy_policy] را خوانده‌ام و می‌پذیرم.' );
 	update_option( 'woocommerce_coming_soon', 'no' );
+	// No checkout-created accounts bypassing verified-phone registration.
+	update_option( 'woocommerce_enable_guest_checkout', 'yes' );
+	update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
 	update_option( 'woocommerce_store_pages_only', 'no' );
 	update_option( 'bsc_disable_xmlrpc', get_option( 'bsc_disable_xmlrpc', 'yes' ) );
 	if ( class_exists( 'WC_Install' ) ) {
