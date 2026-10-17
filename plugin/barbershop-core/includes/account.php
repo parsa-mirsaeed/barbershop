@@ -366,7 +366,7 @@ function bsc_render_account_overview() {
 		return;
 	}
 	$name        = $user->display_name ? $user->display_name : $user->user_email;
-	$phone       = get_user_meta( $user->ID, 'billing_phone', true );
+	$phone       = get_user_meta( $user->ID, '_bsc_verified_phone', true );
 	$order_count = function_exists( 'wc_get_customer_order_count' ) ? wc_get_customer_order_count( $user->ID ) : 0;
 	$initial     = function_exists( 'mb_substr' ) ? mb_substr( $name, 0, 1, 'UTF-8' ) : substr( $name, 0, 1 );
 	?>
