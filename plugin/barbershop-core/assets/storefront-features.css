@@ -26,3 +26,9 @@
 /* Single verified-phone form replaces WooCommerce's previous two-column auth cards. */
 body.woocommerce-account:not(.logged-in) .woocommerce{display:block!important}
 body.woocommerce-account:not(.logged-in) .woocommerce>.bsc-otp{max-width:34rem;margin-inline:auto}
+
+/* The thumbnail list must have independent hit targets on touch devices. */
+.woocommerce div.product .woocommerce-product-gallery .flex-control-thumbs{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;list-style:none;padding:0;margin:.75rem 0}
+.woocommerce div.product .woocommerce-product-gallery .flex-control-thumbs>li{float:none!important;width:auto!important;min-width:0}
+.woocommerce div.product .woocommerce-product-gallery .flex-control-thumbs>li img{display:block}
+@media(max-width:480px){.woocommerce div.product .woocommerce-product-gallery .flex-control-thumbs{grid-template-columns:repeat(3,minmax(0,1fr))}}
