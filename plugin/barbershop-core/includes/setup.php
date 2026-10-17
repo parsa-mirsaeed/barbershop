@@ -213,9 +213,20 @@ function bsc_apply_woocommerce_defaults() {
 }
 
 function bsc_maybe_apply_setup() {
-	if ( class_exists( 'WooCommerce' ) && BSC_VERSION !== get_option( 'bsc_setup_version' ) ) {
-		bsc_apply_woocommerce_defaults();
+	if ( ! class_exists( 'WooCommerce' ) || BSC_VERSION === get_option( 'bsc_setup_version' ) ) {
+		return;
 	}
+	$installed_version = get_option( 'bsc_setup_version', '' );
+	if ( $installed_version ) {
+		// Upgrade existing shops without resetting categories, merchant content,
+		// language, cart behavior or other established WooCommerce settings.
+		// Registration through checkout must never bypass verified-phone OTP.
+		update_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
+		update_option( 'woocommerce_enable_guest_checkout', 'yes' );
+		update_option( 'bsc_setup_version', BSC_VERSION, false );
+		return;
+	}
+	bsc_apply_woocommerce_defaults();
 }
 add_action( 'init', 'bsc_maybe_apply_setup', 40 );
 
