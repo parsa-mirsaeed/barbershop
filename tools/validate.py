@@ -70,20 +70,21 @@ for token in ("SITE_DOMAIN", "FORCE_SSL_ADMIN", "DISALLOW_FILE_EDIT", "WP_DEBUG_
         errors.append(f"Production Docker setup token missing: {token}")
 
 account = (PLUGIN / "includes" / "account.php").read_text(encoding="utf-8")
-for token in (
-    "woocommerce_register_form_start", 'name="full_name"', "billing_phone",
-    "bsc_legal_consent", "woocommerce_created_customer", "bsc_authenticate_with_mobile",
-    "bsc_normalize_iran_mobile", "شماره موبایل یا ایمیل", "edit-address",
-    "woocommerce_account_menu_items", "bsc_render_account_overview",
-):
+otp = (PLUGIN / "includes" / "otp-auth.php").read_text(encoding="utf-8")
+for token in ("bsc_normalize_iran_mobile", "woocommerce_account_menu_items", "bsc_render_account_overview"):
     if token not in account:
-        errors.append(f"Minimal account implementation token missing: {token}")
-for removed in ('name="website"', 'name="first_name"', 'name="last_name"'):
-    if removed in account:
-        errors.append(f"Removed registration field returned: {removed}")
-if 'name="billing_phone"' not in account or "required aria-required=\"true\"" not in account:
-    errors.append("Registration mobile field must be explicitly required.")
-
+        errors.append(f"Account behavior missing: {token}")
+for token in ("bsc_otp_send_handler", "bsc_otp_verify_handler", "wp_hash_password",
+              "wp_check_password", "bsc_otp_require_verified_registration",
+              "BSC_FARAZSMS_API_KEY", "woocommerce_my_account", 'name="phone"', 'name="code"'):
+    if token not in otp:
+        errors.append(f"Phone-only OTP behavior missing: {token}")
+for unwanted in ('name="email"', 'name="full_name"', 'name="password"'):
+    if unwanted in otp:
+        errors.append(f"Unexpected signup field: {unwanted}")
+for path in ("includes/product-search.php", "includes/visibility.php", "assets/storefront-features.css", "assets/gallery-fix.js"):
+    if not (PLUGIN / path).is_file():
+        errors.append(f"Missing storefront feature file: {path}")
 legal = (PLUGIN / "includes" / "legal.php").read_text(encoding="utf-8")
 for token in ("privacy-policy", "terms-and-conditions", "wp_page_for_privacy_policy", "woocommerce_terms_page_id", "سیاست حریم خصوصی", "شرایط استفاده و خرید"):
     if token not in legal:
@@ -116,7 +117,7 @@ for token in ("height:7rem", "width:7rem", "bsc-mobile-dock", "min-height:44px",
         errors.append(f"Storefront CSS token missing: {token}")
 
 header = (THEME / "parts" / "header.html").read_text(encoding="utf-8")
-for token in ("wp:site-logo", "[bsc_cart_link]", "[bsc_account_link]", "#categories", "#products"):
+for token in ("wp:site-logo", "[bsc_cart_link]", "[bsc_account_link]", "#categories", "#products", "[bsc_product_search]"):
     if token not in header:
         errors.append(f"Header navigation/access token missing: {token}")
 theme_functions = (THEME / "functions.php").read_text(encoding="utf-8")
