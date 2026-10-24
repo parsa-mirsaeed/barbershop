@@ -44,7 +44,7 @@ jobs:
           npm install --no-save @playwright/test@1.56.1
           npx playwright install --with-deps chromium
       - name: Test actual WordPress staging header at nine viewport sizes
-        run: npx playwright test tools/header.staging.spec.mjs --project=chromium
+        run: npx playwright test tools/header.staging.spec.mjs
       - name: Attach browser failures
         if: failure()
         uses: actions/upload-artifact@v4
