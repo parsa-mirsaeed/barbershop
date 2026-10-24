@@ -1,0 +1,56 @@
+name: MONTIX responsive header acceptance
+
+on:
+  pull_request:
+    paths:
+      - "theme/persian-barbershop/**"
+      - "tools/test-header.mjs"
+      - "tools/header.staging.spec.mjs"
+      - ".github/workflows/responsive-header.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint WordPress theme PHP
+        run: find theme/persian-barbershop -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Check browser JS syntax
+        run: node --check theme/persian-barbershop/assets/js/site.js
+      - name: Validate responsive header source
+        run: node --test tools/test-header.mjs
+      - name: Validate repository policy
+        run: python3 tools/validate.py
+
+  real-staging-browser:
+    needs: source-checks
+    if: ${{ vars.MONTIX_STAGING_URL != '' }}
+    runs-on: ubuntu-latest
+    env:
+      MONTIX_STAGING_URL: ${{ vars.MONTIX_STAGING_URL }}
+      MONTIX_STAGE_BASIC_USER: ${{ secrets.MONTIX_STAGE_BASIC_USER }}
+      MONTIX_STAGE_BASIC_PASSWORD: ${{ secrets.MONTIX_STAGE_BASIC_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test actual WordPress staging header at nine viewport sizes
+        run: npx playwright test tools/header.staging.spec.mjs
+      - name: Attach browser failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: montix-header-playwright-report
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 3

@@ -89,6 +89,33 @@ function pbs_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'pbs_assets' );
 
+
+/**
+ * A single theme-owned header search form. Its unique ID avoids colliding with
+ * Core's separate product-results search, without changing Core's shortcode.
+ * No input text is changed by JavaScript; Persian stays in natural RTL order.
+ *
+ * @return string
+ */
+function pbs_header_product_search() {
+	if ( ! function_exists( 'wc_get_page_permalink' ) ) {
+		return '';
+	}
+	$field_id = wp_unique_id( 'pbs-header-search-' );
+	return sprintf(
+		'<form class="pbs-header-product-search" role="search" method="get" action="%1$s" dir="rtl">' .
+		'<label class="screen-reader-text" for="%2$s">جست‌وجوی محصولات</label>' .
+		'<input id="%2$s" type="search" name="s" dir="rtl" value="%3$s" placeholder="جست‌وجوی محصول" autocomplete="off" maxlength="100" required>' .
+		'<input type="hidden" name="post_type" value="product">' .
+		'<button type="submit" aria-label="جست‌وجوی محصولات"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.7"></circle><path d="m16 16 5 5"></path></svg></button>' .
+		'</form>',
+		esc_url( home_url( '/' ) ),
+		esc_attr( $field_id ),
+		esc_attr( get_search_query( false ) )
+	);
+}
+add_shortcode( 'pbs_header_product_search', 'pbs_header_product_search' );
+
 function pbs_editor_assets() {
 	wp_enqueue_style( 'persian-barbershop-editor', get_stylesheet_uri(), array(), pbs_asset_version( 'style.css' ) );
 	pbs_add_font_face( 'persian-barbershop-editor' );
