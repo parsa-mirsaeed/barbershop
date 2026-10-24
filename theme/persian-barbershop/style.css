@@ -118,7 +118,7 @@ button, input, select, textarea, .wp-element-button, .wp-block-button__link { mi
 .pbs-header-actions .wp-block-shortcode{flex:0 0 auto;margin:0}
 .pbs-header-actions .bsc-account-link,.pbs-header-actions .bsc-cart-link{min-height:2.85rem}
 @media(max-width:1180px){
-  .site-header-shell .pbs-header-inner{gap:.7rem}
+  .site-header-shell .pbs-header-inner{gap:.7rem;min-height:4rem}
   .pbs-header-navigation{flex:0 0 auto}
   .site-header-shell .pbs-header-navigation .wp-block-navigation__responsive-container:not(.is-menu-open){display:none!important}
   .site-header-shell .pbs-header-navigation .wp-block-navigation__responsive-container-open{align-items:center;border:1px solid var(--pbs-line);border-radius:12px;color:#fff;display:inline-flex!important;height:2.85rem;justify-content:center;padding:0;width:2.85rem}
@@ -146,7 +146,7 @@ button, input, select, textarea, .wp-element-button, .wp-block-button__link { mi
   .pbs-header-product-search{flex-direction:row;gap:0}
   .pbs-header-product-search input[type="search"]{font-size:16px;min-height:2.85rem}
   .pbs-header-product-search button{min-height:2.85rem;width:3rem}
-  .pbs-header-actions{display:flex;flex:0 0 auto;gap:.3rem}
+  .site-header-shell .pbs-header-inner > .pbs-header-actions{display:flex!important;flex:0 0 auto;gap:.3rem}
   .pbs-header-actions .bsc-account-link,.pbs-header-actions .bsc-cart-link{border-radius:12px;height:2.6rem;min-height:2.6rem;padding:0;position:relative;width:2.6rem}
   .pbs-header-actions .bsc-account-link>span:not(.bsc-account-link__icon),.pbs-header-actions .bsc-cart-link__label{display:none}
   .pbs-header-actions .bsc-cart-link__count{font-size:.6rem;height:1.05rem;inset:-.33rem auto auto -.33rem;min-width:1.05rem;padding:0 .12rem;position:absolute}
