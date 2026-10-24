@@ -148,7 +148,8 @@ button, input, select, textarea, .wp-element-button, .wp-block-button__link { mi
   .pbs-header-product-search button{min-height:2.85rem;width:3rem}
   .site-header-shell .pbs-header-inner > .pbs-header-actions{display:flex!important;flex:0 0 auto;gap:.3rem}
   .pbs-header-actions .bsc-account-link,.pbs-header-actions .bsc-cart-link{border-radius:12px;height:2.75rem;min-height:2.75rem;padding:0;position:relative;width:2.75rem}
-  .pbs-header-actions .bsc-account-link>span:not(.bsc-account-link__icon),.pbs-header-actions .bsc-cart-link__label{display:none}
+  .pbs-header-actions .bsc-account-link>span:not(.bsc-account-link__icon){clip:rect(0,0,0,0);clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;white-space:nowrap;width:1px}
+  .pbs-header-actions .bsc-cart-link__label{display:none}
   .pbs-header-actions .bsc-cart-link__count{font-size:.6rem;height:1.05rem;inset:-.33rem auto auto -.33rem;min-width:1.05rem;padding:0 .12rem;position:absolute}
   .pbs-header-actions .bsc-account-link__icon,.pbs-header-actions .bsc-cart-link__icon{height:1.25rem;width:1.25rem}
 }
