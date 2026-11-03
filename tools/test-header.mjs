@@ -32,6 +32,11 @@ for (const match of template.matchAll(/<!--\s*(\/?)wp:([\w/-]+)([\s\S]*?)-->/g))
 assert.deepEqual(stack, [], 'All WordPress block comments should be balanced');
 
 assert.match(php, /function pbs_header_product_search\(/);
+
+assert.match(php, /add_filter\( 'hooked_block'/, 'Auto-inserted WooCommerce header blocks must be suppressed');
+assert.match(php, /woocommerce\/customer-account/, 'Suppress automatically hooked customer-account copies');
+assert.match(php, /woocommerce\/mini-cart/, 'Suppress automatically hooked mini-cart copies');
+
 assert.match(php, /wp_unique_id\(\s*'pbs-header-search-'/, 'Search input ID must not collide with Core result forms');
 assert.match(php, /name="post_type" value="product"/, 'Search must be product-only');
 assert.match(php, /name="s" dir="rtl"/, 'Persian query input must be RTL');
