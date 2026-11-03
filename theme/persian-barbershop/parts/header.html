@@ -11,7 +11,22 @@
       <!-- wp:navigation-link {"label":"[منوی خدمات]","url":"/#services","kind":"custom"} /-->
       <!-- wp:navigation-link {"label":"[منوی تماس]","url":"/#contact","kind":"custom"} /-->
     <!-- /wp:navigation -->
-    <!-- wp:shortcode -->[bsc_product_search]<!-- /wp:shortcode -->
-    <!-- wp:group {"className":"pbs-header-actions","layout":{"type":"flex","flexWrap":"nowrap"}} --><div class="wp-block-group pbs-header-actions"><!-- wp:shortcode -->[bsc_account_link]<!-- /wp:shortcode --><!-- wp:shortcode -->[bsc_cart_link]<!-- /wp:shortcode --></div><!-- /wp:group -->
-  </div><!-- /wp:group -->
-</div><!-- /wp:group -->
+    <!-- wp:group {"className":"pbs-header-search","layout":{"type":"default"}} -->
+    <div class="wp-block-group pbs-header-search">
+      <!-- wp:html -->
+      <button type="button" class="pbs-search-toggle" aria-expanded="false" aria-controls="pbs-header-search-panel" aria-label="باز کردن جست‌وجوی محصولات">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.7"></circle><path d="m16 16 5 5"></path></svg>
+      </button>
+      <!-- /wp:html -->
+      <!-- wp:group {"anchor":"pbs-header-search-panel","className":"pbs-header-search-panel","layout":{"type":"default"}} -->
+      <div id="pbs-header-search-panel" class="wp-block-group pbs-header-search-panel"><!-- wp:shortcode -->[pbs_header_product_search]<!-- /wp:shortcode --></div>
+      <!-- /wp:group -->
+    </div>
+    <!-- /wp:group -->
+    <!-- wp:group {"className":"pbs-header-actions","layout":{"type":"flex","flexWrap":"nowrap"}} -->
+    <div class="wp-block-group pbs-header-actions"><!-- wp:shortcode -->[bsc_account_link]<!-- /wp:shortcode --><!-- wp:shortcode -->[bsc_cart_link]<!-- /wp:shortcode --></div>
+    <!-- /wp:group -->
+  </div>
+  <!-- /wp:group -->
+</div>
+<!-- /wp:group -->

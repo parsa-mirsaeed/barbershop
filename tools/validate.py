@@ -116,7 +116,7 @@ for token in ("height:7rem", "width:7rem", "bsc-mobile-dock", "min-height:44px",
         errors.append(f"Storefront CSS token missing: {token}")
 
 header = (THEME / "parts" / "header.html").read_text(encoding="utf-8")
-for token in ("wp:site-logo", "[bsc_cart_link]", "[bsc_account_link]", "#categories", "#products", "[bsc_product_search]"):
+for token in ("wp:site-logo", "[bsc_cart_link]", "[bsc_account_link]", "#categories", "#products", "[pbs_header_product_search]"):
     if token not in header:
         errors.append(f"Header navigation/access token missing: {token}")
 theme_functions = (THEME / "functions.php").read_text(encoding="utf-8")

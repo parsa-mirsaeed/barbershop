@@ -115,7 +115,7 @@ class LiveMobileRoundThreeTests(unittest.TestCase):
         page, context = self.open_page(live_fixture_html(), 412, 915)
         try:
             self.assert_no_horizontal_overflow(page, 412)
-            self.assertEqual("none", page.locator(".pbs-header-actions").evaluate("el => getComputedStyle(el).display"))
+            self.assertEqual("flex", page.locator(".pbs-header-actions").evaluate("el => getComputedStyle(el).display"))
             self.assertEqual("column", page.locator(".pbs-hero .wp-block-columns").evaluate("el => getComputedStyle(el).flexDirection"))
 
             for selector in ("#home", "#categories", "#products", "#services", "#gallery", "#articles", "#reviews", "#contact", ".pbs-footer"):

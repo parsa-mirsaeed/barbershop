@@ -15,7 +15,13 @@ class StorefrontFeaturesContract(unittest.TestCase):
         for item in ('name="s"', 'name="post_type" value="product"', 'pre_get_posts',
                      'woocommerce_product_loop_start', 'wc_get_template_part', 'paginate_links'):
             self.assertIn(item, source)
-        self.assertIn("[bsc_product_search]", header)
+        # The unique-ID theme form is intentionally separate from Core's
+        # reusable results shortcode, so no duplicate input IDs can appear.
+        theme_functions = (ROOT / "theme" / "persian-barbershop" / "functions.php").read_text(encoding="utf-8")
+        self.assertEqual(1, header.count("[pbs_header_product_search]"))
+        self.assertIn("wp_unique_id( 'pbs-header-search-'", theme_functions)
+        self.assertIn('name="post_type" value="product"', theme_functions)
+        self.assertIn('name="s" dir="rtl"', theme_functions)
 
     def test_visibility_defaults_and_filters(self):
         source = (PLUGIN / "includes" / "visibility.php").read_text(encoding="utf-8")

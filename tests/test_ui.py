@@ -165,12 +165,38 @@ class StorefrontUITests(unittest.TestCase):
                 self.assertIsNotNone(box)
                 self.assertGreaterEqual(box["height"], 44)
                 self.assertGreaterEqual(box["width"], 44)
-            self.assertEqual("none", page.locator(".pbs-header-actions").evaluate("el => getComputedStyle(el).display"))
+            self.assertEqual("flex", page.locator(".pbs-header-actions").evaluate("el => getComputedStyle(el).display"))
             self.assertEqual(1, self.grid_column_count(page, ".bsc-category-grid"))
             self.assertEqual(1, self.grid_column_count(page, ".woocommerce ul.products"))
             for selector in (".bsc-category-card > a", ".woocommerce li.product .button"):
                 for index in range(min(4, page.locator(selector).count())):
                     self.assertGreaterEqual(page.locator(selector).nth(index).bounding_box()["height"], 44)
+        finally:
+            context.close()
+
+    def test_mobile_header_search_is_single_accessible_rtl_form(self) -> None:
+        page, context = self.open_page(360, 800)
+        try:
+            header = page.locator(".site-header-shell")
+            self.assertEqual(1, header.locator(".bsc-account-link").count())
+            self.assertEqual(1, header.locator(".bsc-cart-link").count())
+            self.assertEqual(1, header.locator("form.pbs-header-product-search").count())
+            toggle = header.locator(".pbs-search-toggle")
+            self.assertTrue(toggle.is_visible())
+            self.assertFalse(header.locator("#pbs-header-search-panel").is_visible())
+            toggle.click()
+            self.assertEqual("true", toggle.get_attribute("aria-expanded"))
+            field = header.locator("input[type=search]")
+            self.assertTrue(field.is_visible())
+            field.fill("تیغ")
+            self.assertEqual("تیغ", field.input_value())
+            params = page.evaluate("""() => new URLSearchParams(new FormData(document.querySelector('.pbs-header-product-search'))).toString()""")
+            self.assertIn("post_type=product", params)
+            self.assertIn("%D8%AA%DB%8C%D8%BA", params)
+            page.keyboard.press("Escape")
+            self.assertFalse(header.locator("#pbs-header-search-panel").is_visible())
+            self.assertEqual("false", toggle.get_attribute("aria-expanded"))
+            self.assert_no_page_overflow(page, "mobile-header-360")
         finally:
             context.close()
 
