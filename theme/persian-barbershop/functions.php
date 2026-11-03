@@ -116,6 +116,22 @@ function pbs_header_product_search() {
 }
 add_shortcode( 'pbs_header_product_search', 'pbs_header_product_search' );
 
+/**
+ * MONTIX auto-hooked WooCommerce control policy: Core owns the single explicit
+ * header account/cart controls. Suppress only Woo's automatic copies attached
+ * to core/navigation; do not remove Woo blocks the editor inserted explicitly.
+ */
+add_filter( 'hooked_block', static function ( $parsed, $hooked_type, $position, $anchor ) {
+	if ( ! is_array( $anchor ) || 'core/navigation' !== ( $anchor['blockName'] ?? '' ) ) {
+		return $parsed;
+	}
+	if ( in_array( $hooked_type, array( 'woocommerce/customer-account', 'woocommerce/mini-cart' ), true ) ) {
+		return null;
+	}
+	return $parsed;
+}, 20, 4 );
+
+
 function pbs_editor_assets() {
 	wp_enqueue_style( 'persian-barbershop-editor', get_stylesheet_uri(), array(), pbs_asset_version( 'style.css' ) );
 	pbs_add_font_face( 'persian-barbershop-editor' );
